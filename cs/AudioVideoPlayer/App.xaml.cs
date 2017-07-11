@@ -44,6 +44,7 @@ namespace AudioVideoPlayer
             this.Suspending += OnSuspending;
             // Initialize Log Message List
             MessageList = new System.Collections.Concurrent.ConcurrentQueue<string>();
+            
         }
 
         /// <summary>
@@ -87,7 +88,7 @@ namespace AudioVideoPlayer
                 // When the navigation stack isn't restored navigate to the first page,
                 // configuring the new page by passing required information as a navigation
                 // parameter
-                rootFrame.Navigate(typeof(MainPage), e.Arguments);
+                rootFrame.Navigate(typeof(Shell), e.Arguments);
             }
             // Ensure the current window is active
             Window.Current.Activate();
@@ -132,7 +133,7 @@ namespace AudioVideoPlayer
 
             if (rootFrame.Content == null)
             {
-                if (!rootFrame.Navigate(typeof(MainPage)))
+                if (!rootFrame.Navigate(typeof(Shell)))
                 {
                     throw new Exception("Failed to create initial page");
                 }
@@ -159,7 +160,7 @@ namespace AudioVideoPlayer
             if (rootFrame == null)
             {
                 rootFrame = new Frame();
-                rootFrame.Navigate(typeof(MainPage));
+                rootFrame.Navigate(typeof(Shell));
                 Window.Current.Content = rootFrame;
             }
 

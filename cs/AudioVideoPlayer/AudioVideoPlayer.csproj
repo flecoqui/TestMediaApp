@@ -105,12 +105,55 @@
     </Compile>
     <Compile Include="CommonLicenseRequest.cs" />
     <Compile Include="Companion\CompanionClient.cs" />
+    <Compile Include="Controls\HamburgerMenu\HamburgerMenu.cs" />
+    <Compile Include="Controls\HamburgerMenu\HamburgerMenu.Events.cs" />
+    <Compile Include="Controls\HamburgerMenu\HamburgerMenu.HamburgerButton.cs" />
+    <Compile Include="Controls\HamburgerMenu\HamburgerMenu.Options.cs" />
+    <Compile Include="Controls\HamburgerMenu\HamburgerMenu.Properties.cs" />
+    <Compile Include="Controls\HamburgerMenu\MenuItems\HamburgerMenuGlyphItem.cs" />
+    <Compile Include="Controls\HamburgerMenu\MenuItems\HamburgerMenuImageItem.cs" />
+    <Compile Include="Controls\HamburgerMenu\MenuItems\HamburgerMenuItem.cs" />
+    <Compile Include="Controls\HamburgerMenu\MenuItems\HamburgerMenuItemCollection.cs" />
+    <Compile Include="Converters\BoolNegationConverter.cs" />
+    <Compile Include="Converters\BoolToObjectConverter.cs" />
+    <Compile Include="Converters\BoolToVisibilityConverter.cs" />
+    <Compile Include="Converters\CollectionVisibilityConverter.cs" />
+    <Compile Include="Converters\ConverterTools.cs" />
+    <Compile Include="Converters\EmptyCollectionToObjectConverter.cs" />
+    <Compile Include="Converters\EmptyObjectToObjectConverter.cs" />
+    <Compile Include="Converters\EmptyStringToObjectConverter.cs" />
+    <Compile Include="Converters\FormatStringConverter.cs" />
+    <Compile Include="Converters\ResourceNameToResourceStringConverter.cs" />
+    <Compile Include="Converters\StringFormatConverter.cs" />
+    <Compile Include="Converters\StringVisibilityConverter.cs" />
     <Compile Include="DataModel\MediaDataSource.cs" />
     <Compile Include="Information\SystemInformation.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Models\MenuItem.cs" />
+    <Compile Include="Pages\About\AboutPage.xaml.cs">
+      <DependentUpon>AboutPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Player\PlayerPage.xaml.cs">
+      <DependentUpon>PlayerPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Playlist\PlaylistPage.xaml.cs">
+      <DependentUpon>PlaylistPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Remote\RemotePage.xaml.cs">
+      <DependentUpon>RemotePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Settings\SettingsPage.xaml.cs">
+      <DependentUpon>SettingsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\SignIn\SignInPage.xaml.cs">
+      <DependentUpon>SignInPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Shell.xaml.cs">
+      <DependentUpon>Shell.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -145,7 +188,39 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Controls\HamburgerMenu\HamburgerMenu.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="MainPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\About\AboutPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\Player\PlayerPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\Playlist\PlaylistPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\Remote\RemotePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\Settings\SettingsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\SignIn\SignInPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Shell.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
