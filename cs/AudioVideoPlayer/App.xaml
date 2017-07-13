@@ -168,11 +168,13 @@
                             </VisualStateManager.VisualStateGroups>
                             <!-- Wrap SelectionIndicator in a grid so that its offset is 0,0 - this enables the offset animation. -->
                             <Grid HorizontalAlignment="Left" VerticalAlignment="Center">
+<!--                                Fill="{ThemeResource SystemControlForegroundAccentBrush}"
+                                -->
                                 <Rectangle x:Name="SelectionIndicator"
-                                           Fill="{ThemeResource SystemControlForegroundAccentBrush}"
+                                           Fill="{ThemeResource SystemControlHighlightListLowBrush}"
                                            Height="24"
                                            Opacity="0.0"
-                                           Width="6"/>
+                                           Width="8"/>
                             </Grid>
                             <ContentPresenter x:Name="ContentPresenter"
                                               Content="{TemplateBinding Content}"

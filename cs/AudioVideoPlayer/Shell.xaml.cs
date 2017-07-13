@@ -193,9 +193,11 @@ namespace AudioVideoPlayer
         /// <param name="navigationEventArgs">The <see cref="NavigationEventArgs"/> instance containing the event data.</param>
         private void NavigationFrameOnNavigated(object sender, NavigationEventArgs navigationEventArgs)
         {
-            SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility = NavigationFrame.CanGoBack
-                ? AppViewBackButtonVisibility.Visible
-                : AppViewBackButtonVisibility.Collapsed;
+//            SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility = NavigationFrame.CanGoBack
+//                ? AppViewBackButtonVisibility.Visible
+//                : AppViewBackButtonVisibility.Collapsed;
+
+            SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility = AppViewBackButtonVisibility.Collapsed;
 
             if (_isPaneOpen)
             {
@@ -214,25 +216,14 @@ namespace AudioVideoPlayer
 
             if (NavigationFrame.CurrentSourcePageType != appPage.PageType)
             {
+                if (NavigationFrame.CanGoBack)
+                {
+                    NavigationFrame.GoBack();
+                }
+
                 NavigationFrame.Navigate(appPage.PageType);
                 HamburgerMenu.IsPaneOpen = false;
                 
-            }
-        }
-
-        private void HamburgerMenu_OnOptionsItemClick(object sender, ItemClickEventArgs e)
-        {
-            var option = e.ClickedItem as MenuItem;
-            if (option == null)
-            {
-                return;
-            }
-
-
-            if (NavigationFrame.CurrentSourcePageType != option.PageType)
-            {
-                NavigationFrame.Navigate(option.PageType);
-                HamburgerMenu.IsPaneOpen = false;
             }
         }
 
@@ -270,7 +261,11 @@ namespace AudioVideoPlayer
             {
                 if (this.RequestedTheme != ElementTheme.Light) this.RequestedTheme = ElementTheme.Light;
             }
+            Windows.ApplicationModel.Core.CoreApplicationViewTitleBar coreTitleBar = Windows.ApplicationModel.Core.CoreApplication.GetCurrentView().TitleBar;
+            coreTitleBar.ExtendViewIntoTitleBar = true;
 
+            if(coreTitleBar.Height>0)TitleBar.Height = coreTitleBar.Height;
+            Window.Current.SetTitleBar(MainTitleBar);
         }
     }
 }

@@ -12,10 +12,11 @@
 
 using Windows.ApplicationModel;
 using Windows.UI.Xaml.Navigation;
-
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 namespace AudioVideoPlayer.Pages.SignIn
 {
-    public sealed partial class SignInPage
+    public sealed partial class SignInPage : Page
     {
         public SignInPage()
         {
