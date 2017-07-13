@@ -44,6 +44,7 @@ namespace AudioVideoPlayer
             InitializeComponent();
 
             Current = this;
+            UpdateColor(ViewModel.Settings.MenuBackgroundColor,ViewModel.Settings.DarkTheme);
         }
 
 
@@ -113,7 +114,7 @@ namespace AudioVideoPlayer
             }
         }
 
-        private async void NavigationFrame_Navigating(object sender, NavigatingCancelEventArgs navigationEventArgs)
+        private  void NavigationFrame_Navigating(object sender, NavigatingCancelEventArgs navigationEventArgs)
         {
           // HamburgerMenu.SelectedItem = category;
            HamburgerMenu.SelectedOptionsItem = null;
@@ -250,6 +251,26 @@ namespace AudioVideoPlayer
 
         private void Shell_OnLoaded(object sender, RoutedEventArgs e)
         {
+        }
+        public void UpdateColor(Windows.UI.Color color, bool darkTheme)
+        {
+            HamburgerMenu.PaneBackground = new Windows.UI.Xaml.Media.SolidColorBrush(color);
+            Windows.UI.ViewManagement.ApplicationViewTitleBar formattableTitleBar = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TitleBar;
+            formattableTitleBar.ButtonBackgroundColor = color;
+            formattableTitleBar.ButtonForegroundColor = Windows.UI.Colors.White;
+            formattableTitleBar.ButtonHoverBackgroundColor = color;
+            formattableTitleBar.ButtonInactiveBackgroundColor = color;
+            formattableTitleBar.BackgroundColor = color;
+            formattableTitleBar.ForegroundColor = Windows.UI.Colors.White;
+            if (darkTheme == true)
+            {
+                if (this.RequestedTheme != ElementTheme.Dark) this.RequestedTheme = ElementTheme.Dark;
+            }
+            else
+            {
+                if (this.RequestedTheme != ElementTheme.Light) this.RequestedTheme = ElementTheme.Light;
+            }
+
         }
     }
 }

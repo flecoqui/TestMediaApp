@@ -124,9 +124,11 @@
     <Compile Include="Converters\EmptyStringToObjectConverter.cs" />
     <Compile Include="Converters\FormatStringConverter.cs" />
     <Compile Include="Converters\ResourceNameToResourceStringConverter.cs" />
+    <Compile Include="Converters\ColorToSolidColorBrushConverter .cs" />
     <Compile Include="Converters\StringFormatConverter.cs" />
     <Compile Include="Converters\StringVisibilityConverter.cs" />
     <Compile Include="DataModel\MediaDataSource.cs" />
+    <Compile Include="Helpers\SettingsHelper.cs" />
     <Compile Include="Information\SystemInformation.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
@@ -154,6 +156,8 @@
     <Compile Include="Shell.xaml.cs">
       <DependentUpon>Shell.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\SettingsViewModel.cs" />
+    <Compile Include="ViewModels\ViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">

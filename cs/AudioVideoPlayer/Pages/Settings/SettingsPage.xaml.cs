@@ -67,6 +67,16 @@ namespace AudioVideoPlayer.Pages.Settings
             // this event is handled for you.
         }
 
+        private void ApplyColor_Click(object sender, RoutedEventArgs e)
+        {
+            Windows.UI.Color c = (Windows.UI.Color) ColorCombo.SelectedItem;
+            // Save Theme
+            ViewModel.Settings.DarkTheme = AppThemeSwitch.IsOn;
+            // Save the new Color
+            ViewModel.Settings.MenuBackgroundColor = c;
+            // Refresh the pages with the new Color                         
+            AudioVideoPlayer.Shell.Current.UpdateColor(ViewModel.Settings.MenuBackgroundColor, ViewModel.Settings.DarkTheme);
+        }
     }
 
 

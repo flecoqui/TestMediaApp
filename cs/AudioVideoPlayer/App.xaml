@@ -17,7 +17,7 @@
     xmlns:local="using:AudioVideoPlayer"
     xmlns:controls="using:AudioVideoPlayer.Controls"
     xmlns:converters="using:AudioVideoPlayer.Converters"
-    RequestedTheme="Light">
+    >
 
     <Application.Resources>
 
@@ -195,7 +195,7 @@
                         <FontIcon FontFamily="Segoe MDL2 Assets"
                                   FontSize="16"
                                   Margin="16"
-                                  Glyph="&#xE700;" />
+                                  Glyph="&#xEA37;" />
                     </DataTemplate>
                 </Setter.Value>
             </Setter>

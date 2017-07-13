@@ -5,10 +5,16 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="using:AudioVideoPlayer.Models"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:vm="using:AudioVideoPlayer.ViewModels"
+      xmlns:converters="using:AudioVideoPlayer.Converters"
       Loaded="Shell_OnLoaded"
       SizeChanged="Page_SizeChanged"
-      mc:Ignorable="d">
+    mc:Ignorable="d">
+    <Page.DataContext>
+        <vm:ViewModel x:Name="ViewModel" />
+    </Page.DataContext>
     <Page.Resources>
+        <converters:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter"/>
         <DataTemplate x:Key="ButtonTemplate"
                       x:DataType="local:MenuItem">
             <Grid>
@@ -79,7 +85,7 @@
                             ItemTemplate="{StaticResource ButtonTemplate}"
                             OptionsItemClick="HamburgerMenu_OnOptionsItemClick"
                             OptionsItemTemplate="{StaticResource OptionTemplate}"
-                            PaneBackground="#00b2f0"
+                            PaneBackground="{Binding Settings.MenuColor,Converter={StaticResource ColorToSolidColorBrushConverter}}"
                             DisplayMode="Overlay"
                             IsPaneOpen="False"
                             HamburgerVisibility="Visible"
@@ -100,6 +106,7 @@
                 <RowDefinition />
             </Grid.RowDefinitions>
             <Grid x:Name="DemoAreaGrid">
+                <!--
                 <StackPanel HorizontalAlignment="Center"
                             VerticalAlignment="Center">
                     <TextBlock Margin="0,24,0,0"
@@ -118,6 +125,7 @@
                                Foreground="{StaticResource Brush-Grey-03}"
                                Text="Sample App" />
                 </StackPanel>
+                -->
                 <Frame x:Name="NavigationFrame" />
                 <!--
                     Uncomment this control to help you determine where the focus is.
