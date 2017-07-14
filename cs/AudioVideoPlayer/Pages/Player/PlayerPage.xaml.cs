@@ -146,6 +146,9 @@ namespace AudioVideoPlayer.Pages.Player
         Windows.UI.Color titleBarColor = Windows.UI.Colors.Transparent; 
         void ShowTitleBar(bool bShow)
         {
+            // Refresh the pages with the new Color                         
+            AudioVideoPlayer.Shell.Current.UpdateTitleBarAndColor(bShow);
+           /* 
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
             Windows.ApplicationModel.Core.CoreApplicationViewTitleBar coreTitleBar = Windows.ApplicationModel.Core.CoreApplication.GetCurrentView().TitleBar;
             // Save titleBarColor
@@ -165,7 +168,7 @@ namespace AudioVideoPlayer.Pages.Player
                 formattableTitleBar.ButtonInactiveBackgroundColor = Windows.UI.Colors.Transparent;
                 coreTitleBar.ExtendViewIntoTitleBar = true;
             }
-
+            */
         }
         /// <summary>
         /// Invoked when this page is about to be displayed in a Frame.

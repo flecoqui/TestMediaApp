@@ -96,6 +96,7 @@
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
     <Content Include="Assets\Music.png" />
     <Content Include="Assets\PHOTO.png" />
+    <Content Include="Assets\TransAudioVideo.png" />
     <Content Include="DataModel\MediaData.json" />
     <None Include="project.json" />
   </ItemGroup>
@@ -128,6 +129,9 @@
     <Compile Include="Converters\StringFormatConverter.cs" />
     <Compile Include="Converters\StringVisibilityConverter.cs" />
     <Compile Include="DataModel\MediaDataSource.cs" />
+    <Compile Include="ExtendedSplash.xaml.cs">
+      <DependentUpon>ExtendedSplash.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Helpers\SettingsHelper.cs" />
     <Compile Include="Information\SystemInformation.cs" />
     <Compile Include="MainPage.xaml.cs">
@@ -193,6 +197,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="Controls\HamburgerMenu\HamburgerMenu.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="ExtendedSplash.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

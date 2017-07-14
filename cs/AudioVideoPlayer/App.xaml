@@ -275,7 +275,7 @@
                                     AutomationProperties.Name="Main button"
                                     Background="{TemplateBinding PaneBackground}"
                                     BorderThickness="0"
-                                    TabIndex="0">
+                                    TabIndex="0" Style="{StaticResource TextBlockButtonStyle}" >
                                 <ContentControl Margin="{TemplateBinding HamburgerMargin}"
                                                 ContentTemplate="{TemplateBinding HamburgerMenuTemplate}"
                                                 Foreground="{TemplateBinding PaneForeground}"

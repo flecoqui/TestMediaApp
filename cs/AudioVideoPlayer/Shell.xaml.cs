@@ -44,10 +44,23 @@ namespace AudioVideoPlayer
             InitializeComponent();
 
             Current = this;
-            UpdateColor(ViewModel.Settings.MenuBackgroundColor,ViewModel.Settings.DarkTheme);
+            Window.Current.Activated += Current_Activated;
+            UpdateTitleBarAndColor(true);
         }
 
-
+        private void Current_Activated(object sender, WindowActivatedEventArgs e)
+        {
+            if (e.WindowActivationState != CoreWindowActivationState.Deactivated)
+            {
+                AppLogo.Opacity = 1;
+                MainTitleBar.Opacity = 1;
+            }
+            else
+            {
+                AppLogo.Opacity = 0.5;
+                MainTitleBar.Opacity = 0.5;
+            }
+        }
         public void ShowOnlyHeader(string title)
         {
             //Title.Text = title;
@@ -243,16 +256,61 @@ namespace AudioVideoPlayer
         private void Shell_OnLoaded(object sender, RoutedEventArgs e)
         {
         }
-        public void UpdateColor(Windows.UI.Color color, bool darkTheme)
+        Windows.ApplicationModel.Core.CoreApplicationViewTitleBar coreTitleBar;
+        public void UpdateTitleBarAndColor(bool bShowTitleBar)
         {
-            HamburgerMenu.PaneBackground = new Windows.UI.Xaml.Media.SolidColorBrush(color);
+            Windows.UI.Color backgroundColor = ViewModel.Settings.MenuBackgroundColor;
+            Windows.UI.Color foregroundColor = ViewModel.Settings.MenuForegroundColor;
+            bool darkTheme = ViewModel.Settings.DarkTheme;
+            
+            if (coreTitleBar != null)
+            {
+                coreTitleBar.IsVisibleChanged -= CoreTitleBar_IsVisibleChanged;
+                coreTitleBar.LayoutMetricsChanged -= CoreTitleBar_LayoutMetricsChanged;
+                coreTitleBar = null;
+            }
+            if (coreTitleBar == null)
+            {
+                coreTitleBar = Windows.ApplicationModel.Core.CoreApplication.GetCurrentView().TitleBar;
+                coreTitleBar.IsVisibleChanged += CoreTitleBar_IsVisibleChanged;
+                coreTitleBar.LayoutMetricsChanged += CoreTitleBar_LayoutMetricsChanged;
+            }
+            coreTitleBar.ExtendViewIntoTitleBar = true;
+
+            if (bShowTitleBar == true)
+            {
+                TitleBar.Background = new Windows.UI.Xaml.Media.SolidColorBrush(backgroundColor);
+                MainTitleBarTextBlock.Foreground = new Windows.UI.Xaml.Media.SolidColorBrush(foregroundColor);
+                if (coreTitleBar.Height > 0)
+                    TitleBar.Height = coreTitleBar.Height;
+                Window.Current.SetTitleBar(MainTitleBar);
+            }
+            else
+                Window.Current.SetTitleBar(null);
+
+            HamburgerMenu.PaneBackground = new Windows.UI.Xaml.Media.SolidColorBrush(backgroundColor);            
             Windows.UI.ViewManagement.ApplicationViewTitleBar formattableTitleBar = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TitleBar;
-            formattableTitleBar.ButtonBackgroundColor = color;
-            formattableTitleBar.ButtonForegroundColor = Windows.UI.Colors.White;
-            formattableTitleBar.ButtonHoverBackgroundColor = color;
-            formattableTitleBar.ButtonInactiveBackgroundColor = color;
-            formattableTitleBar.BackgroundColor = color;
-            formattableTitleBar.ForegroundColor = Windows.UI.Colors.White;
+            formattableTitleBar.ButtonForegroundColor = foregroundColor;
+            formattableTitleBar.ForegroundColor = foregroundColor;
+            if (bShowTitleBar == false)
+            {
+                formattableTitleBar.BackgroundColor = Windows.UI.Colors.Transparent;
+                formattableTitleBar.ButtonBackgroundColor = Windows.UI.Colors.Transparent;
+                formattableTitleBar.ButtonHoverBackgroundColor = Windows.UI.Colors.Transparent;
+                formattableTitleBar.ButtonInactiveBackgroundColor = Windows.UI.Colors.Transparent;
+                AppLogo.Opacity = 0.5;
+                MainTitleBar.Opacity = 0.5;
+            }
+            else
+            {
+                formattableTitleBar.BackgroundColor = backgroundColor;
+                formattableTitleBar.ButtonBackgroundColor = backgroundColor;
+                formattableTitleBar.ButtonHoverBackgroundColor = backgroundColor;
+                formattableTitleBar.ButtonInactiveBackgroundColor = backgroundColor;
+                AppLogo.Opacity = 1;
+                MainTitleBar.Opacity = 1;
+            }
+
             if (darkTheme == true)
             {
                 if (this.RequestedTheme != ElementTheme.Dark) this.RequestedTheme = ElementTheme.Dark;
@@ -261,11 +319,17 @@ namespace AudioVideoPlayer
             {
                 if (this.RequestedTheme != ElementTheme.Light) this.RequestedTheme = ElementTheme.Light;
             }
-            Windows.ApplicationModel.Core.CoreApplicationViewTitleBar coreTitleBar = Windows.ApplicationModel.Core.CoreApplication.GetCurrentView().TitleBar;
-            coreTitleBar.ExtendViewIntoTitleBar = true;
 
-            if(coreTitleBar.Height>0)TitleBar.Height = coreTitleBar.Height;
-            Window.Current.SetTitleBar(MainTitleBar);
+        }
+
+        private void CoreTitleBar_IsVisibleChanged(Windows.ApplicationModel.Core.CoreApplicationViewTitleBar sender, object args)
+        {
+            TitleBar.Visibility = sender.IsVisible ? Visibility.Visible : Visibility.Collapsed;
+        }
+        private void CoreTitleBar_LayoutMetricsChanged(Windows.ApplicationModel.Core.CoreApplicationViewTitleBar sender, object args)
+        {
+            TitleBar.Height = sender.Height;
+           // RightMask.Width = sender.SystemOverlayRightInset;
         }
     }
 }

@@ -21,7 +21,7 @@
     mc:Ignorable="d">
     
     <Page.DataContext>
-        <vm:ViewModel x:Name="ViewModel" />
+        <vm:ViewModel x:Name="ViewModelLocator" />
     </Page.DataContext>    
     
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"  >
@@ -42,20 +42,18 @@
         </StackPanel>
         <StackPanel Grid.Row="1" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2"  >
             <StackPanel Orientation="Horizontal" VerticalAlignment="Top" >
-                
-                <ToggleSwitch Margin="2,2,2,2" x:Name="AppThemeSwitch"
+                <ToggleSwitch Margin="2,2,2,2" x:Name="AppThemeSwitch" MinWidth="100"
                                           OffContent="Light"
                                           OnContent="Dark"
-                                          VerticalAlignment="Center"
-                                          
+                                          VerticalAlignment="Center"                                          
                                           IsOn="{Binding Settings.DarkTheme, Mode=TwoWay}">
                 </ToggleSwitch>
 
                 <ComboBox x:Name="ColorCombo" Margin="2,2,2,2"  ItemsSource="{Binding Settings.MenuBackgroundColors}"
                                       SelectedItem="{Binding Settings.MenuBackgroundColor, Mode=OneWay}"
-                                      Width="150"                                     
+                                      Width="100"                                     
                                       VerticalAlignment="Center">
-                <ComboBox.ItemTemplate >
+                    <ComboBox.ItemTemplate >
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
                             <Rectangle Height="24"  Width="96">
@@ -65,8 +63,8 @@
                             </Rectangle>
                         </StackPanel>
                     </DataTemplate>
-                </ComboBox.ItemTemplate>
-            </ComboBox>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
                 <Button x:Name="ApplyColor" Margin="2,2,2,2" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Content="Apply" Click="ApplyColor_Click"/>
             </StackPanel>
         </StackPanel>

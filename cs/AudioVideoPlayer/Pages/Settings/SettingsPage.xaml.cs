@@ -71,11 +71,11 @@ namespace AudioVideoPlayer.Pages.Settings
         {
             Windows.UI.Color c = (Windows.UI.Color) ColorCombo.SelectedItem;
             // Save Theme
-            ViewModel.Settings.DarkTheme = AppThemeSwitch.IsOn;
+            ViewModelLocator.Settings.DarkTheme = AppThemeSwitch.IsOn;
             // Save the new Color
-            ViewModel.Settings.MenuBackgroundColor = c;
+            ViewModelLocator.Settings.MenuBackgroundColor = c;
             // Refresh the pages with the new Color                         
-            AudioVideoPlayer.Shell.Current.UpdateColor(ViewModel.Settings.MenuBackgroundColor, ViewModel.Settings.DarkTheme);
+            AudioVideoPlayer.Shell.Current.UpdateTitleBarAndColor(true);
         }
     }
 

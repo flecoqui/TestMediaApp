@@ -9,10 +9,10 @@
          >
 -->
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" IgnorableNamespaces="uap uap3 mp">
-  <Identity Name="52458FLECOQUI.TestMediaApp" Publisher="CN=flecoqui" Version="1.1.20.0" />
+  <Identity Name="52458FLECOQUI.TestMediaApplication" Publisher="CN=flecoqui" Version="1.1.20.0" />
   <mp:PhoneIdentity PhoneProductId="05e68787-2114-4574-bb0d-000000000001" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
-    <DisplayName>TestMediaApp</DisplayName>
+    <DisplayName>Test Media App</DisplayName>
     <PublisherDisplayName>FLECOQUI</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -27,13 +27,18 @@
       <uap:VisualElements DisplayName="TestMediaApp" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="AudioVideoPlayer" BackgroundColor="#00b2f0">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png">
         </uap:DefaultTile>
-        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+        <uap:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="black" />
         <uap:InitialRotationPreference>
           <uap:Rotation Preference="portrait" />
           <uap:Rotation Preference="landscape" />
         </uap:InitialRotationPreference>
       </uap:VisualElements>
       <Extensions>
+        <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="testmediaapp" DesiredView="useMore">
+            <uap:DisplayName>TestMediaApp</uap:DisplayName>
+          </uap:Protocol>
+        </uap:Extension>
         <uap:Extension Category="windows.fileTypeAssociation">
           <uap:FileTypeAssociation Name="testmediaapp">
             <uap:DisplayName>TestMediaApp</uap:DisplayName>
@@ -56,11 +61,6 @@
               <uap:FileType>.jpg</uap:FileType>
             </uap:SupportedFileTypes>
           </uap:FileTypeAssociation>
-        </uap:Extension>
-        <uap:Extension Category="windows.protocol">
-          <uap:Protocol Name="testmediaapp" DesiredView="useMore">
-            <uap:DisplayName>TestMediaApp</uap:DisplayName>
-          </uap:Protocol>
         </uap:Extension>
       </Extensions>
     </Application>
