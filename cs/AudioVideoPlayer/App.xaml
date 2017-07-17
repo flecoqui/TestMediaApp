@@ -47,6 +47,90 @@
                              Color="{StaticResource Blue-01}" />
 
         <!--  Styles  -->
+        <Style x:Key="TitleTextBlockStyle"
+           TargetType="TextBlock"
+           BasedOn="{StaticResource BaseTextBlockStyle}">
+            <Setter Property="FontSize"
+                Value="18" />
+            <Setter Property="FontWeight"
+                Value="Bold" />
+            <Setter Property="LineHeight"
+                Value="18" />
+            <Setter Property="TextWrapping"
+                Value="Wrap" />
+            <Setter Property="VerticalAlignment"
+                Value="Center" />
+            <Setter Property="HorizontalAlignment"
+                Value="Left" />
+            <Setter Property="Foreground"   
+                Value="{StaticResource ButtonForegroundThemeBrush}" />
+
+        </Style>
+        <Style x:Key="HeaderPanelStyle"
+           TargetType="StackPanel">
+            <Setter Property="VerticalAlignment"
+                Value="Center" />
+            <Setter Property="HorizontalAlignment"
+                Value="Left" />
+            <Setter Property="MinHeight"
+                Value="42" />
+        </Style>
+        <Style x:Key="HeaderTextBlockStyle"
+           TargetType="TextBlock"
+           BasedOn="{StaticResource BaseTextBlockStyle}">
+            <Setter Property="FontSize"
+                Value="18" />
+            <Setter Property="FontWeight"
+                Value="Bold" />
+            <Setter Property="TextWrapping"
+                Value="Wrap" />
+            <Setter Property="VerticalAlignment"
+                Value="Center" />
+            <Setter Property="HorizontalAlignment"
+                Value="Left" />
+            <Setter Property="Margin"
+                Value="50,8,0,0" />
+            <Setter Property="Foreground"   
+                Value="{StaticResource ButtonForegroundThemeBrush}" />
+        </Style>
+        <Style x:Key="LabelTextBlockStyle"
+           TargetType="TextBlock"
+           BasedOn="{StaticResource BaseTextBlockStyle}">
+            <Setter Property="FontSize"
+                Value="16" />
+            <Setter Property="FontWeight"
+                Value="Normal" />
+            <Setter Property="LineHeight"
+                Value="16" />
+            <Setter Property="TextWrapping"
+                Value="Wrap" />
+            <Setter Property="VerticalAlignment"
+                Value="Center" />
+            <Setter Property="HorizontalAlignment"
+                Value="Left" />
+            <Setter Property="Foreground"   
+                Value="{StaticResource ButtonForegroundThemeBrush}" />
+        </Style>
+        <Style x:Key="InputTextBlockStyle"
+           TargetType="TextBlock"
+           BasedOn="{StaticResource BaseTextBlockStyle}">
+            <Setter Property="FontSize"
+                Value="16" />
+            <Setter Property="FontWeight"
+                Value="Normal" />
+            <Setter Property="LineHeight"
+                Value="16" />
+            <Setter Property="TextWrapping"
+                Value="Wrap" />
+            <Setter Property="VerticalAlignment"
+                Value="Center" />
+            <Setter Property="HorizontalAlignment"
+                Value="Left" />
+            <Setter Property="Foreground"   
+                Value="{StaticResource ButtonForegroundThemeBrush}" />
+
+        </Style>
+        
         <Style TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource Brush-Grey-01}" />
         </Style>
@@ -54,6 +138,7 @@
         <Style TargetType="Button">
             <Setter Property="Foreground" Value="{StaticResource Brush-Grey-01}" />
         </Style>
+        
 
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 

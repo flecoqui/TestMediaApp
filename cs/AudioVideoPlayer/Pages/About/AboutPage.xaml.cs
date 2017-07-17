@@ -20,7 +20,6 @@ namespace AudioVideoPlayer.Pages.About
         public AboutPage()
         {
             InitializeComponent();
-            TestLogo.Source = new Windows.UI.Xaml.Media.Imaging.BitmapImage(new System.Uri("ms-appx:///Assets/AudioVideo.png"));
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)

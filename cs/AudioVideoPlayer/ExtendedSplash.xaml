@@ -22,7 +22,7 @@
         <Image x:Name="extendedSplashImage" Source="Assets/TransAudioVideo.png"/>
     </Canvas>
   <Grid x:Name="waitRing"
-      Visibility="Collapsed" Grid.Row="2" >
+      Visibility="Collapsed" Grid.Row="1" >
     <ProgressRing x:Name="progressRing"
      
                   Width="40"
@@ -31,7 +31,7 @@
                   VerticalAlignment="Center"
                   IsActive="True" />
   </Grid>
-    <StackPanel Grid.Row="1" HorizontalAlignment="Center">
+    <StackPanel Grid.Row="2" HorizontalAlignment="Center">
     </StackPanel>
 
 </Grid>

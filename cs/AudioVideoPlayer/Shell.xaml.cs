@@ -78,23 +78,34 @@ namespace AudioVideoPlayer
              NavigateToSample(typeof(AudioVideoPlayer.Pages.Player.PlayerPage));
         }
         */
-        public void NavigateToSample(Type pageType)
+        public void NavigateToSample(Type pageType,Object parameter)
         {
 
             if (pageType != null)
             {
 
 
-                NavigationFrame.Navigate(pageType);
+                NavigationFrame.Navigate(pageType,parameter);
             }
         }
 
 
-        protected override  void OnNavigatedTo(NavigationEventArgs e)
+        protected override async  void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-
-
+            // Set Minimum size for the view
+            Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().SetPreferredMinSize(new Windows.Foundation.Size
+            {
+                Height = 240,
+                Width = 320
+            });
+            // Hide Systray on phone
+            if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
+            {
+                // Hide Status bar
+                var statusBar = Windows.UI.ViewManagement.StatusBar.GetForCurrentView();
+                await statusBar.HideAsync();
+            }
             HamburgerMenu.ItemsSource = new[]
             {
                 new MenuItem { Icon = "\xE768;", Name = "Player", PageType = typeof(AudioVideoPlayer.Pages.Player.PlayerPage) },
@@ -117,17 +128,21 @@ namespace AudioVideoPlayer
             SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
 
             if (!string.IsNullOrWhiteSpace(e?.Parameter?.ToString()))
-            {
-//                var parser = DeepLinkParser.Create(e.Parameter.ToString());
-//                var targetSample = await Sample.FindAsync(parser.Root, parser["sample"]);
-  //              if (targetSample != null)
-                {
-                    NavigateToSample(typeof(AudioVideoPlayer.Pages.Player.PlayerPage));
-                }
-            }
-        }
+                NavigateToSample(typeof(AudioVideoPlayer.Pages.Player.PlayerPage),e.Parameter);
+            else
+                NavigateToSample(typeof(AudioVideoPlayer.Pages.Player.PlayerPage), null);
 
-        private  void NavigationFrame_Navigating(object sender, NavigatingCancelEventArgs navigationEventArgs)
+        }
+        public void SetPath(string path)
+        {
+            var p = NavigationFrame.Content as PlayerPage;
+            if (p == null)
+                NavigateToSample(typeof(AudioVideoPlayer.Pages.Player.PlayerPage), null);
+            p = NavigationFrame.Content as PlayerPage;
+            if (p != null)
+                p.SetPath(path);
+        }
+        private void NavigationFrame_Navigating(object sender, NavigatingCancelEventArgs navigationEventArgs)
         {
           // HamburgerMenu.SelectedItem = category;
            HamburgerMenu.SelectedOptionsItem = null;

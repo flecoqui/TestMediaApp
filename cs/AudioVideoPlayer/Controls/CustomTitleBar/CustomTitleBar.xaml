@@ -1,0 +1,56 @@
+﻿<UserControl
+    x:Class="AudioVideoPlayer.Controls.CustomTitleBar.CustomTitleBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:AudioVideoPlayer"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:AudioVideoPlayer.Converters"
+    xmlns:vm="using:AudioVideoPlayer.ViewModels"
+    xmlns:app="using:AudioVideoPlayer.App"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    Loaded="CustomTitleBar_Loaded"
+    Unloaded="CustomTitleBar_Unloaded">
+    
+    <Grid x:Name="RootGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid x:Name="TitleBar"  Background="{x:Bind BackgroundColor,Converter={StaticResource ColorToSolidColorBrushConverter}}" Height="32" Canvas.ZIndex="3" >
+            <Rectangle x:Name="BackgroundElement" Fill="DarkGreen" />
+            <Grid x:Name="TitleBarContent"  >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="48"/>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Image Grid.Column="0" x:Name="AppLogo" Margin="2,2,2,2" Source="Assets/TransAudioVideo.png" VerticalAlignment="Center" Stretch="UniformToFill" />
+                <TextBlock Grid.Column="1"  
+                           x:Name="MainTitleBarTextBlock" 
+                           Text="Test Media App"
+                           VerticalAlignment="Center" 
+                           HorizontalAlignment="Left"
+                           FontSize="16"
+                           Foreground="{x:Bind ForegroundColor,Converter={StaticResource ColorToSolidColorBrushConverter}}">
+                </TextBlock>
+            </Grid>
+        </Grid>
+        <!--
+        <Grid x:Name="TitleBar" VerticalAlignment="Top" Height="{x:Bind CoreTitleBarHeight, Mode=OneWay}" Canvas.ZIndex="3">
+            <Rectangle x:Name="BackgroundElement" Fill="DarkGreen" />
+            <Grid Padding="{x:Bind CoreTitleBarPadding, Mode=OneWay}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Custom Title Bar" FontStyle="Italic"/>
+                <CheckBox Grid.Column="1" x:Name="TitleBarControl" Visibility="Collapsed">Checkbox in title bar</CheckBox>
+            </Grid>
+        </Grid>
+        -->
+    </Grid>
+
+</UserControl>

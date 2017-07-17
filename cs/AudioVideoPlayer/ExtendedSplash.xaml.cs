@@ -30,6 +30,13 @@ namespace AudioVideoPlayer
         public ExtendedSplash(SplashScreen splashscreen, bool loadState)
         {
             InitializeComponent();
+
+            // Set Minimum size for the view
+            Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().SetPreferredMinSize(new Windows.Foundation.Size
+            {
+                Height = 240,
+                Width = 320
+            });
             ViewModels.ViewModel vm = new ViewModels.ViewModel();
             this.Background = new Windows.UI.Xaml.Media.SolidColorBrush(vm.Settings.MenuBackgroundColor);
             progressRing.Foreground = new Windows.UI.Xaml.Media.SolidColorBrush(vm.Settings.MenuForegroundColor);
@@ -62,7 +69,7 @@ namespace AudioVideoPlayer
         private async void ExtendedSplash_Loaded(object sender, RoutedEventArgs e)
         {
             waitRing.Visibility = Visibility.Visible;
-            await Task.Delay(TimeSpan.FromSeconds(10));
+            await Task.Delay(TimeSpan.FromSeconds(1));
             // Navigate to mainpage
             rootFrame.Navigate(typeof(Shell));
             // Place the frame in the current Window

@@ -15,11 +15,8 @@
             <ColumnDefinition Width="310"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <StackPanel x:Name="TitlePanel" Grid.Row="0" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2"  >
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" >
-                <Image x:Name="TestLogo" Source="Assets/AudioVideo.png" VerticalAlignment="Center" Margin="43,3,3,3" Stretch="Fill" Width="40" Height="40" />
-                <TextBlock x:Name="TestTitle" VerticalAlignment="Center" TextWrapping="Wrap">About Page to be completed</TextBlock>
-            </StackPanel>
+        <StackPanel x:Name="TitlePanel" Grid.Row="0" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource HeaderPanelStyle}"  >
+            <TextBlock  Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Style="{StaticResource HeaderTextBlockStyle}" >About Test Media App</TextBlock>
         </StackPanel>
 
     </Grid>

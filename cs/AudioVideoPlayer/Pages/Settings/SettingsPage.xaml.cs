@@ -51,7 +51,6 @@ namespace AudioVideoPlayer.Pages.Settings
         public SettingsPage()
         {
             this.InitializeComponent();
-            TestLogo.Source = new Windows.UI.Xaml.Media.Imaging.BitmapImage(new System.Uri("ms-appx:///Assets/AudioVideo.png"));
         }
         /// <summary>
         /// Invoked when this page is about to be displayed in a Frame.

@@ -147,9 +147,9 @@ namespace AudioVideoPlayer
                 }
             }
 
-            var p = rootFrame.Content as MainPage;
+            var p = rootFrame.Content as Shell;
             if (p != null)
-            {
+            {                           
                 var f = args.Files.FirstOrDefault() as Windows.Storage.StorageFile;
                 if (f != null)
                 {

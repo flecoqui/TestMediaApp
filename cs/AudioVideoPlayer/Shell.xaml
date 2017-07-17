@@ -77,9 +77,7 @@
                 <TextBlock Grid.Column="1"  
                            x:Name="MainTitleBarTextBlock" 
                            Text="Test Media App"
-                           VerticalAlignment="Center" 
-                           HorizontalAlignment="Left"
-                           FontSize="16"
+                           Style="{StaticResource TitleTextBlockStyle}"
                            Foreground="{Binding Settings.MenuForegroundColor,Converter={StaticResource ColorToSolidColorBrushConverter}}">
                 </TextBlock>
                 <Rectangle Grid.Column="2"  x:Name="BackgroundElement" Fill="Transparent" />
@@ -97,12 +95,11 @@
                                 HamburgerVisibility="Visible"
                                 OpenPaneLength="147"
                                 CompactPaneLength="44"
-                                HamburgerHeight="41"
+                                HamburgerHeight="42"
                                 Style="{StaticResource HamburgerMenuTemplate}"
                                 Grid.Row="1" 
                                 >
-            <Grid x:Name="RootGrid"
-                  Background="{StaticResource Brush-Grey-05}">
+            <Grid x:Name="RootGrid">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
@@ -112,7 +109,7 @@
                 <Grid x:Name="DemoAreaGrid">
 
                     <Frame x:Name="NavigationFrame" />
-                    <!--
+                    <!--Background="{StaticResource Brush-Grey-05}"
                         Uncomment this control to help you determine where the focus is.
                         This could be useful when validating accessibility of your control
                     -->

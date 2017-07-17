@@ -51,7 +51,6 @@ namespace AudioVideoPlayer.Pages.Remote
         public RemotePage()
         {
             this.InitializeComponent();
-            TestLogo.Source = new Windows.UI.Xaml.Media.Imaging.BitmapImage(new System.Uri("ms-appx:///Assets/AudioVideo.png"));
 
 
         }

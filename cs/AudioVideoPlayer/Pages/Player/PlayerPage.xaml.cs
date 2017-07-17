@@ -310,19 +310,10 @@ namespace AudioVideoPlayer.Pages.Player
             }
             else
                 return false;
-            // Set Minimum size for the view
-            ApplicationView.GetForCurrentView().SetPreferredMinSize(new Size
-            {
-                Height = 240,
-                Width = 320
-            });
 
             // Hide Systray on phone
             if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
             {
-                // Hide Status bar
-                var statusBar = Windows.UI.ViewManagement.StatusBar.GetForCurrentView();
-                await statusBar.HideAsync();
                 // Hide fullWindow button
                 fullwindowButton.Visibility = Visibility.Collapsed;
             }
@@ -408,10 +399,13 @@ namespace AudioVideoPlayer.Pages.Player
             RemovePicturePopup();
 
             // Initialize MediaElement events
-            mediaPlayer.MediaOpened -= MediaElement_MediaOpened;
-            mediaPlayer.MediaFailed -= MediaElement_MediaFailed;
-            mediaPlayer.MediaEnded -= MediaElement_MediaEnded;
-            mediaPlayer.PlaybackSession.PlaybackStateChanged -= PlaybackSession_PlaybackStateChanged;
+            if (mediaPlayer != null)
+            {
+                mediaPlayer.MediaOpened -= MediaElement_MediaOpened;
+                mediaPlayer.MediaFailed -= MediaElement_MediaFailed;
+                mediaPlayer.MediaEnded -= MediaElement_MediaEnded;
+                mediaPlayer.PlaybackSession.PlaybackStateChanged -= PlaybackSession_PlaybackStateChanged;
+            }
             //if (Windows.Foundation.Metadata.ApiInformation.IsEventPresent("Windows.Media.Playback.MediaPlaybackSession", "SeekableRangesChanged"))
             //    mediaPlayer.PlaybackSession.SeekableRangesChanged -= PlaybackSession_SeekableRangesChanged;
             mediaPlayerElement.DoubleTapped -= doubleTapped;
@@ -925,11 +919,14 @@ namespace AudioVideoPlayer.Pages.Player
         {
             var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
 
-            localSettings.Values["PlayerPosition"] = mediaPlayer.PlaybackSession.Position;
-            int i = (int)mediaPlayer.PlaybackSession.PlaybackState;
-            localSettings.Values["PlayerState"] = i;
-            LogMessage("SaveState - Position: " + mediaPlayer.PlaybackSession.Position.ToString() + " State: " + mediaPlayer.PlaybackSession.PlaybackState.ToString());
-            mediaPlayer.Pause();
+            if (mediaPlayer != null)
+            {
+                localSettings.Values["PlayerPosition"] = mediaPlayer.PlaybackSession.Position;
+                int i = (int)mediaPlayer.PlaybackSession.PlaybackState;
+                localSettings.Values["PlayerState"] = i;
+                LogMessage("SaveState - Position: " + mediaPlayer.PlaybackSession.Position.ToString() + " State: " + mediaPlayer.PlaybackSession.PlaybackState.ToString());
+                mediaPlayer.Pause();
+            }
         }
         /// <summary>
         /// This method restores the MediaElement position and the media state 
@@ -1168,7 +1165,6 @@ namespace AudioVideoPlayer.Pages.Player
                          fullscreenButton.IsEnabled = false;
                          fullwindowButton.IsEnabled = false;
 
-                         playlistButton.IsEnabled = false;
                          comboStream.IsEnabled = false;
                          mediaUri.IsEnabled = false;
                          minBitrate.IsEnabled = false;
@@ -1195,7 +1191,6 @@ namespace AudioVideoPlayer.Pages.Player
                              fullscreenButton.IsEnabled = true;
                              fullwindowButton.IsEnabled = true;
 
-                             playlistButton.IsEnabled = false;
                              comboStream.IsEnabled = false;
                              mediaUri.IsEnabled = false;
                              minBitrate.IsEnabled = false;
@@ -1204,7 +1199,6 @@ namespace AudioVideoPlayer.Pages.Player
                          }
                          else
                          {
-                             playlistButton.IsEnabled = true;
                              comboStream.IsEnabled = true;
                              mediaUri.IsEnabled = true;
                              minBitrate.IsEnabled = true;
