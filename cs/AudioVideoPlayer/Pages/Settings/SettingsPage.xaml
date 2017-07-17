@@ -24,7 +24,7 @@
         <vm:ViewModel x:Name="ViewModelLocator" />
     </Page.DataContext>
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"  >
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="5,5,5,5" >
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>

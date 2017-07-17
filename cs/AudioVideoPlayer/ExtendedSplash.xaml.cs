@@ -62,7 +62,17 @@ namespace AudioVideoPlayer
             // Create a Frame to act as the navigation context
             rootFrame = new Frame();
             this.Loaded += ExtendedSplash_Loaded;
-
+            // Update Title bar
+            Windows.UI.ViewManagement.ApplicationViewTitleBar formattableTitleBar = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TitleBar;
+            if(formattableTitleBar!=null)
+            { 
+                formattableTitleBar.ButtonForegroundColor = vm.Settings.MenuForegroundColor;
+                formattableTitleBar.ForegroundColor = vm.Settings.MenuForegroundColor;
+                formattableTitleBar.BackgroundColor = vm.Settings.MenuBackgroundColor;
+                formattableTitleBar.ButtonBackgroundColor = vm.Settings.MenuBackgroundColor;
+                formattableTitleBar.ButtonHoverBackgroundColor = vm.Settings.MenuBackgroundColor;
+                formattableTitleBar.ButtonInactiveBackgroundColor = vm.Settings.MenuBackgroundColor;
+            }
 
         }
 

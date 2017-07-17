@@ -17,6 +17,16 @@ namespace AudioVideoPlayer.Pages.About
 {
     public sealed partial class AboutPage
     {
+        public string NameOfSystemFamily { get { return nameof(Information.SystemInformation.SystemFamily); } }
+        public string SystemFamily { get { return Information.SystemInformation.SystemFamily; } }
+        public string SystemVersion { get { return Information.SystemInformation.SystemVersion; } }
+        public string SystemArchitecture { get { return Information.SystemInformation.SystemArchitecture; } }
+        public string ApplicationName { get { return Information.SystemInformation.ApplicationName; } }
+        public string ApplicationVersion { get { return Information.SystemInformation.ApplicationVersion; } }
+        public string DeviceManufacturer { get { return Information.SystemInformation.DeviceManufacturer; } }
+        public string DeviceModel { get { return Information.SystemInformation.DeviceModel; } }
+        public string AppSpecificHardwareID { get{ return Information.SystemInformation.AppSpecificHardwareID.Replace('-',' '); }}
+
         public AboutPage()
         {
             InitializeComponent();

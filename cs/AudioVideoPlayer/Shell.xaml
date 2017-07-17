@@ -99,7 +99,7 @@
                                 Style="{StaticResource HamburgerMenuTemplate}"
                                 Grid.Row="1" 
                                 >
-            <Grid x:Name="RootGrid">
+            <Grid x:Name="RootGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" >
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
@@ -109,7 +109,7 @@
                 <Grid x:Name="DemoAreaGrid">
 
                     <Frame x:Name="NavigationFrame" />
-                    <!--Background="{StaticResource Brush-Grey-05}"
+                    <!--
                         Uncomment this control to help you determine where the focus is.
                         This could be useful when validating accessibility of your control
                     -->
