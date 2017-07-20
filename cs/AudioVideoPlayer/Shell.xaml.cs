@@ -244,9 +244,13 @@ namespace AudioVideoPlayer
 
             if (NavigationFrame.CurrentSourcePageType != appPage.PageType)
             {
-                if (NavigationFrame.CanGoBack)
+                var backStack = NavigationFrame.BackStack;
+                var backStackCount = backStack.Count;
+
+                if (backStackCount > 0)
                 {
-                    NavigationFrame.GoBack();
+                    var masterPageEntry = backStack[backStackCount - 1];
+                    backStack.RemoveAt(backStackCount - 1);
                 }
 
                 NavigationFrame.Navigate(appPage.PageType);

@@ -96,6 +96,7 @@ namespace Companion
                     msocketRecv = null;
                 }
                 msocketRecv = new DatagramSocket();
+                msocketRecv.Control.MulticastOnly = true;
                 msocketRecv.MessageReceived += UDPMulticastMessageReceived;
                 NetworkAdapter adapter = GetDefaultNetworkAdapter();
                 if (adapter != null)

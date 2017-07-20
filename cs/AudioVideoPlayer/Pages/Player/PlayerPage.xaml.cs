@@ -115,12 +115,12 @@ namespace AudioVideoPlayer.Pages.Player
 
         #region Initialization
         /// <summary>
-        /// MainPage constructor 
+        /// PlayerPage constructor 
         /// </summary>
         public PlayerPage()
         {
             this.InitializeComponent();
-            LogMessage("Application MainPage Initialized");
+            LogMessage("Application PlayerPage Initialized");
         }
         // localPath is used to store the path of the content to be played
         string localPath = string.Empty;
@@ -182,7 +182,7 @@ namespace AudioVideoPlayer.Pages.Player
             // Windows.Phone.UI.Input.HardwareButtons.BackPressed event.
             // If you are using the NavigationHelper provided by some templates,
             // this event is handled for you.
-            LogMessage("MainPage OnNavigatedTo");
+            LogMessage("PlayerPage OnNavigatedTo");
             await ReadSettings();
                        
             if (e.NavigationMode != NavigationMode.New)
@@ -220,7 +220,7 @@ namespace AudioVideoPlayer.Pages.Player
             // Load Data
             if (string.IsNullOrEmpty(MediaDataSource.MediaDataPath))
             {
-                LogMessage("MainPage Loading Data...");
+                LogMessage("PlayerPage Loading Data...");
                 await LoadingData(string.Empty);
             }
 
@@ -262,7 +262,7 @@ namespace AudioVideoPlayer.Pages.Player
         /// </summary>
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            LogMessage("MainPage OnNavigatedFrom");
+           // LogMessage("PlayerPage OnNavigatedFrom");
             // Unregister Suspend/Resume
             Application.Current.EnteredBackground -= EnteredBackground;
             Application.Current.LeavingBackground -= LeavingBackground;
@@ -285,7 +285,7 @@ namespace AudioVideoPlayer.Pages.Player
         /// <summary>
         /// This method Register the UI components .
         /// </summary>
-        public async System.Threading.Tasks.Task<bool> RegisterUI()
+        public  async System.Threading.Tasks.Task<bool> RegisterUI()
         {
             bool bResult = false;
             if (!Windows.ApplicationModel.DesignMode.DesignModeEnabled)
@@ -924,7 +924,7 @@ namespace AudioVideoPlayer.Pages.Player
                 localSettings.Values["PlayerPosition"] = mediaPlayer.PlaybackSession.Position;
                 int i = (int)mediaPlayer.PlaybackSession.PlaybackState;
                 localSettings.Values["PlayerState"] = i;
-                LogMessage("SaveState - Position: " + mediaPlayer.PlaybackSession.Position.ToString() + " State: " + mediaPlayer.PlaybackSession.PlaybackState.ToString());
+                //LogMessage("SaveState - Position: " + mediaPlayer.PlaybackSession.Position.ToString() + " State: " + mediaPlayer.PlaybackSession.PlaybackState.ToString());
                 mediaPlayer.Pause();
             }
         }
@@ -3445,7 +3445,7 @@ namespace AudioVideoPlayer.Pages.Player
             s = ReadSettingsValue(keyMediaDataPath) as string;
             if (!string.IsNullOrEmpty(s))
             {
-                LogMessage("MainPage Loading Data for path: " + s);
+                LogMessage("PlayerPage Loading Data for path: " + s);
                 if (await LoadingData(s) == true)
                 {
                     s = ReadSettingsValue(keyMediaDataIndex) as string;
