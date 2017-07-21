@@ -109,7 +109,7 @@ namespace AudioVideoPlayer.Pages.Player
         private const string keyMediaDataPath = "MediaDataPath";
         private const string keyMediaDataIndex = "MediaDataIndex";
         private const string keyMediaUri = "MediaUri";
-        private const string keyWindowState = "WindowState";
+       // private const string keyWindowState = "WindowState";
 
         #endregion
 
@@ -3392,7 +3392,7 @@ namespace AudioVideoPlayer.Pages.Player
                 }
             }
             // Restore WindowState
-            s = ReadSettingsValue(keyWindowState) as string;
+           // s = ReadSettingsValue(keyWindowState) as string;
             if (!string.IsNullOrEmpty(s))
             {
                 int state ;
@@ -3427,8 +3427,8 @@ namespace AudioVideoPlayer.Pages.Player
             SaveSettingsValue(keyMediaUri, mediaUri.Text);
 
             // Save WindowState
-            int state = (int)WindowState;
-            SaveSettingsValue(keyWindowState, state.ToString());
+            //int state = (int)WindowState;
+            //SaveSettingsValue(keyWindowState, state.ToString());
             return true;
         }
         /// <summary>

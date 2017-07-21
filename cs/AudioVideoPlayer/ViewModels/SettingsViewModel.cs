@@ -107,6 +107,18 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
+        public bool Loop
+        {
+            get
+            {
+                return StaticSettingsViewModel.Loop;
+            }
+            set
+            {
+                StaticSettingsViewModel.Loop = value;
+                NotifyPropertyChanged();
+            }
+        }
         public StaticSettingsViewModel.PlayerWindowState WindowState
         {
             get
@@ -182,6 +194,7 @@ namespace AudioVideoPlayer.ViewModels
         };
         // Player Settings
         private static bool autoStart;
+        private static bool loop;
         private static PlayerWindowState windowState;
 
         public static bool AutoStart
@@ -201,7 +214,23 @@ namespace AudioVideoPlayer.ViewModels
                 autoStart = value;
             }
         }
-
+        public static bool Loop
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(Loop));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    loop = false;
+                else
+                    loop = bool.Parse(auto);
+                return loop;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(Loop), value.ToString());
+                loop = value;
+            }
+        }
         public static PlayerWindowState WindowState
         {
             get
@@ -212,14 +241,16 @@ namespace AudioVideoPlayer.ViewModels
                 else
                 {
                     int value = int.Parse(auto);
+
                     if(value>=0 && value < 3)
-                    WindowState = (PlayerWindowState)value;
+                        windowState = (PlayerWindowState)value;
                 }
                 return windowState;
             }
             set
             {
-                Helpers.SettingsHelper.SaveSettingsValue(nameof(WindowState), value.ToString());
+                int intValue = (int) value;
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(WindowState), intValue.ToString());
                 windowState = value;
             }
         }

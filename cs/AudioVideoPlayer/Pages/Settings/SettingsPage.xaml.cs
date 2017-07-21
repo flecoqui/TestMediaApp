@@ -76,29 +76,7 @@ namespace AudioVideoPlayer.Pages.Settings
             // Refresh the pages with the new Color                         
             AudioVideoPlayer.Shell.Current.UpdateTitleBarAndColor(true);
         }
-        // AutoSkip
-        // When the media ended, skip automatically to the next stream in the list 
-        private bool bAutoSkip = false;
-        /// <summary>
-        /// This method is called when the AutoSkip is unchecked
-        /// </summary>
-        private void AutoSkip_Unchecked(object sender, RoutedEventArgs e)
-        {
-            if (AutoSkip.IsChecked == true)
-                bAutoSkip = true;
-            else
-                bAutoSkip = false;
-        }
-        /// <summary>
-        /// This method is called when the AutoSkip is checked 
-        /// </summary>
-        private void AutoSkip_Checked(object sender, RoutedEventArgs e)
-        {
-            if (AutoSkip.IsChecked == true)
-                bAutoSkip = true;
-            else
-                bAutoSkip = false;
-        }
+
     }
 
 

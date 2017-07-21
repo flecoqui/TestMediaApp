@@ -16,6 +16,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:AudioVideoPlayer"
     xmlns:vm="using:AudioVideoPlayer.ViewModels"
+    xmlns:converters="using:AudioVideoPlayer.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
@@ -23,9 +24,16 @@
     <Page.DataContext>
         <vm:ViewModel x:Name="ViewModelLocator" />
     </Page.DataContext>
-
+    <Page.Resources>
+      <converters:WindowModeToBoolConverter x:Key="WindowModeToBoolConverter"/>
+    </Page.Resources>
+    
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="5,5,5,5" >
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -40,6 +48,12 @@
         </StackPanel>
         <StackPanel Grid.Row="1" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2"  >
             <StackPanel Orientation="Horizontal" VerticalAlignment="Top" >
+                <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Margin="0,0,0,0"  Text="User Experience Settings: "/>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel Grid.Row="2" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2"  >
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" >
+                <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}"  Text="Theme: "/>
                 <ToggleSwitch Margin="2,2,2,2" x:Name="AppThemeSwitch" MinWidth="100"
                                           OffContent="Light"
                                           OnContent="Dark"
@@ -47,6 +61,7 @@
                                           IsOn="{Binding Settings.DarkTheme, Mode=TwoWay}">
                 </ToggleSwitch>
 
+                <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}"  Text="Color: "/>
                 <ComboBox x:Name="ColorCombo" Margin="2,2,2,2"  ItemsSource="{Binding Settings.MenuBackgroundColors}"
                                       SelectedItem="{Binding Settings.MenuBackgroundColor, Mode=OneWay}"
                                       Width="100"                                     
@@ -63,13 +78,24 @@
                     </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" >
                 <Button x:Name="ApplyColor" Margin="2,2,2,2" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Content="Apply" Click="ApplyColor_Click"/>
             </StackPanel>
-            
         </StackPanel>
-        <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  Grid.Row="2" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
-            <CheckBox VerticalAlignment="Center" x:Name="AutoSkip" Checked="AutoSkip_Checked" Unchecked="AutoSkip_Unchecked" FontSize="12" ToolTipService.ToolTip="Configure the playlist to start automatically and jump to the next stream at the end of the previous one"   FlowDirection="RightToLeft" HorizontalAlignment="Left" Margin="0,0,0,0" Content="AutoStart:" MinWidth="55" />
-            <CheckBox VerticalAlignment="Center" x:Name="AutoLoop" Checked="AutoSkip_Checked" Unchecked="AutoSkip_Unchecked" FontSize="12" ToolTipService.ToolTip="Configure the playlist to loop at the end of the playlist"   FlowDirection="RightToLeft" HorizontalAlignment="Left" Margin="0,0,0,0" Content="Loop:" MinWidth="55" />
+        <StackPanel Grid.Row="3" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2"  >
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" >
+                <TextBlock Style="{StaticResource HeaderTextBlockStyle}"  Margin="0,0,0,0"  Text="Player Settings: "/>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  Grid.Row="4" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
+            <CheckBox VerticalAlignment="Center" x:Name="AutoSkip" Margin="5,0,5,0" IsChecked="{Binding Settings.AutoStart,Mode=TwoWay}" ToolTipService.ToolTip="Configure the playlist to start automatically and jump to the next stream at the end of the previous one"   FlowDirection="RightToLeft"  Content="AutoStart:" MinWidth="55" />
+            <CheckBox VerticalAlignment="Center" x:Name="AutoLoop" Margin="5,0,5,0" IsChecked="{Binding Settings.Loop,Mode=TwoWay}" ToolTipService.ToolTip="Configure the playlist to loop at the end of the playlist"   FlowDirection="RightToLeft" HorizontalAlignment="Left" Content="Loop:" MinWidth="55" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  Grid.Row="5" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
+            <RadioButton GroupName="WindowMode" Content="Window" MinWidth="86" x:Name="WindowModeWindow" IsChecked="{Binding Settings.WindowState,Mode=TwoWay,Converter={StaticResource WindowModeToBoolConverter },ConverterParameter=0}" />
+            <RadioButton GroupName="WindowMode" Content="FullWindow" x:Name="WindowModeFull" MinWidth="110" IsChecked="{Binding Settings.WindowState,Mode=TwoWay,Converter={StaticResource WindowModeToBoolConverter },ConverterParameter=1}"/>
+            <RadioButton GroupName="WindowMode" Content="FullScreen" x:Name="WindowModeFullscreen" MinWidth="100" IsChecked="{Binding Settings.WindowState,Mode=TwoWay,Converter={StaticResource WindowModeToBoolConverter },ConverterParameter=2}" />
         </StackPanel>
 
     </Grid>
