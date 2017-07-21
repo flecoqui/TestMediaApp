@@ -131,7 +131,7 @@ namespace AudioVideoPlayer.Pages.Player
                 // If the playlist is loaded the application can directly 
                 // play the content
                 mediaUri.Text = "file://" + path;
-                if (AutoSkip.IsChecked == true)
+                if (ViewModels.StaticSettingsViewModel.AutoStart == true)
                 {
                     await StartPlay(mediaUri.Text, mediaUri.Text, null, 0, 0);
                 }
@@ -202,7 +202,7 @@ namespace AudioVideoPlayer.Pages.Player
             mediaPlayer.CommandManager.IsEnabled = false;
 
             // Register UI components and events
-            await RegisterUI();
+           RegisterUI();
 
 
             // Register Smooth Streaming component
@@ -277,6 +277,9 @@ namespace AudioVideoPlayer.Pages.Player
             // Unregister UI components and events
             UnregisterUI();
 
+            // Stop Companion reception
+            UnregisterCompanion();
+
             // Save State
             SaveState();
             //Save Settings
@@ -285,7 +288,7 @@ namespace AudioVideoPlayer.Pages.Player
         /// <summary>
         /// This method Register the UI components .
         /// </summary>
-        public  async System.Threading.Tasks.Task<bool> RegisterUI()
+        public  bool RegisterUI()
         {
             bool bResult = false;
             if (!Windows.ApplicationModel.DesignMode.DesignModeEnabled)
@@ -344,8 +347,6 @@ namespace AudioVideoPlayer.Pages.Player
             // Logs event to refresh the TextBox
             logs.TextChanged += Logs_TextChanged;
 
-            // Set AutoSkip mode 
-            AutoSkip.IsChecked = bAutoSkip;
 
             // Initialize minBitrate and maxBitrate TextBox
             minBitrate.Text = MinBitRate.ToString();
@@ -1148,7 +1149,7 @@ namespace AudioVideoPlayer.Pages.Player
                  {
                      if (bDisable == true)
                      {
-                         Remote.IsEnabled = false;
+
                          playButton.IsEnabled = false;
                          playPauseButton.IsEnabled = false;
                          pausePlayButton.IsEnabled = false;
@@ -1169,41 +1170,14 @@ namespace AudioVideoPlayer.Pages.Player
                          mediaUri.IsEnabled = false;
                          minBitrate.IsEnabled = false;
                          maxBitrate.IsEnabled = false;
-                         AutoSkip.IsEnabled = false;
                      }
                      else
                      {
-                         Remote.IsEnabled = true;
-                         if (Remote.IsChecked == true)
-                         {
-                             playButton.IsEnabled = true;
-                             playPauseButton.IsEnabled = true;
-                             pausePlayButton.IsEnabled = true;
-                             stopButton.IsEnabled = true;
-
-                             minusButton.IsEnabled = true;
-                             plusButton.IsEnabled = true;
-
-                             muteButton.IsEnabled = true;
-                             volumeDownButton.IsEnabled = true;
-                             volumeUpButton.IsEnabled = true;
-
-                             fullscreenButton.IsEnabled = true;
-                             fullwindowButton.IsEnabled = true;
-
-                             comboStream.IsEnabled = false;
-                             mediaUri.IsEnabled = false;
-                             minBitrate.IsEnabled = false;
-                             maxBitrate.IsEnabled = false;
-                             AutoSkip.IsEnabled = false;
-                         }
-                         else
                          {
                              comboStream.IsEnabled = true;
                              mediaUri.IsEnabled = true;
                              minBitrate.IsEnabled = true;
                              maxBitrate.IsEnabled = true;
-                             AutoSkip.IsEnabled = true;
 
                              if ((comboStream.Items.Count > 0) || (!string.IsNullOrEmpty(mediaUri.Text)))
                              {
@@ -1285,11 +1259,6 @@ namespace AudioVideoPlayer.Pages.Player
         /// </summary>
         private void Play_Click(object sender, RoutedEventArgs e)
         {
-            if (Remote.IsChecked == true)
-            {
-                Play_remote_Click(sender, e);
-                return;
-            }
             try
             {
                 PlayCurrentUrl();
@@ -1304,11 +1273,6 @@ namespace AudioVideoPlayer.Pages.Player
         /// </summary>
         private void Stop_Click(object sender, RoutedEventArgs e)
         {
-            if (Remote.IsChecked == true)
-            {
-                Stop_remote_Click(sender, e);
-                return;
-            }
             try
             {
                 if ((!string.IsNullOrEmpty(CurrentMediaUrl)) &&
@@ -1330,11 +1294,6 @@ namespace AudioVideoPlayer.Pages.Player
         /// </summary>
         private void PlayPause_Click(object sender, RoutedEventArgs e)
         {
-            if (Remote.IsChecked == true)
-            {
-                Playpause_remote_Click(sender, e);
-                return;
-            }
             try
             {
                 if ((!string.IsNullOrEmpty(CurrentMediaUrl)) &&
@@ -1355,11 +1314,6 @@ namespace AudioVideoPlayer.Pages.Player
         /// </summary>
         private void PausePlay_Click(object sender, RoutedEventArgs e)
         {
-            if (Remote.IsChecked == true)
-            {
-                Pause_remote_Click(sender, e);
-                return;
-            }
             try
             {
                 if ((!string.IsNullOrEmpty(CurrentMediaUrl)) &&
@@ -1418,11 +1372,6 @@ namespace AudioVideoPlayer.Pages.Player
         /// </summary>
         private void Plus_Click(object sender, RoutedEventArgs e)
         {
-            if (Remote.IsChecked == true)
-            {
-                Plus_remote_Click(sender, e);
-                return;
-            }
             try
             {
                 int Index = comboStream.SelectedIndex;
@@ -1450,11 +1399,6 @@ namespace AudioVideoPlayer.Pages.Player
         /// </summary>
         private void Minus_Click(object sender, RoutedEventArgs e)
         {
-            if (Remote.IsChecked == true)
-            {
-                Minus_remote_Click(sender, e);
-                return;
-            }
             try
             {
                 int Index = comboStream.SelectedIndex;
@@ -1483,11 +1427,6 @@ namespace AudioVideoPlayer.Pages.Player
         /// </summary>
         private void Mute_Click(object sender, RoutedEventArgs e)
         {
-            if (Remote.IsChecked == true)
-            {
-                Mute_remote_Click(sender, e);
-                return;
-            }
             LogMessage("Toggle Mute");
             mediaPlayer.IsMuted = !mediaPlayer.IsMuted;
             UpdateControls();
@@ -1497,11 +1436,6 @@ namespace AudioVideoPlayer.Pages.Player
         /// </summary>
         private void VolumeUp_Click(object sender, RoutedEventArgs e)
         {
-            if (Remote.IsChecked == true)
-            {
-                VolumeUp_remote_Click(sender, e);
-                return;
-            }
             LogMessage("Volume Up");
             mediaPlayer.Volume = (mediaPlayer.Volume + 0.10 <= 1 ? mediaPlayer.Volume + 0.10 : 1) ;
             UpdateControls();
@@ -1511,35 +1445,11 @@ namespace AudioVideoPlayer.Pages.Player
         /// </summary>
         private void VolumeDown_Click(object sender, RoutedEventArgs e)
         {
-            if (Remote.IsChecked == true)
-            {
-                VolumeDown_remote_Click(sender, e);
-                return;
-            }
             LogMessage("Volume Down");
             mediaPlayer.Volume = (mediaPlayer.Volume - 0.10 >= 0 ? mediaPlayer.Volume - 0.10 : 0);
             UpdateControls();
         }
-        /// <summary>
-        /// This method is called when the AutoSkip is unchecked
-        /// </summary>
-        private void AutoSkip_Unchecked(object sender, RoutedEventArgs e)
-        {
-            if (AutoSkip.IsChecked == true)
-                bAutoSkip = true;
-            else
-                bAutoSkip = false;
-        }
-        /// <summary>
-        /// This method is called when the AutoSkip is checked 
-        /// </summary>
-        private void AutoSkip_Checked(object sender, RoutedEventArgs e)
-        {
-            if (AutoSkip.IsChecked == true)
-                bAutoSkip = true;
-            else
-                bAutoSkip = false;
-        }
+
         /// <summary>
         /// This method is called when the ComboStream selection changes 
         /// </summary>
@@ -1632,11 +1542,6 @@ namespace AudioVideoPlayer.Pages.Player
         /// </summary>
         private void Fullscreen_Click(object sender, RoutedEventArgs e)
         {
-            if (Remote.IsChecked == true)
-            {
-                Fullscreen_remote_Click(sender, e);
-                return;
-            }
             LogMessage("Switch to fullscreen");
             SetWindowMode(WindowMediaState.FullScreen);
         }
@@ -1771,11 +1676,6 @@ namespace AudioVideoPlayer.Pages.Player
         /// </summary>
         private void Fullwindow_Click(object sender, RoutedEventArgs e)
         {
-            if (Remote.IsChecked == true)
-            {
-                Fullwindow_remote_Click(sender, e);
-                return;
-            }
 
             LogMessage("Switch to fullwindow");
             SetWindowMode(WindowMediaState.FullWindow);
@@ -3651,20 +3551,16 @@ namespace AudioVideoPlayer.Pages.Player
         {
             companion = new CompanionClient();
             companion.MessageReceived += Companion_MessageReceived;
-            // Remote or Player
-            Remote.Checked += Remote_Checked;
-            Remote.Unchecked += Remote_Checked;
 
         }
-        private void Remote_Checked(object sender, RoutedEventArgs e)
-        {
-            InitializeCompanionMode();
-            UpdateControls();
-        }
+
         private void UnregisterCompanion()
         {
             if (companion != null)
+            {
+                companion.StopRecv();
                 companion.MessageReceived -= Companion_MessageReceived;
+            }
         }
 
         private void select_Click(object sender, RoutedEventArgs e, int newIndex)
@@ -3861,7 +3757,8 @@ namespace AudioVideoPlayer.Pages.Player
 
         private async void InitializeCompanionMode()
         {
-            if (Remote.IsChecked == true)
+            bool bRemote = false;
+            if (bRemote == true)
             {
                 // Show FullWindow on phone
                 if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
@@ -3896,139 +3793,7 @@ namespace AudioVideoPlayer.Pages.Player
 
         }
 
-        //private async void open_remote_Click(object sender, RoutedEventArgs e)
-        //{
-        //    LogMessage("Open Media event, parameter: " + parameter.Text);
-        //    Dictionary<string, string> p = companion.GetParametersFromString(parameter.Text);
-        //    bool bResult = await companion.SendCommand(CompanionClient.commandOpen, p);
-        //    UpdateControls();
-        //}
-        //private async void openPlaylist_remote_Click(object sender, RoutedEventArgs e)
-        //{
-        //    LogMessage("Open Playlist event, parameter: " + parameter.Text);
-        //    Dictionary<string, string> p = companion.GetParametersFromString(parameter.Text);
-        //    bool bResult = await companion.SendCommand(CompanionClient.commandOpenPlaylist, p);
-        //    UpdateControls();
-        //}
-        //private async void select_remote_Click(object sender, RoutedEventArgs e)
-        //{
-
-        //    LogMessage("Select event, parameter: " + parameter.Text);
-        //    Dictionary<string, string> p = companion.GetParametersFromString(parameter.Text);
-        //    bool bResult = await companion.SendCommand(CompanionClient.commandSelect, p);
-        //    UpdateControls();
-
-        //}
-        private async void Stop_remote_Click(object sender, RoutedEventArgs e)
-        {
-            LogMessage("Stop event");
-            bool bResult = await companion.SendCommand(CompanionClient.commandStop, null);
-            UpdateControls();
-
-        }
-        private async void Play_remote_Click(object sender, RoutedEventArgs e)
-        {
-            LogMessage("Play event");
-            bool bResult = await companion.SendCommand(CompanionClient.commandPlay, null);
-            UpdateControls();
-
-        }
-        private async void Playpause_remote_Click(object sender, RoutedEventArgs e)
-        {
-            LogMessage("Playpause event");
-            bool bResult = await companion.SendCommand(CompanionClient.commandPlayPause, null);
-            UpdateControls();
-
-        }
-        private async void Pause_remote_Click(object sender, RoutedEventArgs e)
-        {
-            LogMessage("Pause event");
-            bool bResult = await companion.SendCommand(CompanionClient.commandPause, null);
-            UpdateControls();
-
-
-        }
-        private async void Plus_remote_Click(object sender, RoutedEventArgs e)
-        {
-            LogMessage("Plus event");
-            bool bResult = await companion.SendCommand(CompanionClient.commandPlus, null);
-            UpdateControls();
-
-        }
-        private async void Minus_remote_Click(object sender, RoutedEventArgs e)
-        {
-            LogMessage("Minus event");
-            bool bResult = await companion.SendCommand(CompanionClient.commandMinus, null);
-            UpdateControls();
-        }
-        private async void Fullscreen_remote_Click(object sender, RoutedEventArgs e)
-        {
-            LogMessage("Fullscreen event");
-            bool bResult = await companion.SendCommand(CompanionClient.commandFullScreen, null);
-            UpdateControls();
-
-        }
-        private async void Fullwindow_remote_Click(object sender, RoutedEventArgs e)
-        {
-            LogMessage("Fullwindow event");
-            bool bResult = await companion.SendCommand(CompanionClient.commandFullWindow, null);
-            UpdateControls();
-        }
-        private async void Window_remote_Click(object sender, RoutedEventArgs e)
-        {
-            LogMessage("window event");
-            bool bResult = await companion.SendCommand(CompanionClient.commandWindow, null);
-            UpdateControls();
-        }
-        private async void Mute_remote_Click(object sender, RoutedEventArgs e)
-        {
-            LogMessage("Mute event");
-            bool bResult = await companion.SendCommand(CompanionClient.commandMute, null);
-            UpdateControls();
-        }
-        private async void VolumeUp_remote_Click(object sender, RoutedEventArgs e)
-        {
-            LogMessage("Volume Up event ");
-            bool bResult = await companion.SendCommand(CompanionClient.commandVolumeUp, null);
-            UpdateControls();
-
-        }
-        private async void VolumeDown_remote_Click(object sender, RoutedEventArgs e)
-        {
-            LogMessage("Volume Down event ");
-            bool bResult = await companion.SendCommand(CompanionClient.commandVolumeDown, null);
-            UpdateControls();
-        }
-        private async void Down_remote_Click(object sender, RoutedEventArgs e)
-        {
-            LogMessage("Down event ");
-            bool bResult = await companion.SendCommand(CompanionClient.commandDown, null);
-            UpdateControls();
-        }
-        private async void Up_remote_Click(object sender, RoutedEventArgs e)
-        {
-            LogMessage("Up event ");
-            bool bResult = await companion.SendCommand(CompanionClient.commandUp, null);
-            UpdateControls();
-        }
-        private async void Left_remote_Click(object sender, RoutedEventArgs e)
-        {
-            LogMessage("Left event ");
-            bool bResult = await companion.SendCommand(CompanionClient.commandLeft, null);
-            UpdateControls();
-        }
-        private async void Right_remote_Click(object sender, RoutedEventArgs e)
-        {
-            LogMessage("Right event ");
-            bool bResult = await companion.SendCommand(CompanionClient.commandRight, null);
-            UpdateControls();
-        }
-        private async void Enter_remote_Click(object sender, RoutedEventArgs e)
-        {
-            LogMessage("Enter event ");
-            bool bResult = await companion.SendCommand(CompanionClient.commandEnter, null);
-            UpdateControls();
-        }
+  
 
         #endregion
 

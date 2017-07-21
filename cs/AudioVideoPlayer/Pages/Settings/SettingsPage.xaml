@@ -28,10 +28,11 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="310"/>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <StackPanel x:Name="TitlePanel" Grid.Row="0" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource HeaderPanelStyle}" >
@@ -64,6 +65,11 @@
                 </ComboBox>
                 <Button x:Name="ApplyColor" Margin="2,2,2,2" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Content="Apply" Click="ApplyColor_Click"/>
             </StackPanel>
+            
+        </StackPanel>
+        <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  Grid.Row="2" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
+            <CheckBox VerticalAlignment="Center" x:Name="AutoSkip" Checked="AutoSkip_Checked" Unchecked="AutoSkip_Unchecked" FontSize="12" ToolTipService.ToolTip="Configure the playlist to start automatically and jump to the next stream at the end of the previous one"   FlowDirection="RightToLeft" HorizontalAlignment="Left" Margin="0,0,0,0" Content="AutoStart:" MinWidth="55" />
+            <CheckBox VerticalAlignment="Center" x:Name="AutoLoop" Checked="AutoSkip_Checked" Unchecked="AutoSkip_Unchecked" FontSize="12" ToolTipService.ToolTip="Configure the playlist to loop at the end of the playlist"   FlowDirection="RightToLeft" HorizontalAlignment="Left" Margin="0,0,0,0" Content="Loop:" MinWidth="55" />
         </StackPanel>
 
     </Grid>

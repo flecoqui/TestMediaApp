@@ -18,7 +18,7 @@ using Windows.UI.Xaml.Navigation;
 
 namespace AudioVideoPlayer
 {
-    partial class ExtendedSplash
+    partial class ExtendedSplash 
     {
         internal Rect splashImageRect; // Rect to store splash screen image coordinates.
         internal bool dismissed = false; // Variable to track splash screen dismissal status.
@@ -26,11 +26,11 @@ namespace AudioVideoPlayer
 
         private SplashScreen splash; // Variable to hold the splash screen object.
         private double ScaleFactor; //Variable to hold the device scale factor (use to determine phone screen resolution)
-
+        CoreDispatcher dispatcher;
         public ExtendedSplash(SplashScreen splashscreen, bool loadState)
         {
             InitializeComponent();
-
+            dispatcher = Window.Current.Dispatcher;
             // Set Minimum size for the view
             Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().SetPreferredMinSize(new Windows.Foundation.Size
             {
@@ -39,6 +39,7 @@ namespace AudioVideoPlayer
             });
             ViewModels.ViewModel vm = new ViewModels.ViewModel();
             this.Background = new Windows.UI.Xaml.Media.SolidColorBrush(vm.Settings.MenuBackgroundColor);
+            
             progressRing.Foreground = new Windows.UI.Xaml.Media.SolidColorBrush(vm.Settings.MenuForegroundColor);
 
             // Listen for window resize events to reposition the extended splash screen image accordingly.
@@ -63,23 +64,41 @@ namespace AudioVideoPlayer
             rootFrame = new Frame();
             this.Loaded += ExtendedSplash_Loaded;
             // Update Title bar
+            waitRing.Visibility = Visibility.Visible;
+            Windows.ApplicationModel.Core.CoreApplication.GetCurrentView().TitleBar.ExtendViewIntoTitleBar = true;
+           
             Windows.UI.ViewManagement.ApplicationViewTitleBar formattableTitleBar = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TitleBar;
             if(formattableTitleBar!=null)
-            { 
-                formattableTitleBar.ButtonForegroundColor = vm.Settings.MenuForegroundColor;
-                formattableTitleBar.ForegroundColor = vm.Settings.MenuForegroundColor;
+            {
+                
+
                 formattableTitleBar.BackgroundColor = vm.Settings.MenuBackgroundColor;
+                formattableTitleBar.ForegroundColor = vm.Settings.MenuForegroundColor;
+
+                formattableTitleBar.InactiveBackgroundColor = vm.Settings.MenuBackgroundColor;
+                formattableTitleBar.InactiveForegroundColor = vm.Settings.MenuForegroundColor;
+
+
                 formattableTitleBar.ButtonBackgroundColor = vm.Settings.MenuBackgroundColor;
                 formattableTitleBar.ButtonHoverBackgroundColor = vm.Settings.MenuBackgroundColor;
                 formattableTitleBar.ButtonInactiveBackgroundColor = vm.Settings.MenuBackgroundColor;
-            }
+                formattableTitleBar.ButtonPressedBackgroundColor = vm.Settings.MenuBackgroundColor;
 
+                formattableTitleBar.ButtonForegroundColor = vm.Settings.MenuForegroundColor;
+                formattableTitleBar.ButtonHoverForegroundColor = vm.Settings.MenuForegroundColor;
+                formattableTitleBar.ButtonInactiveForegroundColor = vm.Settings.MenuForegroundColor;
+                formattableTitleBar.ButtonPressedForegroundColor = vm.Settings.MenuForegroundColor;
+                                  
+
+            }
         }
+
+
 
         private async void ExtendedSplash_Loaded(object sender, RoutedEventArgs e)
         {
-            waitRing.Visibility = Visibility.Visible;
-            await Task.Delay(TimeSpan.FromSeconds(1));
+
+            await Task.Delay(TimeSpan.FromSeconds(10));
             // Navigate to mainpage
             rootFrame.Navigate(typeof(Shell));
             // Place the frame in the current Window
@@ -115,15 +134,7 @@ namespace AudioVideoPlayer
             }
         }
 
-        void LearnMoreButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Navigate to mainpage
-            rootFrame.Navigate(typeof(Shell));
 
-
-            // Place the frame in the current Window
-            Window.Current.Content = rootFrame;
-        }
 
         // Include code to be executed when the system has transitioned from the splash screen to the extended splash screen (application's first view).
         void DismissedEventHandler(SplashScreen sender, object e)
@@ -132,6 +143,7 @@ namespace AudioVideoPlayer
 
             // Navigate away from the app's extended splash screen after completing setup operations here...
             // This sample navigates away from the extended splash screen when the "Learn More" button is clicked.
+
         }
     }
 }

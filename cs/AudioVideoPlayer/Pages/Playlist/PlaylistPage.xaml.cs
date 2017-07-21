@@ -43,6 +43,24 @@ namespace AudioVideoPlayer.Pages.Playlist
             // If you are using the NavigationHelper provided by some templates,
             // this event is handled for you.
         }
+        /// <summary>
+        /// Playlist method which loads another JSON playlist for the application 
+        /// </summary>
+        private void Playlist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            var filePicker = new Windows.Storage.Pickers.FileOpenPicker();
+            filePicker.FileTypeFilter.Add(".json");
+            filePicker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
+            filePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
+            filePicker.SettingsIdentifier = "PlaylistPicker";
+            filePicker.CommitButtonText = "Open JSON Playlist File to Process";
+            /*
+            var file = await filePicker.PickSingleFileAsync();
+            if (file != null)
+            {
+                string fileToken = Windows.Storage.AccessCache.StorageApplicationPermissions.FutureAccessList.Add(file);
+            }*/
+        }
 
     }
 

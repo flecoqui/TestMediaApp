@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using Windows.UI;
-
+using System.Collections.ObjectModel;
 namespace AudioVideoPlayer.ViewModels
 {
     public class SettingsViewModel : INotifyPropertyChanged
@@ -23,6 +23,8 @@ namespace AudioVideoPlayer.ViewModels
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
             }
         }
+
+        // UI Settings
 
         public List<Color> MenuBackgroundColors
         {
@@ -91,10 +93,218 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
+
+        // Player Settings
+        public bool AutoStart
+        {
+            get
+            {
+                return StaticSettingsViewModel.AutoStart;
+            }
+            set
+            {
+                StaticSettingsViewModel.AutoStart = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public StaticSettingsViewModel.PlayerWindowState WindowState
+        {
+            get
+            {
+                return StaticSettingsViewModel.WindowState;
+            }
+            set
+            {
+                StaticSettingsViewModel.WindowState = value;
+                NotifyPropertyChanged();
+            }
+        }
+        // Remote Settings
+        public ObservableCollection<Models.Device> DeviceList
+        {
+            get
+            {
+                return StaticSettingsViewModel.DeviceList;
+            }
+            set
+            {
+                StaticSettingsViewModel.DeviceList = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public int IndexRemoteContent
+        {
+            get
+            {
+                return StaticSettingsViewModel.IndexRemoteContent;
+            }
+            set
+            {
+                StaticSettingsViewModel.IndexRemoteContent = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public string UriRemoteContent
+        {
+            get
+            {
+                return StaticSettingsViewModel.UriRemoteContent;
+            }
+            set
+            {
+                StaticSettingsViewModel.UriRemoteContent = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public string UriRemotePlaylist
+        {
+            get
+            {
+                return StaticSettingsViewModel.UriRemotePlaylist;
+            }
+            set
+            {
+                StaticSettingsViewModel.UriRemotePlaylist = value;
+                NotifyPropertyChanged();
+            }
+        }
     }
 
     public static class StaticSettingsViewModel
     {
+
+
+        public enum PlayerWindowState
+        {
+            WindowMode = 0,
+            FullWindow,
+            FullScreen
+        };
+        // Player Settings
+        private static bool autoStart;
+        private static PlayerWindowState windowState;
+
+        public static bool AutoStart
+        {
+            get
+            {
+                string auto = (string) Helpers.SettingsHelper.ReadSettingsValue(nameof(AutoStart));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    autoStart = false;
+                else
+                    autoStart = bool.Parse(auto);
+                return autoStart;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(AutoStart), value.ToString());
+                autoStart = value;
+            }
+        }
+
+        public static PlayerWindowState WindowState
+        {
+            get
+            {
+                string auto = (string) Helpers.SettingsHelper.ReadSettingsValue(nameof(WindowState));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    windowState = PlayerWindowState.WindowMode;
+                else
+                {
+                    int value = int.Parse(auto);
+                    if(value>=0 && value < 3)
+                    WindowState = (PlayerWindowState)value;
+                }
+                return windowState;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(WindowState), value.ToString());
+                windowState = value;
+            }
+        }
+
+        // Remote Settings
+        public const string cALL = "All(Multicast)";
+        private static ObservableCollection<Models.Device> deviceList;
+        private static int indexRemoteContent;
+        private static string uriRemoteContent;
+        private static string uriRemotePlaylist;
+
+        public static ObservableCollection<Models.Device> DeviceList
+        {
+            get
+            {
+                var auto = Helpers.SettingsHelper.ReadSettingsValue(nameof(DeviceList));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                {
+                    deviceList = new ObservableCollection<Models.Device>();
+                    deviceList.Add(new Models.Device(cALL,Companion.CompanionClient.cMulticastAddress) );
+                    deviceList.Add(new Models.Device("MyDevice", "192.168.0.1"));
+                }
+                else
+                    deviceList = (ObservableCollection<Models.Device>)auto;
+                return deviceList;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(DeviceList), value);
+                deviceList = value;
+            }
+        }
+        public static int IndexRemoteContent
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(IndexRemoteContent));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    indexRemoteContent = 0;
+                else
+                    indexRemoteContent = int.Parse(auto);
+                return indexRemoteContent;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(IndexRemoteContent), value.ToString());
+                indexRemoteContent = value;
+            }
+        }
+
+        public static string UriRemoteContent
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(UriRemoteContent));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    uriRemoteContent = "http://amssamples.streaming.mediaservices.windows.net/91492735-c523-432b-ba01-faba6c2206a2/AzureMediaServicesPromo.ism/manifest";
+                else
+                    uriRemoteContent = auto;
+                return uriRemoteContent;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(UriRemoteContent), value.ToString());
+                uriRemoteContent = value;
+            }
+        }
+        public static string UriRemotePlaylist
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(UriRemotePlaylist));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    uriRemotePlaylist = "https://raw.githubusercontent.com/flecoqui/Windows10/master/Samples/TestMediaApp/cs/AudioVideoPlayer/DataModel/MediaData.json";
+                else
+                    uriRemotePlaylist = auto;
+                return uriRemotePlaylist;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(UriRemotePlaylist), value.ToString());
+                uriRemotePlaylist = value;
+            }
+        }
+        // UI settings
         private static List<Color> menuBackgroundColors;
         private static Color menuBackgroundColor;
         private static Color menuForegroundColor;

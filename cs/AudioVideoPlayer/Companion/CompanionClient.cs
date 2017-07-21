@@ -24,10 +24,10 @@ namespace Companion
     class CompanionClient
     {
         
-        const string cMulticastAddress = "239.11.11.11";
-        const string cPort = "1919";
-        const string cQUESTION = "??";
-        const string cEQUAL = "=";
+        public const string cMulticastAddress = "239.11.11.11";
+        public const string cPort = "1919";
+        public const string cQUESTION = "??";
+        public const string cEQUAL = "=";
         const string cMULTICASTCOMMAND = "M-COMMAND";
         const string cUNICASTCOMMAND = "U-COMMAND";
 
@@ -362,7 +362,7 @@ namespace Companion
             return sendInitialized;
 
         }
-        public async Task<bool> Send(string buffer)
+        public async Task<bool> Send(string ip, string buffer)
         {
             try
             {
@@ -370,7 +370,11 @@ namespace Companion
                 if (msocketSend == null)
                     await InitializeSend();
 
-                HostName mcast = new HostName(mAddress);
+                HostName mcast;
+                if(string.IsNullOrEmpty(ip))
+                    mcast  = new HostName(mAddress);
+                else
+                    mcast = new HostName(ip);
                 DataWriter writer = new DataWriter(await msocketSend.GetOutputStreamAsync(mcast, mPort));
 
                 if (writer != null)
@@ -395,7 +399,7 @@ namespace Companion
             return false;
 
         }
-        public async Task<bool> SendCommand(string command, Dictionary<string, string> parameter)
+        public async Task<bool> SendCommand(string ip, string command, Dictionary<string, string> parameter)
         {
             bool bResult = false;
             mLastIDSent = (mLastIDSent > 9999 ? 0 : mLastIDSent + 1);
@@ -409,7 +413,7 @@ namespace Companion
                     c += cQUESTION + value.Key + cEQUAL + value.Value;
                 }
             }
-            bResult = await Send(c);
+            bResult = await Send(ip,c);
             return bResult;
         }
     }

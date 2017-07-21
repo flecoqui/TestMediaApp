@@ -76,6 +76,10 @@ namespace AudioVideoPlayer.Pages.Remote
             // Initialize the Companion mode (Remote or Player)
             InitializeCompanionMode();
 
+            // Select first item in the combo box to select multicast option
+            comboDevice.DataContext = ViewModels.StaticSettingsViewModel.DeviceList;
+            if(comboDevice.Items.Count>0)
+                comboDevice.SelectedIndex = 0;
             // Update Controls
             UpdateControls();
         }
@@ -109,70 +113,84 @@ namespace AudioVideoPlayer.Pages.Remote
 
                     playPlaylistButton.IsEnabled = true;
                     playContentButton.IsEnabled = true;
+                    selectContentButton.IsEnabled = true;
+
+                     UpRemoteButton.IsEnabled = true;
+                     DownRemoteButton.IsEnabled = true;
+                     LeftRemoteButton.IsEnabled = true;
+                     RightRemoteButton.IsEnabled = true;
+                     EnterRemoteButton.IsEnabled = true;
+
+
+
                  });
         }
-
-        /// <summary>
-        /// Full screen method 
-        /// </summary>
-        private void Fullscreen_Click(object sender, RoutedEventArgs e)
+        string GetIPAddress()
         {
-                Fullscreen_remote_Click(sender, e);
-        }
-        /// <summary>
-        /// Full window method 
-        /// </summary>
-        private void Fullwindow_Click(object sender, RoutedEventArgs e)
-        {
-                Fullwindow_remote_Click(sender, e);
-        }
-        /// <summary>
-        /// Play method which plays the video with the MediaElement from position 0
-        /// </summary>
-        private void Play_Click(object sender, RoutedEventArgs e)
-        {
-                Play_remote_Click(sender, e);
-        }
-        /// <summary>
-        /// Stop method which stops the video currently played by the MediaElement
-        /// </summary>
-        private void Stop_Click(object sender, RoutedEventArgs e)
-        {
-                Stop_remote_Click(sender, e);
-        }
-        /// <summary>
-        /// Play method which plays the video currently paused by the MediaElement
-        /// </summary>
-        private void PlayPause_Click(object sender, RoutedEventArgs e)
-        {
-                Playpause_remote_Click(sender, e);
-        }
-        /// <summary>
-        /// Pause method which pauses the video currently played by the MediaElement
-        /// </summary>
-        private void PausePlay_Click(object sender, RoutedEventArgs e)
-        {
-                Pause_remote_Click(sender, e);
-        }
-
-
-        /// <summary>
-        /// Playlist method which loads another JSON playlist for the application 
-        /// </summary>
-        private async void Playlist_Click(object sender, RoutedEventArgs e)
-        {
-            var filePicker = new Windows.Storage.Pickers.FileOpenPicker();
-            filePicker.FileTypeFilter.Add(".json");
-            filePicker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
-            filePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
-            filePicker.SettingsIdentifier = "PlaylistPicker";
-            filePicker.CommitButtonText = "Open JSON Playlist File to Process";
-
-            var file = await filePicker.PickSingleFileAsync();
-            if (file != null)
+            Models.Device d = comboDevice.SelectedItem as Models.Device;
+            if (d != null)
             {
-                string fileToken = Windows.Storage.AccessCache.StorageApplicationPermissions.FutureAccessList.Add(file);
+                if (!string.IsNullOrEmpty(d.IpAddress))
+                    return d.IpAddress;
             }
+            return Companion.CompanionClient.cMulticastAddress;
+        }
+
+        private async void down_remote_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Down event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(),CompanionClient.commandDown, null);
+            UpdateControls();
+        }
+        private async void up_remote_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Up event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(),CompanionClient.commandUp, null);
+            UpdateControls();
+        }
+        private async void left_remote_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Left event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandLeft, null);
+            UpdateControls();
+        }
+        private async void right_remote_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Right event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandRight, null);
+            UpdateControls();
+        }
+        private async void enter_remote_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Enter event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandEnter, null);
+            UpdateControls();
+        }
+        private async void open_remote_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Open Media event to " + GetIPAddress() + " parameter: " + contentUri.Text);
+            string commandString = CompanionClient.parameterContent + CompanionClient.cEQUAL + playlistUri.Text;
+            Dictionary<string, string> p = companion.GetParametersFromString(commandString);
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandOpen, p);
+            UpdateControls();
+        }
+        private async void openPlaylist_remote_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Open Playlist event to " + GetIPAddress() + " parameter: " + playlistUri.Text);
+            string commandString = CompanionClient.parameterContent + CompanionClient.cEQUAL + playlistUri.Text;
+            Dictionary<string, string> p = companion.GetParametersFromString(commandString);
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandOpenPlaylist, p);
+            UpdateControls();
+        }
+        private async void select_remote_Click(object sender, RoutedEventArgs e)
+        {
+
+            LogMessage("Select event to " + GetIPAddress() + " parameter: " + contentNumber.Text);
+            string commandString = CompanionClient.parameterIndex + CompanionClient.cEQUAL + contentNumber.Text;
+            Dictionary<string, string> p = companion.GetParametersFromString(contentNumber.Text);
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandSelect, p);
+            UpdateControls();
+
         }
 
 
@@ -274,112 +292,112 @@ namespace AudioVideoPlayer.Pages.Remote
         //}
         private async void Stop_remote_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Sending Stop event");
-            bool bResult = await companion.SendCommand(CompanionClient.commandStop, null);
+            LogMessage("Sending Stop event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress() ,CompanionClient.commandStop, null);
             UpdateControls();
 
         }
         private async void Play_remote_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Sending Play event");
-            bool bResult = await companion.SendCommand(CompanionClient.commandPlay, null);
+            LogMessage("Sending Play event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandPlay, null);
             UpdateControls();
 
         }
         private async void Playpause_remote_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Sending Playpause event");
-            bool bResult = await companion.SendCommand(CompanionClient.commandPlayPause, null);
+            LogMessage("Sending Playpause event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandPlayPause, null);
             UpdateControls();
 
         }
         private async void Pause_remote_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Sending Pause event");
-            bool bResult = await companion.SendCommand(CompanionClient.commandPause, null);
+            LogMessage("Sending Pause event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandPause, null);
             UpdateControls();
 
 
         }
         private async void Plus_remote_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Sending Plus event");
-            bool bResult = await companion.SendCommand(CompanionClient.commandPlus, null);
+            LogMessage("Sending Plus event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandPlus, null);
             UpdateControls();
 
         }
         private async void Minus_remote_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Sending Minus event");
-            bool bResult = await companion.SendCommand(CompanionClient.commandMinus, null);
+            LogMessage("Sending Minus event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandMinus, null);
             UpdateControls();
         }
         private async void Fullscreen_remote_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Sending Fullscreen event");
-            bool bResult = await companion.SendCommand(CompanionClient.commandFullScreen, null);
+            LogMessage("Sending Fullscreen event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandFullScreen, null);
             UpdateControls();
 
         }
         private async void Fullwindow_remote_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Sending Fullwindow event");
-            bool bResult = await companion.SendCommand(CompanionClient.commandFullWindow, null);
+            LogMessage("Sending Fullwindow event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandFullWindow, null);
             UpdateControls();
         }
         private async void Window_remote_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Sending window event");
-            bool bResult = await companion.SendCommand(CompanionClient.commandWindow, null);
+            LogMessage("Sending window event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandWindow, null);
             UpdateControls();
         }
         private async void Mute_remote_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Sending Mute event");
-            bool bResult = await companion.SendCommand(CompanionClient.commandMute, null);
+            LogMessage("Sending Mute event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandMute, null);
             UpdateControls();
         }
         private async void VolumeUp_remote_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Sending Volume Up event ");
-            bool bResult = await companion.SendCommand(CompanionClient.commandVolumeUp, null);
+            LogMessage("Sending Volume Up event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandVolumeUp, null);
             UpdateControls();
 
         }
         private async void VolumeDown_remote_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Sending Volume Down event ");
-            bool bResult = await companion.SendCommand(CompanionClient.commandVolumeDown, null);
+            LogMessage("Sending Volume Down event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandVolumeDown, null);
             UpdateControls();
         }
         private async void Down_remote_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Sending Down event ");
-            bool bResult = await companion.SendCommand(CompanionClient.commandDown, null);
+            LogMessage("Sending Down event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandDown, null);
             UpdateControls();
         }
         private async void Up_remote_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Sending Up event ");
-            bool bResult = await companion.SendCommand(CompanionClient.commandUp, null);
+            LogMessage("Sending Up event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandUp, null);
             UpdateControls();
         }
         private async void Left_remote_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Sending Left event ");
-            bool bResult = await companion.SendCommand(CompanionClient.commandLeft, null);
+            LogMessage("Sending Left event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandLeft, null);
             UpdateControls();
         }
         private async void Right_remote_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Sending Right event ");
-            bool bResult = await companion.SendCommand(CompanionClient.commandRight, null);
+            LogMessage("Sending Right event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandRight, null);
             UpdateControls();
         }
         private async void Enter_remote_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Sending Enter event ");
-            bool bResult = await companion.SendCommand(CompanionClient.commandEnter, null);
+            LogMessage("Sending Enter event to " + GetIPAddress());
+            bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandEnter, null);
             UpdateControls();
         }
 

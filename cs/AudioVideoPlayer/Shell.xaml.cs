@@ -50,6 +50,7 @@ namespace AudioVideoPlayer
 
         private void Current_Activated(object sender, WindowActivatedEventArgs e)
         {
+            
             if (e.WindowActivationState != CoreWindowActivationState.Deactivated)
             {
                 AppLogo.Opacity = 1;
@@ -311,14 +312,18 @@ namespace AudioVideoPlayer
             Windows.UI.ViewManagement.ApplicationViewTitleBar formattableTitleBar = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TitleBar;
             formattableTitleBar.ButtonForegroundColor = foregroundColor;
             formattableTitleBar.ForegroundColor = foregroundColor;
+            formattableTitleBar.ButtonHoverForegroundColor = foregroundColor;
+            formattableTitleBar.ButtonInactiveForegroundColor = foregroundColor;
+            formattableTitleBar.ButtonForegroundColor = foregroundColor;
+
             if (bShowTitleBar == false)
             {
                 formattableTitleBar.BackgroundColor = Windows.UI.Colors.Transparent;
                 formattableTitleBar.ButtonBackgroundColor = Windows.UI.Colors.Transparent;
                 formattableTitleBar.ButtonHoverBackgroundColor = Windows.UI.Colors.Transparent;
                 formattableTitleBar.ButtonInactiveBackgroundColor = Windows.UI.Colors.Transparent;
-                AppLogo.Opacity = 0.5;
-                MainTitleBar.Opacity = 0.5;
+               // AppLogo.Opacity = 0.5;
+               // MainTitleBar.Opacity = 0.5;
             }
             else
             {
@@ -326,8 +331,8 @@ namespace AudioVideoPlayer
                 formattableTitleBar.ButtonBackgroundColor = backgroundColor;
                 formattableTitleBar.ButtonHoverBackgroundColor = backgroundColor;
                 formattableTitleBar.ButtonInactiveBackgroundColor = backgroundColor;
-                AppLogo.Opacity = 1;
-                MainTitleBar.Opacity = 1;
+              //  AppLogo.Opacity = 1;
+              //  MainTitleBar.Opacity = 1;
             }
 
             if (darkTheme == true)
