@@ -131,6 +131,30 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
+        public int MaxBitrate
+        {
+            get
+            {
+                return StaticSettingsViewModel.MaxBitrate;
+            }
+            set
+            {
+                StaticSettingsViewModel.MaxBitrate = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public int MinBitrate
+        {
+            get
+            {
+                return StaticSettingsViewModel.MinBitrate;
+            }
+            set
+            {
+                StaticSettingsViewModel.MinBitrate = value;
+                NotifyPropertyChanged();
+            }
+        }
         // Remote Settings
         public ObservableCollection<Models.Device> DeviceList
         {
@@ -180,6 +204,67 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
+        // PlayList settings
+        public ObservableCollection<Models.PlayList> PlayListList
+        {
+            get
+            {
+                return StaticSettingsViewModel.PlayListList;
+            }
+            set
+            {
+                StaticSettingsViewModel.PlayListList = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public string CurrentPlayListPath
+        {
+            get
+            {
+                return StaticSettingsViewModel.CurrentPlayListPath;
+            }
+            set
+            {
+                StaticSettingsViewModel.CurrentPlayListPath = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public int CurrentPlayListIndex
+        {
+            get
+            {
+                return StaticSettingsViewModel.CurrentPlayListIndex;
+            }
+            set
+            {
+                StaticSettingsViewModel.CurrentPlayListIndex = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public string CurrentMediaPath
+        {
+            get
+            {
+                return StaticSettingsViewModel.CurrentMediaPath;
+            }
+            set
+            {
+                StaticSettingsViewModel.CurrentMediaPath = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public int CurrentMediaIndex
+        {
+            get
+            {
+                return StaticSettingsViewModel.CurrentMediaIndex;
+            }
+            set
+            {
+                StaticSettingsViewModel.CurrentMediaIndex = value;
+                NotifyPropertyChanged();
+            }
+        }
     }
 
     public static class StaticSettingsViewModel
@@ -196,6 +281,9 @@ namespace AudioVideoPlayer.ViewModels
         private static bool autoStart;
         private static bool loop;
         private static PlayerWindowState windowState;
+        private static int maxBitrate;
+        private static int minBitrate;
+
 
         public static bool AutoStart
         {
@@ -252,6 +340,40 @@ namespace AudioVideoPlayer.ViewModels
                 int intValue = (int) value;
                 Helpers.SettingsHelper.SaveSettingsValue(nameof(WindowState), intValue.ToString());
                 windowState = value;
+            }
+        }
+        public static int MaxBitrate
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(MaxBitrate));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    maxBitrate = 0;
+                else
+                    maxBitrate = int.Parse(auto);
+                return maxBitrate;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(MaxBitrate), value.ToString());
+                maxBitrate = value;
+            }
+        }
+        public static int MinBitrate
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(MinBitrate));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    minBitrate = 0;
+                else
+                    minBitrate = int.Parse(auto);
+                return minBitrate;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(MinBitrate), value.ToString());
+                minBitrate = value;
             }
         }
 
@@ -497,6 +619,103 @@ namespace AudioVideoPlayer.ViewModels
             {
                 Helpers.SettingsHelper.SaveSettingsValue(nameof(DarkTheme), value.ToString());
                 darkTheme = value;
+            }
+        }
+
+
+        // Playlist Settings
+        private static ObservableCollection<Models.PlayList> playListList;
+        private static string currentPlayListPath;
+        private static int currentPlayListIndex;
+        private static string currentMediaPath;
+        private static int currentMediaIndex;
+
+        public static ObservableCollection<Models.PlayList> PlayListList
+        {
+            get
+            {
+                var auto = Helpers.SettingsHelper.ReadSettingsValue(nameof(PlayListList));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                {
+                    playListList = new ObservableCollection<Models.PlayList>();
+                    playListList.Add(new Models.PlayList("ms-appx:///DataModel/MediaData.json","Default Playlist"));
+                }
+                else
+                    playListList = (ObservableCollection<Models.PlayList>)auto;
+                return playListList;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(PlayListList), value);
+                playListList = value;
+            }
+        }
+        public static string CurrentPlayListPath
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(CurrentPlayListPath));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    currentPlayListPath = "ms-appx:///DataModel/MediaData.json";
+                else
+                    currentPlayListPath = auto;
+                return currentPlayListPath;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(CurrentPlayListPath), value.ToString());
+                currentPlayListPath = value;
+            }
+        }
+        public static int CurrentPlayListIndex
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(CurrentPlayListIndex));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    currentPlayListIndex = 0;
+                else
+                    currentPlayListIndex = int.Parse(auto);
+                return currentPlayListIndex;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(CurrentPlayListIndex), value.ToString());
+                currentPlayListIndex = value;
+            }
+        }
+        public static string CurrentMediaPath
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(CurrentMediaPath));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    currentMediaPath = string.Empty;
+                else
+                    currentMediaPath = auto;
+                return currentMediaPath;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(CurrentMediaPath), value.ToString());
+                currentMediaPath = value;
+            }
+        }
+        public static int CurrentMediaIndex
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(CurrentMediaIndex));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    currentMediaIndex = 0;
+                else
+                    currentMediaIndex = int.Parse(auto);
+                return currentMediaIndex;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(CurrentMediaIndex), value.ToString());
+                currentMediaIndex = value;
             }
         }
     }

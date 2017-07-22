@@ -135,6 +135,7 @@
     </Compile>
     <Compile Include="Helpers\SettingsHelper.cs" />
     <Compile Include="Information\SystemInformation.cs" />
+    <Compile Include="Models\PlayList.cs" />
     <Compile Include="Models\Device.cs" />
     <Compile Include="Models\MenuItem.cs" />
     <Compile Include="Pages\About\AboutPage.xaml.cs">

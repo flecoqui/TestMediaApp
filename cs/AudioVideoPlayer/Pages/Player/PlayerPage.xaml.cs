@@ -54,9 +54,6 @@ namespace AudioVideoPlayer.Pages.Player
         }
         // Timer used to automatically skip to the next stream
         private DispatcherTimer timer ;
-        // AutoSkip
-        // When the media ended, skip automatically to the next stream in the list 
-        private bool bAutoSkip = false;
         // Popup used to display picture in fullscreen mode
         private Popup picturePopup = null;
         enum WindowMediaState
@@ -98,18 +95,10 @@ namespace AudioVideoPlayer.Pages.Player
         // Time when the application is starting to play a picture 
         private DateTime StartPictureTime;
 
-        // Default values for MinBitRate and MaxBitRate
-        private uint MinBitRate = 0;
-        private uint MaxBitRate = 0;
-
         // Constant Keys used to store parameter in the isolate storage
-        private const string keyAutoSkip = "bAutoSkip";
-        private const string keyMinBitRate = "MinBitRate";
-        private const string keyMaxBitRate = "MaxBitRate";
-        private const string keyMediaDataPath = "MediaDataPath";
-        private const string keyMediaDataIndex = "MediaDataIndex";
-        private const string keyMediaUri = "MediaUri";
-       // private const string keyWindowState = "WindowState";
+      //  private const string keyMediaDataPath = "MediaDataPath";
+      //  private const string keyMediaDataIndex = "MediaDataIndex";
+      //  private const string keyMediaUri = "MediaUri";
 
         #endregion
 
@@ -237,7 +226,7 @@ namespace AudioVideoPlayer.Pages.Player
 
 
             // Start to play the first asset
-            if (bAutoSkip)
+            if (ViewModels.StaticSettingsViewModel.AutoStart)
             {
                 // If the path has been set before
                 // the application will use this path 
@@ -349,8 +338,6 @@ namespace AudioVideoPlayer.Pages.Player
 
 
             // Initialize minBitrate and maxBitrate TextBox
-            minBitrate.Text = MinBitRate.ToString();
-            maxBitrate.Text = MaxBitRate.ToString();
             maxBitrate.TextChanged += BitrateTextChanged;
             minBitrate.TextChanged += BitrateTextChanged;
 
@@ -686,7 +673,7 @@ namespace AudioVideoPlayer.Pages.Player
                     LogMessage("Media ended");
                     ReleaseDisplay();
                     UpdateControls();
-                    if (bAutoSkip)
+                    if (ViewModels.StaticSettingsViewModel.AutoStart)
                     {
                         LogMessage("Skipping to next Media on media end...");
                         Plus_Click(null, null);
@@ -826,7 +813,7 @@ namespace AudioVideoPlayer.Pages.Player
                     TimeSpan t = mediaPlayer.PlaybackSession.Position - CurrentStartPosition;
                     if (t > CurrentDuration)
                     {
-                        if (bAutoSkip)
+                        if (ViewModels.StaticSettingsViewModel.AutoStart)
                         {
                             LogMessage("Skipping to next Media on timer tick...");
                             Plus_Click(null, null);
@@ -838,7 +825,7 @@ namespace AudioVideoPlayer.Pages.Player
                     TimeSpan t = DateTime.Now - StartPictureTime;
                     if (t > CurrentDuration)
                     {
-                        if (bAutoSkip)
+                        if (ViewModels.StaticSettingsViewModel.AutoStart)
                         {
                             LogMessage("Skipping to next Media on timer tick...");
                             Plus_Click(null, null);
@@ -981,12 +968,8 @@ namespace AudioVideoPlayer.Pages.Player
         {
             LogMessage("EnteredBackground in XAML Page");
             var deferal = e.GetDeferral();
-            // Register for orientation change
-//            displayInformation.OrientationChanged -= displayInformation_OrientationChanged;
             SaveSettings();
-            //BookNetworkForBackground();
-            //CreateFakeMediaSourceToBookNetworkForBackground();
-//            SaveState();
+
             deferal.Complete();
         }
         #endregion
@@ -1113,9 +1096,9 @@ namespace AudioVideoPlayer.Pages.Player
                 if (!uint.TryParse(tb.Text, out n))
                 {
                     if (tb == minBitrate)
-                        tb.Text = MinBitRate.ToString();
+                        tb.Text = ViewModels.StaticSettingsViewModel.MinBitrate.ToString();
                     if (tb == maxBitrate)
-                        tb.Text = MaxBitRate.ToString();
+                        tb.Text = ViewModels.StaticSettingsViewModel.MaxBitrate.ToString();
                 }
                 else
                 {
@@ -1123,16 +1106,16 @@ namespace AudioVideoPlayer.Pages.Player
                     if (tb == minBitrate)
                     {
                         if (CheckBitrates(tb.Text, maxBitrate.Text))
-                            MinBitRate = n;
+                            ViewModels.StaticSettingsViewModel.MinBitrate = (int)n;
                         else
-                            tb.Text = MinBitRate.ToString();
+                            tb.Text = ViewModels.StaticSettingsViewModel.MinBitrate.ToString();
                     }
                     if (tb == maxBitrate)
                     {
                         if (CheckBitrates(minBitrate.Text, tb.Text))
-                            MaxBitRate = n;
+                            ViewModels.StaticSettingsViewModel.MaxBitrate = (int)n;
                         else
-                            tb.Text = MaxBitRate.ToString();
+                            tb.Text = ViewModels.StaticSettingsViewModel.MaxBitrate.ToString();
                     }
                 }
             }
@@ -1360,7 +1343,7 @@ namespace AudioVideoPlayer.Pages.Player
                 if (await LoadingData(file.Path) == false)
                     await LoadingData(string.Empty);
                 //Update control and play first video
-                if (bAutoSkip)
+                if (ViewModels.StaticSettingsViewModel.AutoStart)
                     PlayCurrentUrl();
                 UpdateControls();
             }
@@ -1375,18 +1358,31 @@ namespace AudioVideoPlayer.Pages.Player
             try
             {
                 int Index = comboStream.SelectedIndex;
-                Index = (Index+1>=comboStream.Items.Count? 0: ++Index);
-                comboStream.SelectedIndex = Index;
-                MediaItem ms = comboStream.SelectedItem as MediaItem;
-                if(ms!=null)
+                if ((Index + 1) >= comboStream.Items.Count)
                 {
-                    mediaUri.Text = ms.Content;
-                    PlayReadyLicenseUrl = ms.PlayReadyUrl;
-                    httpHeadersString = ms.HttpHeaders;
-                    httpHeaders = GetHttpHeaders(httpHeadersString);
-                    PlayReadyChallengeCustomData = ms.PlayReadyCustomData;
+                    if (ViewModels.StaticSettingsViewModel.Loop == true)
+                        Index = 0;
+                    else
+                        Index = -1;
                 }
-                PlayCurrentUrl();
+                else
+                    ++Index;
+                if (Index >= 0)
+                {
+                    comboStream.SelectedIndex = Index;
+                    MediaItem ms = comboStream.SelectedItem as MediaItem;
+                    if (ms != null)
+                    {
+                        mediaUri.Text = ms.Content;
+                        PlayReadyLicenseUrl = ms.PlayReadyUrl;
+                        httpHeadersString = ms.HttpHeaders;
+                        httpHeaders = GetHttpHeaders(httpHeadersString);
+                        PlayReadyChallengeCustomData = ms.PlayReadyCustomData;
+                    }
+                    PlayCurrentUrl();
+                }
+                else
+                    LogMessage("End of playlist loop");
 
             }
             catch (Exception ex)
@@ -1402,18 +1398,32 @@ namespace AudioVideoPlayer.Pages.Player
             try
             {
                 int Index = comboStream.SelectedIndex;
-                Index = (Index - 1 >= 0 ? --Index : comboStream.Items.Count-1);
-                comboStream.SelectedIndex = Index;
-                MediaItem ms = comboStream.SelectedItem as MediaItem;
-                if(ms!=null)
+
+                if (Index - 1 >= 0)
+                    --Index;
+                else
                 {
-                    mediaUri.Text = ms.Content;
-                    PlayReadyLicenseUrl = ms.PlayReadyUrl;
-                    httpHeadersString = ms.HttpHeaders;
-                    httpHeaders = GetHttpHeaders(httpHeadersString);
-                    PlayReadyChallengeCustomData = ms.PlayReadyCustomData;
+                    if (ViewModels.StaticSettingsViewModel.Loop == true)
+                        Index = comboStream.Items.Count - 1;
+                    else
+                        Index = -1; 
                 }
-                PlayCurrentUrl();
+                if (Index >= 0)
+                {
+                    comboStream.SelectedIndex = Index;
+                    MediaItem ms = comboStream.SelectedItem as MediaItem;
+                    if(ms!=null)
+                    {
+                        mediaUri.Text = ms.Content;
+                        PlayReadyLicenseUrl = ms.PlayReadyUrl;
+                        httpHeadersString = ms.HttpHeaders;
+                        httpHeaders = GetHttpHeaders(httpHeadersString);
+                        PlayReadyChallengeCustomData = ms.PlayReadyCustomData;
+                    }
+                    PlayCurrentUrl();
+                }
+                else
+                    LogMessage("End of playlist loop");
             }
             catch (Exception ex)
             {
@@ -2090,7 +2100,7 @@ namespace AudioVideoPlayer.Pages.Player
         private async System.Threading.Tasks.Task<bool> UpdateControlsDisplayUpdater(string title, string content, string poster)
         {
             LogMessage("Updating SystemControls");
-            if ((comboStream.Items.Count > 1)&&(bAutoSkip))
+            if ((comboStream.Items.Count > 1)&&(ViewModels.StaticSettingsViewModel.AutoStart))
             {
                 SystemControls.IsPreviousEnabled = true;
                 SystemControls.IsNextEnabled = true;             
@@ -2746,6 +2756,8 @@ namespace AudioVideoPlayer.Pages.Player
 
                             LogMessage("Available bitrates: ");
                             uint startupBitrate = 0;
+                            uint MaxBitRate = (uint)ViewModels.StaticSettingsViewModel.MaxBitrate;
+                            uint MinBitRate = (uint)ViewModels.StaticSettingsViewModel.MinBitrate;
                             foreach (var b in adaptiveMediaSource.AvailableBitrates)
                             {
                                 LogMessage("bitrate: " + b.ToString() + " b/s ");
@@ -2789,6 +2801,9 @@ namespace AudioVideoPlayer.Pages.Player
             // VC1 Codec flag: true if VC1 codec is used for this Smooth Streaming content
             bool bVC1CodecDetected = false;            
             LogMessage("Manifest Ready for uri: " + sender.Uri.ToString());
+            uint MaxBitRate = (uint) ViewModels.StaticSettingsViewModel.MaxBitrate;
+            uint MinBitRate = (uint) ViewModels.StaticSettingsViewModel.MinBitrate;
+
             foreach (var stream in args.AdaptiveSource.Manifest.SelectedStreams)
             {
 
@@ -3329,32 +3344,18 @@ namespace AudioVideoPlayer.Pages.Player
         /// </summary>
         public async System.Threading.Tasks.Task<bool> ReadSettings()
         {
-            string s = ReadSettingsValue(keyAutoSkip) as string;
-            if (!string.IsNullOrEmpty(s))
-                bool.TryParse(s, out bAutoSkip);
 
-            s = ReadSettingsValue(keyMinBitRate) as string;
-            if (!string.IsNullOrEmpty(s))
-                uint.TryParse(s, out MinBitRate);
-
-            s = ReadSettingsValue(keyMaxBitRate) as string;
-            if (!string.IsNullOrEmpty(s))
-                uint.TryParse(s, out MaxBitRate);
 
             // Restore PlayList path and index in the local settings
-            s = ReadSettingsValue(keyMediaDataPath) as string;
+            string s = ViewModels.StaticSettingsViewModel.CurrentPlayListPath;
             if (!string.IsNullOrEmpty(s))
             {
                 LogMessage("PlayerPage Loading Data for path: " + s);
                 if (await LoadingData(s) == true)
                 {
-                    s = ReadSettingsValue(keyMediaDataIndex) as string;
-                    if (!string.IsNullOrEmpty(s))
-                    {
-                        int index;
+                        int index = ViewModels.StaticSettingsViewModel.CurrentMediaIndex;
                         if (int.TryParse(s, out index))
                         {
-
                             comboStream.SelectedIndex = index;
                             MediaItem ms = comboStream.SelectedItem as MediaItem;
                             if (ms != null)
@@ -3367,9 +3368,8 @@ namespace AudioVideoPlayer.Pages.Player
                                 PlayReadyChallengeCustomData = ms.PlayReadyCustomData;
                             }
 
-                        }
                     }
-                    s = ReadSettingsValue(keyMediaUri) as string;
+                    s = ViewModels.StaticSettingsViewModel.CurrentMediaPath;
                     if (!string.IsNullOrEmpty(s))
                     {
                         mediaUri.Text = s;
@@ -3400,9 +3400,9 @@ namespace AudioVideoPlayer.Pages.Player
                 {
                     if(state==0)
                         WindowState = WindowMediaState.WindowMode;
-                    else if ((state == 1)&&(bAutoSkip==true))
+                    else if ((state == 1)&&(ViewModels.StaticSettingsViewModel.AutoStart == true))
                         WindowState = WindowMediaState.FullWindow;
-                    else if ((state == 2) && (bAutoSkip == true))
+                    else if ((state == 2) && (ViewModels.StaticSettingsViewModel.AutoStart == true))
                         WindowState = WindowMediaState.FullScreen;
                     else
                         WindowState = WindowMediaState.WindowMode;
@@ -3417,18 +3417,10 @@ namespace AudioVideoPlayer.Pages.Player
         /// </summary>
         public bool SaveSettings()
         {
-            SaveSettingsValue(keyAutoSkip, bAutoSkip.ToString());
-            SaveSettingsValue(keyMinBitRate, MinBitRate.ToString());
-            SaveSettingsValue(keyMaxBitRate, MaxBitRate.ToString());
-
             // Save PlayList path and index in the local settings
-            SaveSettingsValue(keyMediaDataPath, MediaDataSource.MediaDataPath);
-            SaveSettingsValue(keyMediaDataIndex, comboStream.SelectedIndex.ToString());
-            SaveSettingsValue(keyMediaUri, mediaUri.Text);
-
-            // Save WindowState
-            //int state = (int)WindowState;
-            //SaveSettingsValue(keyWindowState, state.ToString());
+            ViewModels.StaticSettingsViewModel.CurrentPlayListPath = MediaDataSource.MediaDataPath;
+            ViewModels.StaticSettingsViewModel.CurrentMediaIndex = comboStream.SelectedIndex;
+            ViewModels.StaticSettingsViewModel.CurrentMediaPath = mediaUri.Text;
             return true;
         }
         /// <summary>
@@ -3622,7 +3614,7 @@ namespace AudioVideoPlayer.Pages.Player
                                 await LoadingData(Path);
                                 MediaItem ms = comboStream.SelectedItem as MediaItem;
                                 mediaUri.Text = ms.Content;
-                                if (bAutoSkip)
+                                if (ViewModels.StaticSettingsViewModel.AutoStart)
                                     PlayCurrentUrl();
                                 UpdateControls();
                             }
