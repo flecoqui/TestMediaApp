@@ -38,6 +38,7 @@ using System.Text.RegularExpressions;
 namespace AudioVideoPlayer.Pages.Playlist
 {
 
+
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
@@ -51,12 +52,47 @@ namespace AudioVideoPlayer.Pages.Playlist
         {
             this.InitializeComponent();
         }
+        private void comboPlayList_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            RemoveButton.IsEnabled = false;
+            ImportButton.IsEnabled = false;
+            if (comboPlayList.Items.Count > 0)
+            {
+                ViewModels.ViewModel vm = this.DataContext as ViewModels.ViewModel;
+                if (vm != null)
+                {
+                    string PlaylistPath = vm.Settings.CurrentPlayListPath;
+                    int index = 0;
+                    foreach (var item in comboPlayList.Items)
+                    {
+                        if (item is Models.PlayList)
+                        {
+                            Models.PlayList p = item as Models.PlayList;
+                            if (p != null)
+                            {
+                                if (string.Equals(p.Path, PlaylistPath))
+                                {
+                                    comboPlayList.SelectedIndex = index;
+                                    break;
+                                }
+                                if (string.Equals(p.ImportedPath, PlaylistPath))
+                                {
+                                    comboPlayList.SelectedIndex = index;
+                                    break;
+                                }
+                            }
+                        }
+                        index++;
+                    }
+                }
+            }
+        }
         /// <summary>
         /// Invoked when this page is about to be displayed in a Frame.
         /// </summary>
         /// <param name="e">Event data that describes how this page was reached.
         /// This parameter is typically used to configure the page.</param>
-        protected  override void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             // TODO: If your application contains multiple pages, ensure that you are
             // handling the hardware Back button by registering for the
@@ -83,6 +119,20 @@ namespace AudioVideoPlayer.Pages.Playlist
             }*/
         }
 
+        bool IsThePlaylistNameUsed(string name)
+        {
+            ViewModels.ViewModel vm = this.DataContext as ViewModels.ViewModel;
+            if (vm != null)
+            {
+                foreach (var p in vm.Settings.PlayListList)
+                {
+                    if (string.Equals(p.Name, name))
+                        return true;
+                }
+            }
+            return false;
+        }
+
         private async void AddPlaylist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             var filePicker = new Windows.Storage.Pickers.FileOpenPicker();
@@ -96,35 +146,54 @@ namespace AudioVideoPlayer.Pages.Playlist
             if (file != null)
             {
                 string fileToken = Windows.Storage.AccessCache.StorageApplicationPermissions.FutureAccessList.Add(file);
-
-
                 try
                 {
                     Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Wait, 1);
-
-                    MediaDataSource.Clear();
-                    MediaDataGroup audio_video = await MediaDataSource.GetGroupAsync(file.Path, "audio_video_picture");
-                    if ((audio_video != null) && (audio_video.Items.Count > 0))
+                    if(!IsThePlaylistNameUsed(file.Name))
                     {
-                        Models.PlayList playlist = new Models.PlayList(file.Path, audio_video.Title);
-                        if(playlist!=null)
+                        Models.PlayList playlist = await Models.PlayList.GetNewPlaylist(file.Path);
+                        if (playlist != null)
                         {
-                            playlist.Count = audio_video.Items.Count;
-                            playlist.Index = 0;
-                            playlist.bAnalyzed = false;
-                            playlist.bImported = false;
-                            playlist.bLocalItem = false;
-                            playlist.bRemoteItem = false;
-                            playlist.bRemovalDeviceItem = false;
-                            playlist.ImportedPath = string.Empty;
-                            ObservableCollection<Models.PlayList> PlayListList = ViewModels.StaticSettingsViewModel.PlayListList;
-                            PlayListList.Add(playlist);
-                            ViewModels.StaticSettingsViewModel.PlayListList = PlayListList;
+                            ViewModels.ViewModel vm = this.DataContext as ViewModels.ViewModel;
+                            if (vm != null)
+                            {
+                                ObservableCollection<Models.PlayList> PlayListList = vm.Settings.PlayListList;
+                                PlayListList.Add(playlist);
+                                vm.Settings.PlayListList = PlayListList;
+                                if (comboPlayList.Items.Count > 0)
+                                {
+
+                                    RemoveButton.IsEnabled = true;
+                                    int index = 0;
+                                    foreach (var item in comboPlayList.Items)
+                                    {
+                                        if(item is Models.PlayList)
+                                        {
+                                            Models.PlayList p = item as Models.PlayList;
+                                            if(p!=null)
+                                            {
+                                                if(string.Equals(p.Name,playlist.Name))
+                                                {
+                                                    comboPlayList.SelectedIndex = index;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        index++;
+                                    }
+                                }
+                                else
+                                {
+                                    ImportButton.IsEnabled = false;
+                                    RemoveButton.IsEnabled = false;
+                                }
+                            }
                         }
                     }
                 }
                 catch (Exception ex)
                 {
+                    System.Diagnostics.Debug.WriteLine("Exception: " + ex.Message);
                 }
                 finally
                 {
@@ -135,6 +204,55 @@ namespace AudioVideoPlayer.Pages.Playlist
         private void ImportPlaylist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
 
+        }
+        private void RemovePlaylist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            if (comboPlayList.SelectedItem is Models.PlayList)
+            {
+                ObservableCollection<Models.PlayList> p =  ViewModelLocator.Settings.PlayListList;
+                if ((p != null)&&(comboPlayList.SelectedIndex<p.Count))
+                    p.RemoveAt(comboPlayList.SelectedIndex);
+                ViewModelLocator.Settings.PlayListList = p;
+                if (comboPlayList.Items.Count > 0)
+                {
+
+                    RemoveButton.IsEnabled = true;
+                    comboPlayList.SelectedIndex = 0;
+                }
+                else
+                {
+                    ImportButton.IsEnabled = false;
+                    RemoveButton.IsEnabled = false;
+                }
+
+            }            
+        }
+
+        private void comboPlayList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if(comboPlayList.SelectedItem is Models.PlayList)
+            {
+                Models.PlayList p = (Models.PlayList)comboPlayList.SelectedItem;
+                if(p!=null)
+                {
+                    if(!string.IsNullOrEmpty(p.ImportedPath))
+                    {
+                        ViewModelLocator.Settings.CurrentPlayListPath = p.ImportedPath;
+                        ViewModelLocator.Settings.CurrentPlayListIndex = comboPlayList.SelectedIndex;
+                        ViewModelLocator.Settings.CurrentMediaPath = string.Empty;
+                        ViewModelLocator.Settings.CurrentMediaIndex = 0;
+                    }
+                    else if (!string.IsNullOrEmpty(p.Path))
+                    {
+                        ViewModelLocator.Settings.CurrentPlayListPath = p.Path;
+                        ViewModelLocator.Settings.CurrentPlayListIndex = comboPlayList.SelectedIndex;
+                        ViewModelLocator.Settings.CurrentMediaPath = string.Empty;
+                        ViewModelLocator.Settings.CurrentMediaIndex = 0;
+                    }
+                    ImportButton.IsEnabled = (p.bImported == false ? true : false);
+                    RemoveButton.IsEnabled = true;
+                }
+            }
         }
     }
 

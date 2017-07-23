@@ -2,7 +2,7 @@
   "Groups": [
     {
       "UniqueId": "audio_video_picture",
-      "Title": "Universal Media Player Tests",
+      "Title": "Default playlist",
       "Category": "Windows 10 Universal Media Player Tests",
       "ImagePath": "ms-appx:///Assets/AudioVideo.png",
       "Description": "Windows 10 Universal Media Player Tests",

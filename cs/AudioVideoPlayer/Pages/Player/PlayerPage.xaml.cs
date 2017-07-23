@@ -3353,27 +3353,25 @@ namespace AudioVideoPlayer.Pages.Player
                 LogMessage("PlayerPage Loading Data for path: " + s);
                 if (await LoadingData(s) == true)
                 {
-                        int index = ViewModels.StaticSettingsViewModel.CurrentMediaIndex;
-                        if (int.TryParse(s, out index))
-                        {
-                            comboStream.SelectedIndex = index;
-                            MediaItem ms = comboStream.SelectedItem as MediaItem;
-                            if (ms != null)
-                            {
-                                mediaUri.Text = ms.Content;
-                                PlayReadyLicenseUrl = ms.PlayReadyUrl;
-                                httpHeadersString = ms.HttpHeaders;
-                                httpHeaders = GetHttpHeaders(httpHeadersString);
+                    int index = ViewModels.StaticSettingsViewModel.CurrentMediaIndex;
+                    comboStream.SelectedIndex = index;
+                    MediaItem ms = comboStream.SelectedItem as MediaItem;
+                    if (ms != null)
+                    {
+                        mediaUri.Text = ms.Content;
+                        PlayReadyLicenseUrl = ms.PlayReadyUrl;
+                        httpHeadersString = ms.HttpHeaders;
+                        httpHeaders = GetHttpHeaders(httpHeadersString);
 
-                                PlayReadyChallengeCustomData = ms.PlayReadyCustomData;
-                            }
-
+                        PlayReadyChallengeCustomData = ms.PlayReadyCustomData;
                     }
                     s = ViewModels.StaticSettingsViewModel.CurrentMediaPath;
                     if (!string.IsNullOrEmpty(s))
                     {
                         mediaUri.Text = s;
                     }
+                    
+                        
                 }
                 else
                 {
