@@ -57,8 +57,8 @@ namespace AudioVideoPlayer
                 splash.Dismissed += new TypedEventHandler<SplashScreen, Object>(DismissedEventHandler);
 
                 // Retrieve the window coordinates of the splash screen image.
-                splashImageRect = splash.ImageLocation;
-                PositionImage();
+                //splashImageRect = splash.ImageLocation;
+                //PositionImage();
             }
 
             // Create a Frame to act as the navigation context
@@ -99,7 +99,7 @@ namespace AudioVideoPlayer
         private async void ExtendedSplash_Loaded(object sender, RoutedEventArgs e)
         {
 
-            await Task.Delay(TimeSpan.FromSeconds(10));
+            await Task.Delay(TimeSpan.FromSeconds(5));
             // Navigate to mainpage
             rootFrame.Navigate(typeof(Shell));
             // Place the frame in the current Window
@@ -121,8 +121,8 @@ namespace AudioVideoPlayer
             extendedSplashImage.SetValue(Canvas.TopProperty, splashImageRect.Top);
             if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.Phone.UI.Input.HardwareButtons"))
             {
-                extendedSplashImage.Height = splashImageRect.Height / ScaleFactor;
-                extendedSplashImage.Width = splashImageRect.Width / ScaleFactor;
+                extendedSplashImage.Height = splashImageRect.Height / (ScaleFactor*2);
+                extendedSplashImage.Width = splashImageRect.Width / (ScaleFactor*2);
             }
             else
             {
@@ -137,8 +137,8 @@ namespace AudioVideoPlayer
             if (splash != null)
             {
                 // Update the coordinates of the splash screen image.
-                splashImageRect = splash.ImageLocation;
-                PositionImage();
+               // splashImageRect = splash.ImageLocation;
+               // PositionImage();
             }
         }
 

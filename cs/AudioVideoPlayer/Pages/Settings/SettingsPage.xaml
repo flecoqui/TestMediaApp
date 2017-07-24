@@ -37,6 +37,9 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="310"/>
@@ -96,6 +99,23 @@
             <RadioButton GroupName="WindowMode" Content="Window" MinWidth="86" x:Name="WindowModeWindow" IsChecked="{Binding Settings.WindowState,Mode=TwoWay,Converter={StaticResource WindowModeToBoolConverter },ConverterParameter=0}" />
             <RadioButton GroupName="WindowMode" Content="FullWindow" x:Name="WindowModeFull" MinWidth="110" IsChecked="{Binding Settings.WindowState,Mode=TwoWay,Converter={StaticResource WindowModeToBoolConverter },ConverterParameter=1}"/>
             <RadioButton GroupName="WindowMode" Content="FullScreen" x:Name="WindowModeFullscreen" MinWidth="100" IsChecked="{Binding Settings.WindowState,Mode=TwoWay,Converter={StaticResource WindowModeToBoolConverter },ConverterParameter=2}" />
+        </StackPanel>
+        <StackPanel Grid.Row="6" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2"  >
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" >
+                <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Margin="0,0,0,0"  Text="Companion Settings: "/>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  Grid.Row="7" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
+            <CheckBox VerticalAlignment="Center" x:Name="Multicast" Margin="5,0,5,0" IsChecked="{Binding Settings.Multicast,Mode=TwoWay}" ToolTipService.ToolTip="Configure companion reception multicast or unicast"   FlowDirection="RightToLeft"  Content="Multicast:" MinWidth="55"  Foreground="{ThemeResource ButtonForegroundThemeBrush}"  />
+            <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="IP address: "/>
+            <TextBlock x:Name="IPAddress" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  Grid.Row="8" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
+            <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Address: "/>
+            <TextBox x:Name="MAddress" Margin="5,0,0,0" MinWidth="100" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="{Binding Settings.MulticastIPAddress,Mode=TwoWay}" />
+            <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="UDP Port: "/>
+            <TextBox x:Name="UDPPort" Margin="5,0,0,0" MinWidth="50" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="{Binding Settings.UDPPort,Mode=TwoWay}" />
+            
         </StackPanel>
 
     </Grid>

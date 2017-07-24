@@ -33,6 +33,7 @@ using Windows.Security.Cryptography.Core;
 using Windows.Security.Cryptography;
 using Windows.Storage.Streams;
 using System.Text.RegularExpressions;
+using Windows.Networking.Connectivity;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -57,6 +58,9 @@ namespace AudioVideoPlayer.Pages.Settings
                 // Show fullWindow button
                 WindowModeFull.Visibility = Visibility.Collapsed;
             }
+            string s = CompanionClient.GetNetworkAdapterIPAddress();
+            if (!string.IsNullOrEmpty(s))
+                IPAddress.Text = s; 
         }
         /// <summary>
         /// Invoked when this page is about to be displayed in a Frame.
@@ -82,6 +86,7 @@ namespace AudioVideoPlayer.Pages.Settings
             // Refresh the pages with the new Color                         
             AudioVideoPlayer.Shell.Current.UpdateTitleBarAndColor(true);
         }
+
 
     }
 

@@ -169,7 +169,7 @@ namespace AudioVideoPlayer.Pages.Remote
         private async void open_remote_Click(object sender, RoutedEventArgs e)
         {
             LogMessage("Open Media event to " + GetIPAddress() + " parameter: " + contentUri.Text);
-            string commandString = CompanionClient.parameterContent + CompanionClient.cEQUAL + playlistUri.Text;
+            string commandString = CompanionClient.parameterContent + CompanionClient.cEQUAL + contentUri.Text;
             Dictionary<string, string> p = companion.GetParametersFromString(commandString);
             bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandOpen, p);
             UpdateControls();
@@ -187,7 +187,7 @@ namespace AudioVideoPlayer.Pages.Remote
 
             LogMessage("Select event to " + GetIPAddress() + " parameter: " + contentNumber.Text);
             string commandString = CompanionClient.parameterIndex + CompanionClient.cEQUAL + contentNumber.Text;
-            Dictionary<string, string> p = companion.GetParametersFromString(contentNumber.Text);
+            Dictionary<string, string> p = companion.GetParametersFromString(commandString);
             bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandSelect, p);
             UpdateControls();
 
@@ -237,7 +237,7 @@ namespace AudioVideoPlayer.Pages.Remote
 
         private void RegisterCompanion()
         {
-            companion = new CompanionClient();
+            companion = new CompanionClient(ViewModels.StaticSettingsViewModel.Multicast, ViewModels.StaticSettingsViewModel.MulticastIPAddress, ViewModels.StaticSettingsViewModel.UDPPort);
             companion.MessageReceived += Companion_MessageReceived;
 
         }

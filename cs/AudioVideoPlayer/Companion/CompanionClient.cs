@@ -62,12 +62,15 @@ namespace Companion
 
         private DatagramSocket msocketSend;
         private DatagramSocket msocketRecv;
-        public string mAddress { get; set; }
-        public string mPort { get; set; }
-        public string mInterfaceAddress { get; set; }
+        private DatagramSocket usocketRecv;
 
-        public int mLastIDReceived;
-        public int mLastIDSent;
+        private bool multicastReception = true;
+        private string mAddress { get; set; }
+        private string mPort { get; set; }
+        private string mInterfaceAddress { get; set; }
+
+        private int mLastIDReceived;
+        private int mLastIDSent;
         public delegate void CompanionEventHandler<TSender, TCommand, TParameter>(TSender sender, TCommand Command, TParameter Parameter);
         public event CompanionEventHandler<CompanionClient, string, Dictionary<string, string>> MessageReceived;
 
@@ -76,6 +79,7 @@ namespace Companion
         {
             msocketSend = null;
             msocketRecv = null;
+            usocketRecv = null;
             mAddress = cMulticastAddress;
             mPort = cPort;
             recvInitialized = false;
@@ -84,7 +88,30 @@ namespace Companion
             mLastIDReceived = 0;
             mLastIDSent = 0;
         }
-        public async Task<bool> InitializeRecv()
+        public CompanionClient(bool bMulticastReception, string MulticastIPAddress, int UDPPort)
+        {
+            msocketSend = null;
+            msocketRecv = null;
+            usocketRecv = null;
+            multicastReception = bMulticastReception;
+            mAddress = MulticastIPAddress;
+            mPort = UDPPort.ToString();
+            recvInitialized = false;
+            sendInitialized = false;
+            mInterfaceAddress = string.Empty;
+            mLastIDReceived = 0;
+            mLastIDSent = 0;
+        }
+        public Task<bool> InitializeRecv()
+        {
+            if (multicastReception)
+                return InitializeMulticastRecv();
+            else
+                return InitializeUnicastRecv();
+
+        }
+
+        public async Task<bool> InitializeMulticastRecv()
         {
             recvInitialized = false;
             try
@@ -98,19 +125,43 @@ namespace Companion
                 msocketRecv = new DatagramSocket();
                 msocketRecv.Control.MulticastOnly = true;
                 msocketRecv.MessageReceived += UDPMulticastMessageReceived;
-                NetworkAdapter adapter = GetDefaultNetworkAdapter();
-                if (adapter != null)
-                    await msocketRecv.BindServiceNameAsync(mPort);
-  //              await msocketRecv.BindServiceNameAsync(mPort, adapter);
-                else
-                    await msocketRecv.BindServiceNameAsync(mPort);
+                await msocketRecv.BindServiceNameAsync(mPort);
                 HostName mcast = new HostName(mAddress);
                 msocketRecv.JoinMulticastGroup(mcast);
+
                 mLastIDReceived = 0;
                 recvInitialized = true;
 
             }
             catch(Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while listening: " + e.Message);
+                recvInitialized = false;
+            }
+            return recvInitialized;
+        }
+        public async Task<bool> InitializeUnicastRecv()
+        {
+            recvInitialized = false;
+            try
+            {
+
+                if (usocketRecv != null)
+                {
+                    usocketRecv.MessageReceived -= UDPMulticastMessageReceived;
+                    usocketRecv.Dispose();
+                    usocketRecv = null;
+                }
+                usocketRecv = new DatagramSocket();
+                usocketRecv.MessageReceived += UDPMulticastMessageReceived;
+                await usocketRecv.BindServiceNameAsync(mPort);
+
+
+                mLastIDReceived = 0;
+                recvInitialized = true;
+
+            }
+            catch (Exception e)
             {
                 System.Diagnostics.Debug.WriteLine("Exception while listening: " + e.Message);
                 recvInitialized = false;
@@ -148,7 +199,23 @@ namespace Companion
             }
             return adapter;
         }
+        public static string GetNetworkAdapterIPAddress()
+        {
+            var icp = NetworkInformation.GetInternetConnectionProfile();
 
+            if (icp?.NetworkAdapter == null) return null;
+
+            var hostnames = NetworkInformation.GetHostNames();
+
+            foreach (var hn in hostnames)
+            {
+                if ((hn.IPInformation != null) && (hn.IPInformation.NetworkAdapter !=null) && (hn.IPInformation.NetworkAdapter.NetworkAdapterId == icp.NetworkAdapter.NetworkAdapterId))
+                {
+                    return hn.CanonicalName;
+                }
+            }
+            return null;
+        }
         private bool recvInitialized;
         public bool IsReceiving()
         {
@@ -168,6 +235,12 @@ namespace Companion
                     msocketRecv.MessageReceived -= UDPMulticastMessageReceived;
                     msocketRecv.Dispose();
                     msocketRecv = null;
+                }
+                if (usocketRecv != null)
+                {
+                    usocketRecv.MessageReceived -= UDPMulticastMessageReceived;
+                    usocketRecv.Dispose();
+                    usocketRecv = null;
                 }
 
             }

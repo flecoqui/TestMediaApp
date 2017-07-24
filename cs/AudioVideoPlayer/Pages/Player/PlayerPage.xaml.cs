@@ -122,6 +122,7 @@ namespace AudioVideoPlayer.Pages.Player
                 mediaUri.Text = "file://" + path;
                 if (ViewModels.StaticSettingsViewModel.AutoStart == true)
                 {
+                    SetAutoStartWindowState();
                     await StartPlay(mediaUri.Text, mediaUri.Text, null, 0, 0);
                 }
             }
@@ -158,6 +159,20 @@ namespace AudioVideoPlayer.Pages.Player
                 coreTitleBar.ExtendViewIntoTitleBar = true;
             }
             */
+        }
+        void SetAutoStartWindowState()
+        {
+            int state = (int)ViewModels.StaticSettingsViewModel.WindowState;
+            if (state == 0)
+                WindowState = WindowMediaState.WindowMode;
+            else if ((state == 1) && (ViewModels.StaticSettingsViewModel.AutoStart == true))
+                WindowState = WindowMediaState.FullWindow;
+            else if ((state == 2) && (ViewModels.StaticSettingsViewModel.AutoStart == true))
+                WindowState = WindowMediaState.FullScreen;
+            else
+                WindowState = WindowMediaState.WindowMode;
+
+            SetWindowMode(WindowState);
         }
         /// <summary>
         /// Invoked when this page is about to be displayed in a Frame.
@@ -228,6 +243,7 @@ namespace AudioVideoPlayer.Pages.Player
             // Start to play the first asset
             if (ViewModels.StaticSettingsViewModel.AutoStart)
             {
+                SetAutoStartWindowState();
                 // If the path has been set before
                 // the application will use this path 
                 // to play the content
@@ -3393,24 +3409,7 @@ namespace AudioVideoPlayer.Pages.Player
                 }
             }
             // Restore WindowState
-           // s = ReadSettingsValue(keyWindowState) as string;
-            if (!string.IsNullOrEmpty(s))
-            {
-                int state ;
-                if (int.TryParse(s, out state))
-                {
-                    if(state==0)
-                        WindowState = WindowMediaState.WindowMode;
-                    else if ((state == 1)&&(ViewModels.StaticSettingsViewModel.AutoStart == true))
-                        WindowState = WindowMediaState.FullWindow;
-                    else if ((state == 2) && (ViewModels.StaticSettingsViewModel.AutoStart == true))
-                        WindowState = WindowMediaState.FullScreen;
-                    else
-                        WindowState = WindowMediaState.WindowMode;
-
-                    SetWindowMode(WindowState);
-                }
-            }
+            SetAutoStartWindowState();
             return true;
         }
         /// <summary>
@@ -3542,7 +3541,7 @@ namespace AudioVideoPlayer.Pages.Player
 
         private void RegisterCompanion()
         {
-            companion = new CompanionClient();
+            companion = new CompanionClient(ViewModels.StaticSettingsViewModel.Multicast, ViewModels.StaticSettingsViewModel.MulticastIPAddress, ViewModels.StaticSettingsViewModel.UDPPort);
             companion.MessageReceived += Companion_MessageReceived;
 
         }
@@ -3616,7 +3615,10 @@ namespace AudioVideoPlayer.Pages.Player
                                 MediaItem ms = comboStream.SelectedItem as MediaItem;
                                 mediaUri.Text = ms.Content;
                                 if (ViewModels.StaticSettingsViewModel.AutoStart)
+                                {
+                                    SetAutoStartWindowState();
                                     PlayCurrentUrl();
+                                }
                                 UpdateControls();
                             }
                         }
@@ -3700,7 +3702,7 @@ namespace AudioVideoPlayer.Pages.Player
                 case CompanionClient.commandFullWindow:
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                     {
-                        if (IsFullWindow())
+                        if ((IsFullWindow())||(IsFullScreen()))
                             SetWindowMode(WindowMediaState.WindowMode);
                         else
                             Fullwindow_Click(null, null);
@@ -3709,7 +3711,7 @@ namespace AudioVideoPlayer.Pages.Player
                 case CompanionClient.commandFullScreen:
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                     {
-                        if (IsFullScreen())
+                        if ((IsFullWindow()) || (IsFullScreen()))
                             SetWindowMode(WindowMediaState.WindowMode);
                         else
                             Fullscreen_Click(null, null);

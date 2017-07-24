@@ -10,19 +10,31 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      mc:Ignorable="d" 
-      d:DesignWidth="1366" d:DesignHeight="768">
+      mc:Ignorable="d" >
+    <!--
+    d:DesignWidth="1366" d:DesignHeight="768">
+    -->
+    <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="1*"/>
+        <ColumnDefinition Width="2*"/>
+        <ColumnDefinition Width="1*"/>
+    </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
-        <RowDefinition/>
-      <RowDefinition Height="50"/>
-      <RowDefinition Height="50"/>
+        <RowDefinition Height="1*"/>
+      <RowDefinition Height="2*"/>
+        <RowDefinition Height="1*"/>
+        <RowDefinition Height="1*"/>
+        <RowDefinition Height="1*"/>
     </Grid.RowDefinitions>
 
-    <Canvas Grid.Row="0" >
-        <Image x:Name="extendedSplashImage" Source="Assets/TransAudioVideo.png"/>
-    </Canvas>
+   <!-- <Canvas Grid.Row="1" Grid.Column="1" >
+    -->
+        <StackPanel  Grid.Row="1" Grid.Column="1"  VerticalAlignment="Center" HorizontalAlignment="Center" >
+        <Image x:Name="extendedSplashImage" Source="Assets/TransAudioVideo.png" Stretch="UniformToFill"/>
+        </StackPanel>
+  <!--  </Canvas> -->
   <Grid x:Name="waitRing"
-      Visibility="Collapsed" Grid.Row="1" >
+      Visibility="Collapsed" Grid.Row="3" Grid.Column="1" >
     <ProgressRing x:Name="progressRing"
      
                   Width="40"

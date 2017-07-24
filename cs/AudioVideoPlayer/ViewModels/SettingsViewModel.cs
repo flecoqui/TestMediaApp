@@ -269,6 +269,42 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
+        public int UDPPort
+        {
+            get
+            {
+                return StaticSettingsViewModel.UDPPort;
+            }
+            set
+            {
+                StaticSettingsViewModel.UDPPort = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public bool Multicast
+        {
+            get
+            {
+                return StaticSettingsViewModel.Multicast;
+            }
+            set
+            {
+                StaticSettingsViewModel.Multicast = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public string MulticastIPAddress
+        {
+            get
+            {
+                return StaticSettingsViewModel.MulticastIPAddress;
+            }
+            set
+            {
+                StaticSettingsViewModel.MulticastIPAddress = value;
+                NotifyPropertyChanged();
+            }
+        }
     }
 
 

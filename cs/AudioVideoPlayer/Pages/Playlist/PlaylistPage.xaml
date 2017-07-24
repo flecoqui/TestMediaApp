@@ -68,8 +68,11 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock  Grid.Row="0" Grid.Column="0"  Text="Add a playlist:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
-                    <Button Grid.Row="0" Grid.Column="1"  IsEnabled="true" Content="&#xE78B;"  Foreground="{ThemeResource ButtonForegroundThemeBrush}" ToolTipService.ToolTip="Add a plylist in the list from an existing JSON file" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="AddPlaylist_Click" />
+                    <StackPanel Orientation="Horizontal" Grid.Column="0"   >
+                    <TextBlock  Grid.Row="0" Text="Add a playlist:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
+                    <Button Grid.Row="0" IsEnabled="true" Content="&#xE78B;"  Foreground="{ThemeResource ButtonForegroundThemeBrush}" ToolTipService.ToolTip="Add a plylist in the list from an existing JSON file" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="AddPlaylist_Click" />
+                    </StackPanel>
+                    <TextBlock x:Name="ErrorMessage"   Grid.Row="0" Grid.Column="1" Foreground="{ThemeResource ButtonForegroundThemeBrush}" VerticalAlignment="Center" TextWrapping="Wrap"  ></TextBlock>
                     <TextBlock  Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"  Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Select a playlist:" Style="{StaticResource LabelTextBoldBlockStyle}" HorizontalAlignment="Left" />
                     <ComboBox  Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Name="comboPlayList" 
                            

@@ -51,6 +51,7 @@ namespace AudioVideoPlayer.Pages.Playlist
         public PlaylistPage()
         {
             this.InitializeComponent();
+            ClearErrorMessage();
         }
         private void comboPlayList_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
@@ -99,25 +100,10 @@ namespace AudioVideoPlayer.Pages.Playlist
             // Windows.Phone.UI.Input.HardwareButtons.BackPressed event.
             // If you are using the NavigationHelper provided by some templates,
             // this event is handled for you.
+            ClearErrorMessage();
+
         }
-        /// <summary>
-        /// Playlist method which loads another JSON playlist for the application 
-        /// </summary>
-        private void Playlist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
-        {
-            var filePicker = new Windows.Storage.Pickers.FileOpenPicker();
-            filePicker.FileTypeFilter.Add(".json");
-            filePicker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
-            filePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
-            filePicker.SettingsIdentifier = "PlaylistPicker";
-            filePicker.CommitButtonText = "Open JSON Playlist File to Process";
-            /*
-            var file = await filePicker.PickSingleFileAsync();
-            if (file != null)
-            {
-                string fileToken = Windows.Storage.AccessCache.StorageApplicationPermissions.FutureAccessList.Add(file);
-            }*/
-        }
+
 
         bool IsThePlaylistNameUsed(string name)
         {
@@ -158,7 +144,15 @@ namespace AudioVideoPlayer.Pages.Playlist
             }
             return false;
         }
-
+        void ClearErrorMessage()
+        {
+            ErrorMessage.Text = "";
+        }
+        void SetErrorMessage(string text)
+        {
+            if(!string.IsNullOrEmpty(text))
+                ErrorMessage.Text = text;
+        }
         private async void AddPlaylist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             var filePicker = new Windows.Storage.Pickers.FileOpenPicker();
@@ -167,6 +161,7 @@ namespace AudioVideoPlayer.Pages.Playlist
             filePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
             filePicker.SettingsIdentifier = "PlaylistPicker";
             filePicker.CommitButtonText = "Open JSON Playlist File to Process";
+            ClearErrorMessage();
 
             var file = await filePicker.PickSingleFileAsync();
             if (file != null)
@@ -193,6 +188,10 @@ namespace AudioVideoPlayer.Pages.Playlist
                                 }
                             }
                         }
+                        else
+                        {
+                            SetErrorMessage("Playlist name already used");
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -207,6 +206,8 @@ namespace AudioVideoPlayer.Pages.Playlist
         }
         private async  void ImportPlaylist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
+            ClearErrorMessage();
+
             if (comboPlayList.SelectedItem is Models.PlayList)
             {
                 Models.PlayList p = comboPlayList.SelectedItem as Models.PlayList;
@@ -254,6 +255,8 @@ namespace AudioVideoPlayer.Pages.Playlist
         }
         private async void RemovePlaylist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
+            ClearErrorMessage();
+
             if (comboPlayList.SelectedItem is Models.PlayList)
             {
                 ObservableCollection<Models.PlayList> pll =  ViewModelLocator.Settings.PlayListList;
@@ -288,7 +291,9 @@ namespace AudioVideoPlayer.Pages.Playlist
 
         private void comboPlayList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if(comboPlayList.SelectedItem is Models.PlayList)
+            ClearErrorMessage();
+
+            if (comboPlayList.SelectedItem is Models.PlayList)
             {
                 Models.PlayList p = (Models.PlayList)comboPlayList.SelectedItem;
                 if(p!=null)

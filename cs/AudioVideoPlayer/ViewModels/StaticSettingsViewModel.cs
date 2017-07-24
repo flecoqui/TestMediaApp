@@ -140,7 +140,7 @@ namespace AudioVideoPlayer.ViewModels
                 {
                     deviceList = new ObservableCollection<Models.Device>();
                     deviceList.Add(new Models.Device(cALL,Companion.CompanionClient.cMulticastAddress) );
-                    deviceList.Add(new Models.Device("MyDevice", "192.168.0.1"));
+                    deviceList.Add(new Models.Device("MyDevice", "192.168.1.65"));
                 }
                 else
                     deviceList = (ObservableCollection<Models.Device>)auto;
@@ -469,6 +469,62 @@ namespace AudioVideoPlayer.ViewModels
             {
                 Helpers.SettingsHelper.SaveSettingsValue(nameof(CurrentMediaIndex), value.ToString());
                 currentMediaIndex = value;
+            }
+        }
+        // Companion Settings
+        private static bool multicast;
+        private static int udpport;
+        private static string multicastIPAddress;
+        public static bool Multicast
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(Multicast));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    multicast = true;
+                else
+                    multicast = bool.Parse(auto);
+                return multicast;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(Multicast), value.ToString());
+                multicast = value;
+            }
+        }
+
+        public static int UDPPort
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(UDPPort));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    udpport = 1919;
+                else
+                    udpport = int.Parse(auto);
+                return udpport;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(UDPPort), value.ToString());
+                udpport = value;
+            }
+        }
+        public static string MulticastIPAddress
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(MulticastIPAddress));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    multicastIPAddress = "239.11.11.11";
+                else
+                    multicastIPAddress = auto;
+                return multicastIPAddress;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(MulticastIPAddress), value.ToString());
+                multicastIPAddress = value;
             }
         }
     }
