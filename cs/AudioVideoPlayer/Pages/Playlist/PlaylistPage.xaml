@@ -58,11 +58,11 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -84,23 +84,23 @@
                            SelectionChanged="comboPlayList_SelectionChanged"    
                                >
                     </ComboBox>
-                    <TextBlock Grid.Row="3" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}"  Text="Path: "/>
-                    <TextBlock  Grid.Row="3" Grid.Column="1"   ToolTipService.ToolTip="Path of the imported Playlist" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Path',Mode=OneWay}"  Height="40"  />
-                    <TextBlock Grid.Row="4" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}"  Text="Number of items: "/>
-                    <TextBlock  Grid.Row="4" Grid.Column="1" ToolTipService.ToolTip="Path of the imported Playlist" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Count',Mode=OneWay}"  Height="40"  />
-                    <TextBlock Grid.Row="5" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}"  Text="Curent Index: "/>
-                    <TextBlock  Grid.Row="5" Grid.Column="1" ToolTipService.ToolTip="Path of the imported Playlist" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Index',Mode=OneWay}"  Height="40"  />
+                    <TextBlock Grid.Row="3" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Path: "  VerticalAlignment="Center"/>
+                    <TextBlock  Grid.Row="3" Grid.Column="1"   ToolTipService.ToolTip="Path of the imported Playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Path',Mode=OneWay}"   TextWrapping="Wrap" VerticalAlignment="Center"  MinHeight="40" />
+                    <TextBlock Grid.Row="4" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Number of items: "/>
+                    <TextBlock  Grid.Row="4" Grid.Column="1" ToolTipService.ToolTip="Path of the imported Playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Count',Mode=OneWay}"   VerticalAlignment="Center"  />
+                    <TextBlock Grid.Row="5" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Curent Index: "/>
+                    <TextBlock  Grid.Row="5" Grid.Column="1" ToolTipService.ToolTip="Path of the imported Playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Index',Mode=OneWay}"   VerticalAlignment="Center"   />
                     <TextBlock Grid.Row="6" Grid.Column="0"   Text="Remove the playlist:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
-                    <Button Grid.Row="6" Grid.Column="1"  IsEnabled="true"  x:Name="RemoveButton"  Content="&#xE8C6;"  Foreground="{ThemeResource ButtonForegroundThemeBrush}" ToolTipService.ToolTip="Remove the current playlist" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="RemovePlaylist_Click" />
+                    <Button Grid.Row="6" Grid.Column="1"  IsEnabled="true"  x:Name="RemoveButton"  Content="&#xE8C6;"  Foreground="{ThemeResource ButtonForegroundThemeBrush}" ToolTipService.ToolTip="Remove the current playlist" FontFamily="Segoe MDL2 Assets" IsTabStop="True"  Width="40" Margin="1,1,1,1" Click="RemovePlaylist_Click" />
                     <TextBlock Grid.Row="7" Grid.Column="0"  Text="Import playlist:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
-                    <Button Grid.Row="7" Grid.Column="1" IsEnabled="false" x:Name="ImportButton" Content="&#xE8B5;"  Foreground="{ThemeResource ButtonForegroundThemeBrush}" ToolTipService.ToolTip="Import the playlist in the local machine" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1"  Click="ImportPlaylist_Click" />
-                    <TextBlock Grid.Row="8" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}"  Text="Imported Path: "/>
-                    <TextBlock Grid.Row="8" Grid.Column="1" ToolTipService.ToolTip="Path of the imported Playlist" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='ImportedPath',Mode=OneWay}" Height="40"  />
+                    <Button Grid.Row="7" Grid.Column="1" IsEnabled="false" x:Name="ImportButton" Content="&#xE8B5;"  Foreground="{ThemeResource ButtonForegroundThemeBrush}" ToolTipService.ToolTip="Import the playlist in the local machine" FontFamily="Segoe MDL2 Assets" IsTabStop="True"  Width="40" Margin="1,1,1,1"  Click="ImportPlaylist_Click" />
+                    <TextBlock Grid.Row="8" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Imported Path: "/>
+                    <TextBlock Grid.Row="8" Grid.Column="1" ToolTipService.ToolTip="Path of the imported Playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='ImportedPath',Mode=OneWay}"  TextWrapping="Wrap" VerticalAlignment="Center" MinHeight="40"/>
                 </Grid>
             </StackPanel>
             <StackPanel>
                 <TextBlock  Text="Current playlist Path:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
-                <TextBox  ToolTipService.ToolTip="Path/Uri of the current selected Playlist" IsTabStop="True" Text="{Binding Settings.CurrentPlayListPath}" />
+                <TextBlock   ToolTipService.ToolTip="Path/Uri of the current selected Playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{Binding Settings.CurrentPlayListPath}" TextWrapping="Wrap" />
             </StackPanel>
         </StackPanel>
     </Grid>

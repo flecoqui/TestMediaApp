@@ -132,6 +132,32 @@ namespace AudioVideoPlayer.Pages.Playlist
             }
             return false;
         }
+        private bool SelectPlaylistWithName(string Name)
+        {
+            if (comboPlayList.Items.Count > 0)
+            {
+
+                RemoveButton.IsEnabled = true;
+                int index = 0;
+                foreach (var item in comboPlayList.Items)
+                {
+                    if (item is Models.PlayList)
+                    {
+                        Models.PlayList p = item as Models.PlayList;
+                        if (p != null)
+                        {
+                            if (string.Equals(p.Name, Name))
+                            {
+                                comboPlayList.SelectedIndex = index;
+                                return true;
+                            }
+                        }
+                    }
+                    index++;
+                }
+            }
+            return false;
+        }
 
         private async void AddPlaylist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
@@ -149,10 +175,10 @@ namespace AudioVideoPlayer.Pages.Playlist
                 try
                 {
                     Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Wait, 1);
-                    if(!IsThePlaylistNameUsed(file.Name))
+                    Models.PlayList playlist = await Models.PlayList.GetNewPlaylist(file.Path);
+                    if (playlist != null)
                     {
-                        Models.PlayList playlist = await Models.PlayList.GetNewPlaylist(file.Path);
-                        if (playlist != null)
+                        if (!IsThePlaylistNameUsed(playlist.Name))
                         {
                             ViewModels.ViewModel vm = this.DataContext as ViewModels.ViewModel;
                             if (vm != null)
@@ -160,29 +186,7 @@ namespace AudioVideoPlayer.Pages.Playlist
                                 ObservableCollection<Models.PlayList> PlayListList = vm.Settings.PlayListList;
                                 PlayListList.Add(playlist);
                                 vm.Settings.PlayListList = PlayListList;
-                                if (comboPlayList.Items.Count > 0)
-                                {
-
-                                    RemoveButton.IsEnabled = true;
-                                    int index = 0;
-                                    foreach (var item in comboPlayList.Items)
-                                    {
-                                        if(item is Models.PlayList)
-                                        {
-                                            Models.PlayList p = item as Models.PlayList;
-                                            if(p!=null)
-                                            {
-                                                if(string.Equals(p.Name,playlist.Name))
-                                                {
-                                                    comboPlayList.SelectedIndex = index;
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                        index++;
-                                    }
-                                }
-                                else
+                                if(!SelectPlaylistWithName(playlist.Name))
                                 {
                                     ImportButton.IsEnabled = false;
                                     RemoveButton.IsEnabled = false;
@@ -201,18 +205,72 @@ namespace AudioVideoPlayer.Pages.Playlist
                 }
             }
         }
-        private void ImportPlaylist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
-        {
-
-        }
-        private void RemovePlaylist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private async  void ImportPlaylist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             if (comboPlayList.SelectedItem is Models.PlayList)
             {
-                ObservableCollection<Models.PlayList> p =  ViewModelLocator.Settings.PlayListList;
-                if ((p != null)&&(comboPlayList.SelectedIndex<p.Count))
-                    p.RemoveAt(comboPlayList.SelectedIndex);
-                ViewModelLocator.Settings.PlayListList = p;
+                Models.PlayList p = comboPlayList.SelectedItem as Models.PlayList;
+                if (p != null)
+                {
+                   Windows.Storage.StorageFolder playlistFolder = await Helpers.StorageHelper.GetFolder("playlist");
+                    if (playlistFolder == null)
+                    {
+                        playlistFolder = await Helpers.StorageHelper.CreateLocalFolder("playlist");
+                    }
+                    if (playlistFolder != null)
+                    {
+                        string folderName = System.IO.Path.GetFileName(playlistFolder.Path);
+                        string fileName = System.IO.Path.GetFileName(p.Path);
+
+                        // Remove existing imported playlist
+                        if (!string.IsNullOrEmpty(p.ImportedPath))
+                            await Helpers.StorageHelper.RemoveFile(p.ImportedPath);
+
+                        // Get a unique filename
+                        string destFileName = fileName;
+                        destFileName = await Helpers.StorageHelper.GetUniqueFileName(folderName, fileName);
+
+                        Windows.Storage.StorageFile importedPlaylistfile = await Helpers.StorageHelper.CopyFileToFolder(p.Path, folderName,destFileName);
+                        if(importedPlaylistfile!=null)
+                        {
+                            p.ImportedPath = importedPlaylistfile.Path;
+                            ObservableCollection<Models.PlayList> pll = ViewModelLocator.Settings.PlayListList;
+                            if ((pll != null) && (comboPlayList.SelectedIndex < pll.Count))
+                            {
+                                pll[comboPlayList.SelectedIndex] = p;
+                                ViewModelLocator.Settings.PlayListList = pll;
+                                if (!SelectPlaylistWithName(p.Name))
+                                {
+                                    ImportButton.IsEnabled = false;
+                                    RemoveButton.IsEnabled = false;
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+        private async void RemovePlaylist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            if (comboPlayList.SelectedItem is Models.PlayList)
+            {
+                ObservableCollection<Models.PlayList> pll =  ViewModelLocator.Settings.PlayListList;
+                if ((pll != null) && (comboPlayList.SelectedIndex < pll.Count))
+                {
+                    
+                    Models.PlayList p = comboPlayList.SelectedItem as Models.PlayList;
+                    if (p != null)
+                    {
+                        if(!string.IsNullOrEmpty(p.ImportedPath))
+                        {
+                            bool b = await Helpers.StorageHelper.RemoveFile(p.ImportedPath);
+                        }
+                    }
+                    pll.RemoveAt(comboPlayList.SelectedIndex);
+                }
+                ViewModelLocator.Settings.PlayListList = pll;
                 if (comboPlayList.Items.Count > 0)
                 {
 
@@ -249,7 +307,7 @@ namespace AudioVideoPlayer.Pages.Playlist
                         ViewModelLocator.Settings.CurrentMediaPath = string.Empty;
                         ViewModelLocator.Settings.CurrentMediaIndex = 0;
                     }
-                    ImportButton.IsEnabled = (p.bImported == false ? true : false);
+                    ImportButton.IsEnabled = (((p.bImported == false) && (!p.Path.StartsWith("ms-appx://"))) ? true : false);
                     RemoveButton.IsEnabled = true;
                 }
             }

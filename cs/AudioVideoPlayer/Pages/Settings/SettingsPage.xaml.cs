@@ -51,6 +51,12 @@ namespace AudioVideoPlayer.Pages.Settings
         public SettingsPage()
         {
             this.InitializeComponent();
+            // Show FullWindow on phone
+            if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
+            {
+                // Show fullWindow button
+                WindowModeFull.Visibility = Visibility.Collapsed;
+            }
         }
         /// <summary>
         /// Invoked when this page is about to be displayed in a Frame.

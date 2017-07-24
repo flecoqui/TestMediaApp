@@ -48,12 +48,12 @@
         </StackPanel>
         <StackPanel Grid.Row="1" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2"  >
             <StackPanel Orientation="Horizontal" VerticalAlignment="Top" >
-                <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Margin="0,0,0,0"  Text="User Experience Settings: "/>
+                <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Margin="0,0,0,0"  Text="User Experience Settings: "/>
             </StackPanel>
         </StackPanel>
         <StackPanel Grid.Row="2" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2"  >
             <StackPanel Orientation="Horizontal" VerticalAlignment="Top" >
-                <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}"  Text="Theme: "/>
+                <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Theme: "/>
                 <ToggleSwitch Margin="2,2,2,2" x:Name="AppThemeSwitch" MinWidth="100"
                                           OffContent="Light"
                                           OnContent="Dark"
@@ -61,7 +61,7 @@
                                           IsOn="{Binding Settings.DarkTheme, Mode=TwoWay}">
                 </ToggleSwitch>
 
-                <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}"  Text="Color: "/>
+                <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Color: "/>
                 <ComboBox x:Name="ColorCombo" Margin="2,2,2,2"  ItemsSource="{Binding Settings.MenuBackgroundColors}"
                                       SelectedItem="{Binding Settings.MenuBackgroundColor, Mode=OneWay}"
                                       Width="100"                                     
@@ -85,7 +85,7 @@
         </StackPanel>
         <StackPanel Grid.Row="3" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2"  >
             <StackPanel Orientation="Horizontal" VerticalAlignment="Top" >
-                <TextBlock Style="{StaticResource HeaderTextBlockStyle}"  Margin="0,0,0,0"  Text="Player Settings: "/>
+                <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Margin="0,0,0,0"  Text="Player Settings: "/>
             </StackPanel>
         </StackPanel>
         <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  Grid.Row="4" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >

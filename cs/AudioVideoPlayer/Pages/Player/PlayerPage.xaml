@@ -79,7 +79,7 @@
             <ColumnDefinition Width="310"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <StackPanel x:Name="TitlePanel" Grid.Row="0" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource HeaderPanelStyle}"  >
+        <StackPanel x:Name="TitlePanel" Grid.Row="0" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource HeaderPanelStyle}" VerticalAlignment="Top"  >
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
                 <TextBlock x:Name="TestTitle" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Style="{StaticResource HeaderTextBlockStyle}"  TextWrapping="Wrap">Windows 10 Universal Media Player</TextBlock>
                 <Image x:Name="TestLogo" Source="Assets/AudioVideo.png" VerticalAlignment="Center" Margin="43,3,3,3" Stretch="Fill" Width="40" Height="40" />
@@ -125,13 +125,13 @@
             </StackPanel>
         </StackPanel>
         <Grid x:Name="GridMedia"  Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" >
-            <Image x:Name="backgroundVideo"  Source="Assets/Screen169.png" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="UniformToFill"></Image>
+            <Image x:Name="backgroundVideo" Source="ms-appx:///Assets/Screen169.png" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="UniformToFill"></Image>
             <!--
             <MediaElement x:Name="mediaElement" AutoPlay="True" AreTransportControlsEnabled="False"   HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform"   />
               -->
             <MediaPlayerElement x:Name="mediaPlayerElement" AutoPlay="True" AreTransportControlsEnabled="False"   HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Stretch="Uniform"   />
-            <Image x:Name="pictureElement"  Source="Assets/Screen169.png" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="UniformToFill"></Image>
-
+            <Image x:Name="pictureElement"  Source="ms-appx:///Assets/Screen169.png" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="UniformToFill"></Image>
+            
         </Grid>
         <TextBox  x:Name="logs" Grid.Row="2" Grid.ColumnSpan="2" Foreground="{ThemeResource ButtonForegroundThemeBrush}" IsTabStop="True" Margin="2,2,2,2"   MaxHeight="640" MinHeight="100"  ScrollViewer.HorizontalScrollBarVisibility="Auto"  ScrollViewer.VerticalScrollBarVisibility="Auto" TextWrapping="NoWrap" AcceptsReturn="True" FontSize="12" IsReadOnly="True"  Visibility="Visible" Text="" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
         </TextBox>

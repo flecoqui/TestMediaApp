@@ -37,6 +37,7 @@ namespace AudioVideoPlayer
                 Height = 240,
                 Width = 320
             });
+
             ViewModels.ViewModel vm = new ViewModels.ViewModel();
             this.Background = new Windows.UI.Xaml.Media.SolidColorBrush(vm.Settings.MenuBackgroundColor);
             
@@ -103,6 +104,13 @@ namespace AudioVideoPlayer
             rootFrame.Navigate(typeof(Shell));
             // Place the frame in the current Window
             Window.Current.Content = rootFrame;
+            // Hide Systray on phone
+            if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
+            {
+                // Hide Status bar
+                var statusBar = Windows.UI.ViewManagement.StatusBar.GetForCurrentView();
+                await statusBar.HideAsync();
+            }
         }
 
 

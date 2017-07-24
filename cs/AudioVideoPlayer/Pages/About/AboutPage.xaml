@@ -30,22 +30,22 @@
         <StackPanel HorizontalAlignment="Left" x:Name="TitlePanel" Grid.Row="0" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource HeaderPanelStyle}"  >
             <TextBlock Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Style="{StaticResource HeaderTextBlockStyle}" >About Test Media App</TextBlock>
         </StackPanel>
-        <TextBlock Grid.Row="2" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}"  Text="OS Family: "/>
-        <TextBlock Grid.Row="2" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Text="{x:Bind SystemFamily }" />
-        <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}"  Text="OS Version: "/>
-        <TextBlock Grid.Row="3" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Text="{x:Bind SystemVersion }" />
-        <TextBlock Grid.Row="5" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}"  Text="Application Name: "/>
-        <TextBlock Grid.Row="5" Grid.Column="1" Margin="5,0,0,0"  Style="{StaticResource LabelTextBlockStyle}" Text="{x:Bind ApplicationName }" />
-        <TextBlock Grid.Row="6" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}"  Text="Application Version: "/>
-        <TextBlock Grid.Row="6" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Text="{x:Bind ApplicationVersion }" />
-        <TextBlock Grid.Row="7" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}"  Text="Application Architecture: "/>
-        <TextBlock Grid.Row="7" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Text="{x:Bind SystemArchitecture}" />
-        <TextBlock Grid.Row="9" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}"  Text="Device Manufacturer: "/>
-        <TextBlock Grid.Row="9" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Text="{x:Bind DeviceManufacturer }" />
-        <TextBlock Grid.Row="10" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}"  Text="Device Model: "/>
-        <TextBlock Grid.Row="10" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Text="{x:Bind DeviceModel }" />
-        <TextBlock Grid.Row="12" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}"  Text="Harddware ID: "/>
-        <TextBlock Grid.Row="12" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Text="{x:Bind AppSpecificHardwareID }" TextWrapping="Wrap"/>
+        <TextBlock Grid.Row="2" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="OS Family: "/>
+        <TextBlock Grid.Row="2" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind SystemFamily }" />
+        <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="OS Version: "/>
+        <TextBlock Grid.Row="3" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind SystemVersion }" />
+        <TextBlock Grid.Row="5" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Application Name: "/>
+        <TextBlock Grid.Row="5" Grid.Column="1" Margin="5,0,0,0"  Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ApplicationName }" />
+        <TextBlock Grid.Row="6" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Application Version: "/>
+        <TextBlock Grid.Row="6" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ApplicationVersion }" />
+        <TextBlock Grid.Row="7" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Application Architecture: "/>
+        <TextBlock Grid.Row="7" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind SystemArchitecture}" />
+        <TextBlock Grid.Row="9" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Device Manufacturer: "/>
+        <TextBlock Grid.Row="9" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind DeviceManufacturer }" />
+        <TextBlock Grid.Row="10" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Device Model: "/>
+        <TextBlock Grid.Row="10" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind DeviceModel }" />
+        <TextBlock Grid.Row="12" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Harddware ID: "/>
+        <TextBlock Grid.Row="12" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind AppSpecificHardwareID }" TextWrapping="Wrap"/>
 
     </Grid>
 </Page>

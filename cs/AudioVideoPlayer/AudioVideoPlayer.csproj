@@ -134,6 +134,7 @@
     <Compile Include="ExtendedSplash.xaml.cs">
       <DependentUpon>ExtendedSplash.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\StorageHelper.cs" />
     <Compile Include="Helpers\SettingsHelper.cs" />
     <Compile Include="Information\SystemInformation.cs" />
     <Compile Include="Models\PlayList.cs" />

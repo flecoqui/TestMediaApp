@@ -354,6 +354,7 @@ namespace AudioVideoPlayer.Pages.Player
             return bResult;
         }
 
+  
 
         /// <summary>
         /// This method Unregister the UI components .
@@ -1748,6 +1749,8 @@ namespace AudioVideoPlayer.Pages.Player
         {
             SetPictureElementSize();
         }
+
+
         /// <summary>
         /// Resize the picturePopup
         /// </summary>
