@@ -25,7 +25,8 @@ namespace Companion
     {
         
         public const string cMulticastAddress = "239.11.11.11";
-        public const string cPort = "1919";
+        public const string cMulticastPort = "1919";
+        public const string cUnicastPort = "1918";
         public const string cQUESTION = "??";
         public const string cEQUAL = "=";
         const string cMULTICASTCOMMAND = "M-COMMAND";
@@ -51,6 +52,8 @@ namespace Companion
         public const string commandLeft = "LEFT";
         public const string commandRight = "RIGHT";
         public const string commandEnter = "ENTER";
+        public const string commandPing = "PING";
+        public const string commandPingResponse = "PINGRESPONSE";
 
 
         public const string parameterID = "ID";
@@ -59,14 +62,17 @@ namespace Companion
         public const string parameterStart = "START";
         public const string parameterDuration = "DURATION";
         public const string parameterIndex = "INDEX";
+        public const string parameterName = "NAME";
+        public const string parameterIPAddress = "IP";
 
         private DatagramSocket msocketSend;
         private DatagramSocket msocketRecv;
         private DatagramSocket usocketRecv;
 
-        private bool multicastReception = true;
+        private string dName { get; set; }
         private string mAddress { get; set; }
         private string mPort { get; set; }
+        private string uPort { get; set; }
         private string mInterfaceAddress { get; set; }
 
         private int mLastIDReceived;
@@ -81,39 +87,50 @@ namespace Companion
             msocketRecv = null;
             usocketRecv = null;
             mAddress = cMulticastAddress;
-            mPort = cPort;
+            mPort = cMulticastPort;
+            uPort = cUnicastPort;
             recvInitialized = false;
             sendInitialized = false;
             mInterfaceAddress = string.Empty;
             mLastIDReceived = 0;
             mLastIDSent = 0;
+            dName = "MyDevice";
         }
-        public CompanionClient(bool bMulticastReception, string MulticastIPAddress, int UDPPort)
+        public CompanionClient(string DeviceName, string MulticastIPAddress, int MulticastUDPPort, int UnicastUDPPort)
         {
             msocketSend = null;
             msocketRecv = null;
             usocketRecv = null;
-            multicastReception = bMulticastReception;
+            dName = DeviceName;
             mAddress = MulticastIPAddress;
-            mPort = UDPPort.ToString();
+            mPort = MulticastUDPPort.ToString();
+            uPort = UnicastUDPPort.ToString();
             recvInitialized = false;
             sendInitialized = false;
             mInterfaceAddress = string.Empty;
             mLastIDReceived = 0;
             mLastIDSent = 0;
         }
-        public Task<bool> InitializeRecv()
+        public async  Task<bool> InitializeRecv()
         {
-            if (multicastReception)
-                return InitializeMulticastRecv();
-            else
-                return InitializeUnicastRecv();
+            recvInitialized = false;
+            if (await InitializeMulticastRecv() == true)
+            {
 
+                bool result = await InitializeUnicastRecv();
+                if(result)
+                {
+                    mLastIDReceived = 0;
+                    recvInitialized = true;
+                    return true;
+                }
+            }
+            return false;
         }
 
         public async Task<bool> InitializeMulticastRecv()
         {
-            recvInitialized = false;
+
             try
             {
                 if (msocketRecv != null)
@@ -128,21 +145,20 @@ namespace Companion
                 await msocketRecv.BindServiceNameAsync(mPort);
                 HostName mcast = new HostName(mAddress);
                 msocketRecv.JoinMulticastGroup(mcast);
-
-                mLastIDReceived = 0;
-                recvInitialized = true;
-
+                return true;
             }
             catch(Exception e)
             {
                 System.Diagnostics.Debug.WriteLine("Exception while listening: " + e.Message);
-                recvInitialized = false;
-            }
-            return recvInitialized;
+           }
+            return false;
+        }
+        public bool IsMulticastReceiving()
+        {
+            return (usocketRecv != null);
         }
         public async Task<bool> InitializeUnicastRecv()
         {
-            recvInitialized = false;
             try
             {
 
@@ -154,19 +170,18 @@ namespace Companion
                 }
                 usocketRecv = new DatagramSocket();
                 usocketRecv.MessageReceived += UDPMulticastMessageReceived;
-                await usocketRecv.BindServiceNameAsync(mPort);
-
-
-                mLastIDReceived = 0;
-                recvInitialized = true;
-
+                await usocketRecv.BindServiceNameAsync(uPort);
+                return true;
             }
             catch (Exception e)
             {
                 System.Diagnostics.Debug.WriteLine("Exception while listening: " + e.Message);
-                recvInitialized = false;
             }
-            return recvInitialized;
+            return false ;
+        }
+        public bool IsUnicastReceiving()
+        {
+            return (usocketRecv != null);
         }
         public  NetworkAdapter GetDefaultNetworkAdapter()
         {
@@ -199,6 +214,32 @@ namespace Companion
             }
             return adapter;
         }
+        public static bool IsIPv4Address(string s )
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(s))
+                {
+                    char[] sep = { '.' };
+                    string[] arrayIP = s.Split(sep);
+                    if (arrayIP.Count() == 4)
+                    {
+                        for (int i = 0; i < arrayIP.Count(); i++)
+                        {
+                            int digit = int.Parse(arrayIP[i]);
+                            if ((digit < 0) || (digit > 255))
+                                return false;
+                        }
+                        return true;
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception checking IP Address: " + ex.Message);
+            }
+            return false;
+        }
         public static string GetNetworkAdapterIPAddress()
         {
             var icp = NetworkInformation.GetInternetConnectionProfile();
@@ -211,7 +252,9 @@ namespace Companion
             {
                 if ((hn.IPInformation != null) && (hn.IPInformation.NetworkAdapter !=null) && (hn.IPInformation.NetworkAdapter.NetworkAdapterId == icp.NetworkAdapter.NetworkAdapterId))
                 {
-                    return hn.CanonicalName;
+                    if(IsIPv4Address(hn.CanonicalName))
+                        return hn.CanonicalName;
+                    //                    System.Diagnostics.Debug.WriteLine("IP Address: " + hn.CanonicalName);
                 }
             }
             return null;
@@ -351,7 +394,7 @@ namespace Companion
             }
             return null;
         }
-        private void ParseMessage(string Message)
+        private async  void ParseMessage(string Message, string remoteIPAddress, string remoteUDPPort)
         { 
             if(!string.IsNullOrEmpty(Message))
             {
@@ -375,6 +418,13 @@ namespace Companion
                                     Parameter.Remove(parameterID);
                                     if (MessageReceived != null)
                                         MessageReceived(this, Command, Parameter);
+
+                                    if (string.Equals(Command,commandPing))
+                                    {
+                                        string commandString = CompanionClient.parameterName + CompanionClient.cEQUAL + dName + CompanionClient.cQUESTION + CompanionClient.parameterIPAddress + CompanionClient.cEQUAL + GetNetworkAdapterIPAddress();
+                                        Dictionary<string, string> p = this.GetParametersFromString(commandString);
+                                        await SendCommand(remoteIPAddress, commandPingResponse, p);
+                                    }
                                 }
                             }
                         }
@@ -390,7 +440,7 @@ namespace Companion
 
                 uint stringLength = eventArguments.GetDataReader().UnconsumedBufferLength;
                 string message = eventArguments.GetDataReader().ReadString(stringLength);
-                ParseMessage(message);
+                ParseMessage(message, eventArguments.RemoteAddress.CanonicalName, eventArguments.RemotePort);
             }
             catch (Exception exception)
             {
@@ -439,16 +489,22 @@ namespace Companion
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("Message Sent: " + buffer);
                 if (msocketSend == null)
                     await InitializeSend();
 
                 HostName mcast;
-                if(string.IsNullOrEmpty(ip))
-                    mcast  = new HostName(mAddress);
+                string port;
+                if ((string.IsNullOrEmpty(ip)) || (string.Equals(ip, mAddress)))
+                {
+                    port = mPort;
+                    mcast = new HostName(mAddress);
+                }
                 else
+                {
+                    port = uPort;
                     mcast = new HostName(ip);
-                DataWriter writer = new DataWriter(await msocketSend.GetOutputStreamAsync(mcast, mPort));
+                }
+                DataWriter writer = new DataWriter(await msocketSend.GetOutputStreamAsync(mcast, port));
 
                 if (writer != null)
                 {
@@ -457,6 +513,7 @@ namespace Companion
                     bool bresult = await writer.FlushAsync();
                     writer.DetachStream();
                     writer.Dispose();
+                    System.Diagnostics.Debug.WriteLine("Message Sent to: " + mcast.CanonicalName + ":" + port + " content: " + buffer);
                     return true;
                 }
             }

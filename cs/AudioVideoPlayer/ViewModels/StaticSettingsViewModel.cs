@@ -140,18 +140,26 @@ namespace AudioVideoPlayer.ViewModels
                 {
                     deviceList = new ObservableCollection<Models.Device>();
                     deviceList.Add(new Models.Device(cALL,Companion.CompanionClient.cMulticastAddress) );
-                    deviceList.Add(new Models.Device("MyDevice", "192.168.1.65"));
+                    deviceList.Add(new Models.Device("MyDeviceHome", "192.168.1.65"));
+                    deviceList.Add(new Models.Device("MyDeviceWork", "10.85.185.182"));
+                    deviceList.Add(new Models.Device("MyDevicePhone", "10.85.197.252"));
+                    deviceList.Add(new Models.Device("MyDevicePhone1", "172.16.0.3"));
+                    deviceList.Add(new Models.Device("MyDevicePC1", "172.16.0.2"));
                 }
                 else
-                    deviceList = (ObservableCollection<Models.Device>)auto;
+                    deviceList = ObjectSerializer <ObservableCollection<Models.Device>>.FromXml((string)auto);
                 return deviceList;
             }
             set
             {
-                Helpers.SettingsHelper.SaveSettingsValue(nameof(DeviceList), value);
+                string serializeString = ObjectSerializer<ObservableCollection<Models.Device>>.ToXml(value);
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(DeviceList), serializeString);
                 deviceList = value;
             }
+
         }
+
+
         public static int IndexRemoteContent
         {
             get
@@ -472,42 +480,42 @@ namespace AudioVideoPlayer.ViewModels
             }
         }
         // Companion Settings
-        private static bool multicast;
-        private static int udpport;
+        private static int unicastUDPPort;
+        private static int multicastUDPPort;
         private static string multicastIPAddress;
-        public static bool Multicast
+
+        public static int MulticastUDPPort
         {
             get
             {
-                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(Multicast));
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(MulticastUDPPort));
                 if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
-                    multicast = true;
+                    multicastUDPPort = 1919;
                 else
-                    multicast = bool.Parse(auto);
-                return multicast;
+                    multicastUDPPort = int.Parse(auto);
+                return multicastUDPPort;
             }
             set
             {
-                Helpers.SettingsHelper.SaveSettingsValue(nameof(Multicast), value.ToString());
-                multicast = value;
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(MulticastUDPPort), value.ToString());
+                multicastUDPPort = value;
             }
         }
-
-        public static int UDPPort
+        public static int UnicastUDPPort
         {
             get
             {
-                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(UDPPort));
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(UnicastUDPPort));
                 if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
-                    udpport = 1919;
+                    unicastUDPPort = 1918;
                 else
-                    udpport = int.Parse(auto);
-                return udpport;
+                    unicastUDPPort = int.Parse(auto);
+                return unicastUDPPort;
             }
             set
             {
-                Helpers.SettingsHelper.SaveSettingsValue(nameof(UDPPort), value.ToString());
-                udpport = value;
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(UnicastUDPPort), value.ToString());
+                unicastUDPPort = value;
             }
         }
         public static string MulticastIPAddress

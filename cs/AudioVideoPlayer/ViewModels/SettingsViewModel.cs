@@ -269,27 +269,27 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
-        public int UDPPort
+        public int MulticastUDPPort
         {
             get
             {
-                return StaticSettingsViewModel.UDPPort;
+                return StaticSettingsViewModel.MulticastUDPPort;
             }
             set
             {
-                StaticSettingsViewModel.UDPPort = value;
+                StaticSettingsViewModel.MulticastUDPPort = value;
                 NotifyPropertyChanged();
             }
         }
-        public bool Multicast
+        public int UnicastUDPPort
         {
             get
             {
-                return StaticSettingsViewModel.Multicast;
+                return StaticSettingsViewModel.UnicastUDPPort;
             }
             set
             {
-                StaticSettingsViewModel.Multicast = value;
+                StaticSettingsViewModel.UnicastUDPPort = value;
                 NotifyPropertyChanged();
             }
         }

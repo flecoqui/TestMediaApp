@@ -42,8 +42,9 @@ namespace AudioVideoPlayer.Converters
 
                 if (windowMode == windowModeParameter)
                     return true;
+                return false;
             }
-            return false;
+            return null;
         }
 
         /// <summary>

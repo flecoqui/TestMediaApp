@@ -86,8 +86,50 @@ namespace AudioVideoPlayer.Pages.Settings
             // Refresh the pages with the new Color                         
             AudioVideoPlayer.Shell.Current.UpdateTitleBarAndColor(true);
         }
+        /// <summary>
+        /// This method is called when the UDPPort fields are changed
+        /// </summary>
+        void UDPPortChanged(object sender, TextChangedEventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb != null)
+            {
+                uint n;
+                if (!uint.TryParse(tb.Text, out n))
+                {
+                    if (tb == MulticastUDPPort)
+                        tb.Text = ViewModels.StaticSettingsViewModel.MulticastUDPPort.ToString();
+                    if (tb == UnicastUDPPort)
+                        tb.Text = ViewModels.StaticSettingsViewModel.UnicastUDPPort.ToString();
+                }
+                else
+                {
 
+                    if ((n<=0)||(n>65535)) 
+                    {
+                        if (tb == MulticastUDPPort)
+                            tb.Text = ViewModels.StaticSettingsViewModel.MulticastUDPPort.ToString();
+                        if (tb == UnicastUDPPort)
+                            tb.Text = ViewModels.StaticSettingsViewModel.UnicastUDPPort.ToString();
+                    }
+                }
+            }
+        }
 
+        /// <summary>
+        /// This method is called when the IPAddress fields are changed
+        /// </summary>
+        void IPAddressChanged(object sender, TextChangedEventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb != null)
+            {
+                if (!CompanionClient.IsIPv4Address(tb.Text))
+                {
+                        tb.Text = ViewModels.StaticSettingsViewModel.MulticastIPAddress.ToString();
+                }
+            }
+        }
     }
 
 

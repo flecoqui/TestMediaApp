@@ -17,6 +17,11 @@ namespace AudioVideoPlayer.Models
 {
     public class Device
     {
+        public Device()
+        {
+            Name = string.Empty;
+            IpAddress = string.Empty;
+        }
         public Device(string name, string ip)
         {
             Name = name;

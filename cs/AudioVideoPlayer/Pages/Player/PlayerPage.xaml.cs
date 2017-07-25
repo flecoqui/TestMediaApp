@@ -3541,7 +3541,7 @@ namespace AudioVideoPlayer.Pages.Player
 
         private void RegisterCompanion()
         {
-            companion = new CompanionClient(ViewModels.StaticSettingsViewModel.Multicast, ViewModels.StaticSettingsViewModel.MulticastIPAddress, ViewModels.StaticSettingsViewModel.UDPPort);
+            companion = new CompanionClient(Information.SystemInformation.DeviceManufacturer + "_" + Information.SystemInformation.DeviceModel + "_" + Information.SystemInformation.SystemFamily,ViewModels.StaticSettingsViewModel.MulticastIPAddress, ViewModels.StaticSettingsViewModel.MulticastUDPPort, ViewModels.StaticSettingsViewModel.UnicastUDPPort);
             companion.MessageReceived += Companion_MessageReceived;
 
         }
@@ -3742,7 +3742,12 @@ namespace AudioVideoPlayer.Pages.Player
                         VolumeDown_Click(null, null);
                     });
                     break;
-
+                case CompanionClient.commandPing:
+                    LogMessage("PING Command received");
+                    break;
+                case CompanionClient.commandPingResponse:
+                    LogMessage("PINGRESPONSE Command received");
+                    break;
                 default:
                     LogMessage("Unknown Command");
                     break;

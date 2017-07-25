@@ -45,13 +45,23 @@ namespace AudioVideoPlayer.Pages.Remote
     public sealed partial class RemotePage : Page
     {
 
+        enum Status
+        {
+            NoDeviceSelected = 0,
+            DeviceSelected,
+            AddingDevice
+        }
+
+        Status PageStatus = Status.DeviceSelected;
+
         /// <summary>
         /// PlaylistPage constructor 
         /// </summary>
         public RemotePage()
         {
             this.InitializeComponent();
-
+            PageStatus = Status.NoDeviceSelected;
+            UpdateControls();
 
         }
         /// <summary>
@@ -78,8 +88,13 @@ namespace AudioVideoPlayer.Pages.Remote
 
             // Select first item in the combo box to select multicast option
             comboDevice.DataContext = ViewModels.StaticSettingsViewModel.DeviceList;
-            if(comboDevice.Items.Count>0)
+            if (comboDevice.Items.Count > 0)
+            {
                 comboDevice.SelectedIndex = 0;
+                PageStatus = Status.DeviceSelected;
+            }
+            else
+                PageStatus = Status.NoDeviceSelected;
             // Update Controls
             UpdateControls();
         }
@@ -92,36 +107,122 @@ namespace AudioVideoPlayer.Pages.Remote
             await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
                  () =>
                  {
-                    playButton.IsEnabled = true;
-                    playPauseButton.IsEnabled = true;
-                    pausePlayButton.IsEnabled = true;
-                    stopButton.IsEnabled = true;
+                     if (PageStatus == Status.DeviceSelected)
+                     {
+                         playButton.IsEnabled = true;
+                         playPauseButton.IsEnabled = true;
+                         pausePlayButton.IsEnabled = true;
+                         stopButton.IsEnabled = true;
 
-                    minusButton.IsEnabled = true;
-                    plusButton.IsEnabled = true;
+                         minusButton.IsEnabled = true;
+                         plusButton.IsEnabled = true;
 
-                    muteButton.IsEnabled = true;
-                    volumeDownButton.IsEnabled = true;
-                    volumeUpButton.IsEnabled = true;
+                         muteButton.IsEnabled = true;
+                         volumeDownButton.IsEnabled = true;
+                         volumeUpButton.IsEnabled = true;
 
-                    fullscreenButton.IsEnabled = true;
-                    fullwindowButton.IsEnabled = true;
+                         fullscreenButton.IsEnabled = true;
+                         fullwindowButton.IsEnabled = true;
 
-                    comboDevice.IsEnabled = true;
-                    contentUri.IsEnabled = true;
-                    playlistUri.IsEnabled = true;
-
-                    playPlaylistButton.IsEnabled = true;
-                    playContentButton.IsEnabled = true;
-                    selectContentButton.IsEnabled = true;
-
-                     UpRemoteButton.IsEnabled = true;
-                     DownRemoteButton.IsEnabled = true;
-                     LeftRemoteButton.IsEnabled = true;
-                     RightRemoteButton.IsEnabled = true;
-                     EnterRemoteButton.IsEnabled = true;
+                         comboDevice.IsEnabled = true;
+                         contentUri.IsEnabled = true;
+                         playlistUri.IsEnabled = true;
+                         contentNumber.IsEnabled = true;
 
 
+                         playPlaylistButton.IsEnabled = true;
+                         playContentButton.IsEnabled = true;
+                         selectContentButton.IsEnabled = true;
+
+                         UpRemoteButton.IsEnabled = true;
+                         DownRemoteButton.IsEnabled = true;
+                         LeftRemoteButton.IsEnabled = true;
+                         RightRemoteButton.IsEnabled = true;
+                         EnterRemoteButton.IsEnabled = true;
+
+                         DiscoverDeviceButton.IsEnabled = true;
+                         AddDeviceButton.IsEnabled = true;
+                         RemoveDeviceButton.IsEnabled = true;
+                         DeviceName.IsReadOnly = true;
+                         DeviceIPAddress.IsReadOnly = true;
+                     }
+                     else if (PageStatus == Status.NoDeviceSelected)
+                     {
+                         playButton.IsEnabled = false;
+                         playPauseButton.IsEnabled = false;
+                         pausePlayButton.IsEnabled = false;
+                         stopButton.IsEnabled = false;
+
+                         minusButton.IsEnabled = false;
+                         plusButton.IsEnabled = false;
+
+                         muteButton.IsEnabled = false;
+                         volumeDownButton.IsEnabled = false;
+                         volumeUpButton.IsEnabled = false;
+
+                         fullscreenButton.IsEnabled = false;
+                         fullwindowButton.IsEnabled = false;
+
+                         comboDevice.IsEnabled = false;
+                         contentUri.IsEnabled = false;
+                         playlistUri.IsEnabled = false;
+                         contentNumber.IsEnabled = false;
+
+
+                         playPlaylistButton.IsEnabled = false;
+                         playContentButton.IsEnabled = false;
+                         selectContentButton.IsEnabled = false;
+
+                         UpRemoteButton.IsEnabled = false;
+                         DownRemoteButton.IsEnabled = false;
+                         LeftRemoteButton.IsEnabled = false;
+                         RightRemoteButton.IsEnabled = false;
+                         EnterRemoteButton.IsEnabled = false;
+
+                         DiscoverDeviceButton.IsEnabled = true;
+                         AddDeviceButton.IsEnabled = true;
+                         RemoveDeviceButton.IsEnabled = false;
+                         DeviceName.IsReadOnly = true;
+                         DeviceIPAddress.IsReadOnly = true;
+                     }
+                     else if (PageStatus == Status.AddingDevice)
+                     {
+                         playButton.IsEnabled = false;
+                         playPauseButton.IsEnabled = false;
+                         pausePlayButton.IsEnabled = false;
+                         stopButton.IsEnabled = false;
+
+                         minusButton.IsEnabled = false;
+                         plusButton.IsEnabled = false;
+
+                         muteButton.IsEnabled = false;
+                         volumeDownButton.IsEnabled = false;
+                         volumeUpButton.IsEnabled = false;
+
+                         fullscreenButton.IsEnabled = false;
+                         fullwindowButton.IsEnabled = false;
+
+                         comboDevice.IsEnabled = false;
+                         contentUri.IsEnabled = false;
+                         playlistUri.IsEnabled = false;
+                         contentNumber.IsEnabled = false;
+
+                         playPlaylistButton.IsEnabled = false;
+                         playContentButton.IsEnabled = false;
+                         selectContentButton.IsEnabled = false;
+
+                         UpRemoteButton.IsEnabled = false;
+                         DownRemoteButton.IsEnabled = false;
+                         LeftRemoteButton.IsEnabled = false;
+                         RightRemoteButton.IsEnabled = false;
+                         EnterRemoteButton.IsEnabled = false;
+
+                         DiscoverDeviceButton.IsEnabled = false;
+                         AddDeviceButton.IsEnabled = true;
+                         RemoveDeviceButton.IsEnabled = false;
+                         DeviceName.IsReadOnly = false;
+                         DeviceIPAddress.IsReadOnly = false;
+                     }
 
                  });
         }
@@ -133,7 +234,7 @@ namespace AudioVideoPlayer.Pages.Remote
                 if (!string.IsNullOrEmpty(d.IpAddress))
                     return d.IpAddress;
             }
-            return Companion.CompanionClient.cMulticastAddress;
+            return ViewModels.StaticSettingsViewModel.MulticastIPAddress;
         }
 
         private async void down_remote_Click(object sender, RoutedEventArgs e)
@@ -237,18 +338,10 @@ namespace AudioVideoPlayer.Pages.Remote
 
         private void RegisterCompanion()
         {
-            companion = new CompanionClient(ViewModels.StaticSettingsViewModel.Multicast, ViewModels.StaticSettingsViewModel.MulticastIPAddress, ViewModels.StaticSettingsViewModel.UDPPort);
-            companion.MessageReceived += Companion_MessageReceived;
+            companion = new CompanionClient(Information.SystemInformation.DeviceManufacturer + "_" + Information.SystemInformation.DeviceModel + "_" + Information.SystemInformation.SystemFamily, ViewModels.StaticSettingsViewModel.MulticastIPAddress, ViewModels.StaticSettingsViewModel.MulticastUDPPort, ViewModels.StaticSettingsViewModel.UnicastUDPPort);
 
         }
-        private void UnregisterCompanion()
-        {
-            if (companion != null)
-                companion.MessageReceived -= Companion_MessageReceived;
-        }
-        private void Companion_MessageReceived(CompanionClient sender, string Command, Dictionary<string, string> Parameters)
-        {
-        }
+
         private async void InitializeCompanionMode()
         {
                 // Show FullWindow on phone
@@ -402,6 +495,213 @@ namespace AudioVideoPlayer.Pages.Remote
         }
 
         #endregion
+
+
+        /// <summary>
+        /// This method is called when the IPAddress fields are changed
+        /// </summary>
+        void IPAddressChanged(object sender, TextChangedEventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb != null)
+            {
+                if (!CompanionClient.IsIPv4Address(tb.Text))
+                {
+                    tb.Text = ViewModels.StaticSettingsViewModel.MulticastIPAddress.ToString();
+                }
+            }
+        }
+        private async void Companion_MessageReceived(CompanionClient sender, string Command, Dictionary<string, string> Parameters)
+        {
+            if (Parameters == null)
+                LogMessage("Command Received: " + Command);
+            else
+            {
+                string parameter = string.Empty;
+                foreach (var v in Parameters)
+                {
+                    parameter += " " + v.Key + "=" + v.Value;
+                }
+                LogMessage("Command Received: " + Command + " Parameter: " + parameter);
+            }
+            switch (Command)
+            {
+                case CompanionClient.commandPingResponse:
+                    await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,  () =>
+                    {
+                        if ((Parameters != null) && (Parameters.ContainsKey(CompanionClient.parameterName)) && (Parameters.ContainsKey(CompanionClient.parameterIPAddress)))
+                        {
+                            string Name = Parameters[CompanionClient.parameterName];
+                            if (Name != null)
+                            {
+                                string IP = Parameters[CompanionClient.parameterIPAddress];
+                                if (IP != null)
+                                {
+                                    ObservableCollection<Models.Device> deviceList = ViewModelLocator.Settings.DeviceList;
+                                    if (deviceList != null)
+                                    {
+                                        Models.Device d = deviceList.FirstOrDefault(device => string.Equals(device.Name, Name) && string.Equals(device.IpAddress, IP));
+                                        if (d == null)
+                                        {
+                                            LogMessage("Device: " + Name + " IP address: " + IP + " discovered");
+                                            deviceList.Add(new Models.Device(Name, IP));
+
+                                            ViewModelLocator.Settings.DeviceList = deviceList;
+                                            int index = 0;
+                                            PageStatus = Status.NoDeviceSelected;
+                                            foreach (var item in comboDevice.Items)
+                                            {
+                                                if (item is Models.Device)
+                                                {
+                                                    Models.Device p = item as Models.Device;
+                                                    if (p != null)
+                                                    {
+                                                        if (string.Equals(p.Name, Name)&& string.Equals(p.IpAddress,IP))
+                                                        {
+                                                            comboDevice.SelectedIndex = index;
+                                                            PageStatus = Status.DeviceSelected;
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                                index++;
+                                            }
+                                        }
+                                    }
+                                    UpdateControls();
+                                }
+                            }
+                        }
+                    });
+                    break;
+            }
+        }
+        private void comboDevice_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+
+            if (comboDevice.SelectedItem is Models.Device)
+            {
+                Models.Device p = (Models.Device)comboDevice.SelectedItem;
+                if (p != null)
+                    PageStatus = Status.DeviceSelected;
+                else
+                    PageStatus = Status.NoDeviceSelected;
+            }
+            UpdateControls();
+
+        }
+        private void comboDevice_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            RemoveDeviceButton.IsEnabled = false;
+            if (comboDevice.Items.Count > 0)
+            {
+                PageStatus = Status.DeviceSelected;
+                comboDevice.SelectedIndex = 0;
+            }
+            else
+                PageStatus = Status.NoDeviceSelected;
+            UpdateControls();
+        }
+        private async void DiscoverDevice_Click(object sender, RoutedEventArgs e)
+        {
+
+            if (companion.IsUnicastReceiving())
+            {
+                LogMessage("Stop Discovering Devices ...");
+                companion.MessageReceived -= Companion_MessageReceived;
+                companion.StopRecv();
+                DiscoverDeviceButton.Content = "\xE895";
+            }
+            else
+            {
+                LogMessage("Discovering Devices ...");
+                await companion.InitializeUnicastRecv();
+                companion.MessageReceived += Companion_MessageReceived;
+                DiscoverDeviceButton.Content = "\xE894";
+                await companion.SendCommand(ViewModels.StaticSettingsViewModel.MulticastIPAddress, CompanionClient.commandPing, null);
+            }
+            UpdateControls();
+        }
+        private void AddDevice_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Adding Device ...");
+            if (string.Equals(AddDeviceButton.Content,"\xE710"))
+            {
+                LogMessage("Adding Device ...");
+                AddDeviceButton.Content = "\xE8FB";
+                PageStatus = Status.AddingDevice;
+            }
+            else
+            {
+                LogMessage("Completing Adding Devices ...");
+
+                string Name = DeviceName.Text;
+                string IP = DeviceIPAddress.Text;
+                if ((!string.IsNullOrEmpty(Name)) && (CompanionClient.IsIPv4Address(IP)))
+                {
+                    ObservableCollection<Models.Device> deviceList = ViewModelLocator.Settings.DeviceList;
+                    if (deviceList != null)
+                    {
+                        Models.Device d = deviceList.FirstOrDefault(device => string.Equals(device.Name, Name) && string.Equals(device.IpAddress, IP));
+                        if (d == null)
+                        {
+                            LogMessage("Device: " + Name + " IP address: " + IP + " added");
+                            deviceList.Add(new Models.Device(Name, IP));
+
+                            ViewModelLocator.Settings.DeviceList = deviceList;
+                            int index = 0;
+                            PageStatus = Status.NoDeviceSelected;
+                            foreach (var item in comboDevice.Items)
+                            {
+                                if (item is Models.Device)
+                                {
+                                    Models.Device p = item as Models.Device;
+                                    if (p != null)
+                                    {
+                                        if (string.Equals(p.Name, Name) && string.Equals(p.IpAddress, IP))
+                                        {
+                                            comboDevice.SelectedIndex = index;
+                                            PageStatus = Status.DeviceSelected;
+                                            AddDeviceButton.Content = "\xE710";
+                                            break;
+                                        }
+                                    }
+                                }
+                                index++;
+                            }
+                        }
+                    }
+                }
+            }
+            UpdateControls();
+        }
+        private void RemoveDevice_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Removing Device ...");
+            if (comboDevice.SelectedItem is Models.Device)
+            {
+                ObservableCollection<Models.Device> pll = ViewModelLocator.Settings.DeviceList;
+                if ((pll != null) && (comboDevice.SelectedIndex < pll.Count))
+                {
+                    pll.RemoveAt(comboDevice.SelectedIndex);
+                }
+                ViewModelLocator.Settings.DeviceList = pll;
+                if (comboDevice.Items.Count > 0)
+                {
+
+                    PageStatus = Status.DeviceSelected;
+                    comboDevice.SelectedIndex = 0;
+                }
+                else
+                {
+                    PageStatus = Status.NoDeviceSelected;
+                }
+
+            }
+
+            UpdateControls();
+        }
 
         #region Logs
         void PushMessage(string Message)
