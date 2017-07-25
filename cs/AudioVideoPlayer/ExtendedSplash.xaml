@@ -29,9 +29,9 @@
 
    <!-- <Canvas Grid.Row="1" Grid.Column="1" >
     -->
-        <StackPanel  Grid.Row="1" Grid.Column="1"  VerticalAlignment="Center" HorizontalAlignment="Center" >
-        <Image x:Name="extendedSplashImage" Source="Assets/TransAudioVideo.png" Stretch="UniformToFill"/>
-        </StackPanel>
+        <Grid  Grid.Row="1" Grid.Column="1"  VerticalAlignment="Center" HorizontalAlignment="Center" >
+        <Image x:Name="extendedSplashImage" Source="Assets/TransAudioVideo.png"  HorizontalAlignment="Center" VerticalAlignment="Center"  Stretch="Uniform"/>
+        </Grid>
   <!--  </Canvas> -->
   <Grid x:Name="waitRing"
       Visibility="Collapsed" Grid.Row="3" Grid.Column="1" >

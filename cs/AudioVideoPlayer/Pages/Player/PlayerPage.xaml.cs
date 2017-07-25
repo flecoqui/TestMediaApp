@@ -1519,8 +1519,10 @@ namespace AudioVideoPlayer.Pages.Player
             var view = ApplicationView.GetForCurrentView();
             if (((picturePopup != null) && (picturePopup.IsOpen == true)) ||
                 ((mediaPlayerElement.IsFullWindow) &&
-                (mediaPlayerElement.AreTransportControlsEnabled == false)) ||
-                ((view != null) && (view.IsFullScreenMode)))
+                (mediaPlayerElement.AreTransportControlsEnabled == true)) )
+                // XBox
+                //||
+                //((view != null) && (view.IsFullScreenMode)))
                 return true;
             return false;
         }
