@@ -23,10 +23,11 @@ namespace AudioVideoPlayer.Pages.About
         public string SystemArchitecture { get { return Information.SystemInformation.SystemArchitecture; } }
         public string ApplicationName { get { return Information.SystemInformation.ApplicationName; } }
         public string ApplicationVersion { get { return Information.SystemInformation.ApplicationVersion; } }
+        public string DeviceName { get { return Information.SystemInformation.DeviceName; } }
         public string DeviceManufacturer { get { return Information.SystemInformation.DeviceManufacturer; } }
         public string DeviceModel { get { return Information.SystemInformation.DeviceModel; } }
         public string AppSpecificHardwareID { get{ return Information.SystemInformation.AppSpecificHardwareID.Replace('-',' '); }}
-
+        public string PackageFamilyName {get { return Information.SystemInformation.PackageFamilyName; } }
         public AboutPage()
         {
             InitializeComponent();

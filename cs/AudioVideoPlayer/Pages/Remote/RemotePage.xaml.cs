@@ -28,7 +28,7 @@ using AudioVideoPlayer.DataModel;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using System.Reflection;
-using Companion;
+using AudioVideoPlayer.Companion;
 using Windows.Security.Cryptography.Core;
 using Windows.Security.Cryptography;
 using Windows.Storage.Streams;
@@ -228,11 +228,11 @@ namespace AudioVideoPlayer.Pages.Remote
         }
         string GetIPAddress()
         {
-            Models.Device d = comboDevice.SelectedItem as Models.Device;
+            Companion.CompanionDevice d = comboDevice.SelectedItem as Companion.CompanionDevice;
             if (d != null)
             {
-                if (!string.IsNullOrEmpty(d.IpAddress))
-                    return d.IpAddress;
+                if (!string.IsNullOrEmpty(d.IPAddress))
+                    return d.IPAddress;
             }
             return ViewModels.StaticSettingsViewModel.MulticastIPAddress;
         }
@@ -335,11 +335,12 @@ namespace AudioVideoPlayer.Pages.Remote
 
         #region Companion
         private CompanionClient companion;
-
+        private CompanionConnectionManager companionConnectionManager;
+        private CompanionDevice localCompanionDevice;
         private void RegisterCompanion()
         {
             companion = new CompanionClient(Information.SystemInformation.DeviceManufacturer + "_" + Information.SystemInformation.DeviceModel + "_" + Information.SystemInformation.SystemFamily, ViewModels.StaticSettingsViewModel.MulticastIPAddress, ViewModels.StaticSettingsViewModel.MulticastUDPPort, ViewModels.StaticSettingsViewModel.UnicastUDPPort);
-
+            companionConnectionManager = new CompanionConnectionManager();
         }
 
         private async void InitializeCompanionMode()
@@ -351,13 +352,121 @@ namespace AudioVideoPlayer.Pages.Remote
                     fullwindowButton.Visibility = Visibility.Visible;
                 }
 
-                companion.StopRecv();
+                localCompanionDevice = new CompanionDevice(string.Empty, Information.SystemInformation.DeviceName, companionConnectionManager.GetSourceIP(), Information.SystemInformation.SystemFamily);
+            companionConnectionManager.MessageReceived += CompanionConnectionManager_MessageReceived;
+            companionConnectionManager.CompanionDeviceAdded += CompanionConnectionManager_CompanionDeviceAdded;
+            companionConnectionManager.CompanionDeviceRemoved += CompanionConnectionManager_CompanionDeviceRemoved;
+            companionConnectionManager.CompanionDeviceUpdated += CompanionConnectionManager_CompanionDeviceUpdated;
+
+            await companionConnectionManager.Initialize(localCompanionDevice, "testmediaapp://", "com.testmediaapp.companionservice", "52458FLECOQUI.TestMediaApplication_h29hy11807230");
+            
+            companion.StopRecv();
                 bool result = await companion.InitializeSend();
                 if (result == true)
                     LogMessage("Companion Initialize Send ok");
                 else
                     LogMessage("Error Companion Initialize Send");
 
+        }
+
+
+        void UpdateSelection(string Id)
+        {
+            int index = 0;
+            PageStatus = Status.NoDeviceSelected;
+            foreach (var item in comboDevice.Items)
+            {
+                if (item is Companion.CompanionDevice)
+                {
+                    Companion.CompanionDevice p = item as Companion.CompanionDevice;
+                    if (p != null)
+                    {
+                        if (string.Equals(p.Id, Id))
+                        {
+                            comboDevice.SelectedIndex = index;
+                            PageStatus = Status.DeviceSelected;
+                            return;
+                        }
+                    }
+                }
+                index++;
+            }
+            if (comboDevice.Items.Count > 0)
+            {
+                comboDevice.SelectedIndex = 0;
+                PageStatus = Status.DeviceSelected;
+            }
+            return;
+        }
+        private async void CompanionConnectionManager_CompanionDeviceUpdated(CompanionConnectionManager sender, CompanionDevice args)
+        {
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                ObservableCollection<Companion.CompanionDevice> deviceList = ViewModelLocator.Settings.DeviceList;
+                if (deviceList != null)
+                {
+                    Companion.CompanionDevice d = deviceList.FirstOrDefault(device => string.Equals(device.Id, args.Id));
+                    if (d != null)
+                    {
+                        deviceList.Remove(d);
+                    }
+                    deviceList.Add(new Companion.CompanionDevice(args.Id, args.Name, args.IPAddress, args.Kind));
+                    ViewModelLocator.Settings.DeviceList = deviceList;
+                    UpdateSelection(args.Id);
+                    LogMessage("Device: " + d.Name + " IP address: " + d.IPAddress + " Updated ");
+                }
+            });
+        }
+        private async void CompanionConnectionManager_CompanionDeviceRemoved(CompanionConnectionManager sender, CompanionDevice args)
+        {
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                ObservableCollection<Companion.CompanionDevice> deviceList = ViewModelLocator.Settings.DeviceList;
+                if (deviceList != null)
+                {
+                    Companion.CompanionDevice d = deviceList.FirstOrDefault(device => string.Equals(device.Id, args.Id));
+                    if (d != null)
+                    {
+                        LogMessage("Device: " + d.Name + " IP address: " + d.IPAddress + " removed ");
+                        deviceList.Remove(d);
+                        ViewModelLocator.Settings.DeviceList = deviceList;
+                        if (comboDevice.SelectedItem is Companion.CompanionDevice)
+                        {
+                            Companion.CompanionDevice sd = (Companion.CompanionDevice)comboDevice.SelectedItem;
+                            ViewModelLocator.Settings.DeviceList = deviceList;
+                            UpdateSelection(sd.Id);
+                        }
+                    }
+                }
+            });
+        }
+
+        private async void CompanionConnectionManager_CompanionDeviceAdded(CompanionConnectionManager sender, CompanionDevice args)
+        {
+
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                ObservableCollection<Companion.CompanionDevice> deviceList = ViewModelLocator.Settings.DeviceList;
+                if (deviceList != null)
+                {
+                    Companion.CompanionDevice d = deviceList.FirstOrDefault(device => string.Equals(device.Id, args.Id) && string.Equals(device.Name, args.Name));
+                    if (d != null)
+                    {
+                        deviceList.Remove(d);
+                    }
+                    LogMessage("Device: " + args.Name + " IP address: " + args.IPAddress + " added");
+                    deviceList.Add(new Companion.CompanionDevice(args.Id, args.Name, args.IPAddress, args.Kind));
+
+                    ViewModelLocator.Settings.DeviceList = deviceList;
+                    UpdateSelection(args.Id);
+                }
+            });
+
+        }
+
+        private void CompanionConnectionManager_MessageReceived(CompanionDevice sender, string args)
+        {
+            throw new NotImplementedException();
         }
 
         //private async void open_remote_Click(object sender, RoutedEventArgs e)
@@ -423,6 +532,14 @@ namespace AudioVideoPlayer.Pages.Remote
         {
             LogMessage("Sending Minus event to " + GetIPAddress());
             bool bResult = await companion.SendCommand(GetIPAddress(), CompanionClient.commandMinus, null);
+            if (comboDevice.SelectedItem != null)
+            {
+                CompanionDevice cd = comboDevice.SelectedItem as CompanionDevice;
+                if (cd != null)
+                {
+                    bResult = await companionConnectionManager.Send(cd, "TEST");
+                }
+            }
             UpdateControls();
         }
         private async void Fullscreen_remote_Click(object sender, RoutedEventArgs e)
@@ -497,20 +614,6 @@ namespace AudioVideoPlayer.Pages.Remote
         #endregion
 
 
-        /// <summary>
-        /// This method is called when the IPAddress fields are changed
-        /// </summary>
-        void IPAddressChanged(object sender, TextChangedEventArgs e)
-        {
-            TextBox tb = sender as TextBox;
-            if (tb != null)
-            {
-                if (!CompanionClient.IsIPv4Address(tb.Text))
-                {
-                    tb.Text = ViewModels.StaticSettingsViewModel.MulticastIPAddress.ToString();
-                }
-            }
-        }
         private async void Companion_MessageReceived(CompanionClient sender, string Command, Dictionary<string, string> Parameters)
         {
             if (Parameters == null)
@@ -537,26 +640,26 @@ namespace AudioVideoPlayer.Pages.Remote
                                 string IP = Parameters[CompanionClient.parameterIPAddress];
                                 if (IP != null)
                                 {
-                                    ObservableCollection<Models.Device> deviceList = ViewModelLocator.Settings.DeviceList;
+                                    ObservableCollection<Companion.CompanionDevice> deviceList = ViewModelLocator.Settings.DeviceList;
                                     if (deviceList != null)
                                     {
-                                        Models.Device d = deviceList.FirstOrDefault(device => string.Equals(device.Name, Name) && string.Equals(device.IpAddress, IP));
+                                        Companion.CompanionDevice d = deviceList.FirstOrDefault(device => string.Equals(device.Name, Name) && string.Equals(device.IPAddress, IP));
                                         if (d == null)
                                         {
                                             LogMessage("Device: " + Name + " IP address: " + IP + " discovered");
-                                            deviceList.Add(new Models.Device(Name, IP));
+                                            deviceList.Add(new Companion.CompanionDevice(Guid.NewGuid().ToString(), Name, IP,string.Empty));
 
                                             ViewModelLocator.Settings.DeviceList = deviceList;
                                             int index = 0;
                                             PageStatus = Status.NoDeviceSelected;
                                             foreach (var item in comboDevice.Items)
                                             {
-                                                if (item is Models.Device)
+                                                if (item is Companion.CompanionDevice)
                                                 {
-                                                    Models.Device p = item as Models.Device;
+                                                    Companion.CompanionDevice p = item as Companion.CompanionDevice;
                                                     if (p != null)
                                                     {
-                                                        if (string.Equals(p.Name, Name)&& string.Equals(p.IpAddress,IP))
+                                                        if (string.Equals(p.Name, Name)&& string.Equals(p.IPAddress,IP))
                                                         {
                                                             comboDevice.SelectedIndex = index;
                                                             PageStatus = Status.DeviceSelected;
@@ -580,9 +683,9 @@ namespace AudioVideoPlayer.Pages.Remote
         {
 
 
-            if (comboDevice.SelectedItem is Models.Device)
+            if (comboDevice.SelectedItem is Companion.CompanionDevice)
             {
-                Models.Device p = (Models.Device)comboDevice.SelectedItem;
+                Companion.CompanionDevice p = (Companion.CompanionDevice)comboDevice.SelectedItem;
                 if (p != null)
                     PageStatus = Status.DeviceSelected;
                 else
@@ -605,7 +708,16 @@ namespace AudioVideoPlayer.Pages.Remote
         }
         private async void DiscoverDevice_Click(object sender, RoutedEventArgs e)
         {
-
+            if (!companionConnectionManager.IsDiscovering())
+            {
+                LogMessage("Start Discovering Devices ...");
+                await companionConnectionManager.StartDiscovery();
+            }
+            else
+            {
+                LogMessage("Stop Discovering Devices ...");
+                companionConnectionManager.StopDiscovery();
+            }
             if (companion.IsUnicastReceiving())
             {
                 LogMessage("Stop Discovering Devices ...");
@@ -640,26 +752,26 @@ namespace AudioVideoPlayer.Pages.Remote
                 string IP = DeviceIPAddress.Text;
                 if ((!string.IsNullOrEmpty(Name)) && (CompanionClient.IsIPv4Address(IP)))
                 {
-                    ObservableCollection<Models.Device> deviceList = ViewModelLocator.Settings.DeviceList;
+                    ObservableCollection<Companion.CompanionDevice> deviceList = ViewModelLocator.Settings.DeviceList;
                     if (deviceList != null)
                     {
-                        Models.Device d = deviceList.FirstOrDefault(device => string.Equals(device.Name, Name) && string.Equals(device.IpAddress, IP));
+                        Companion.CompanionDevice d = deviceList.FirstOrDefault(device => string.Equals(device.Name, Name) && string.Equals(device.IPAddress, IP));
                         if (d == null)
                         {
                             LogMessage("Device: " + Name + " IP address: " + IP + " added");
-                            deviceList.Add(new Models.Device(Name, IP));
+                            deviceList.Add(new Companion.CompanionDevice(Guid.NewGuid().ToString(), Name, IP,string.Empty));
 
                             ViewModelLocator.Settings.DeviceList = deviceList;
                             int index = 0;
                             PageStatus = Status.NoDeviceSelected;
                             foreach (var item in comboDevice.Items)
                             {
-                                if (item is Models.Device)
+                                if (item is Companion.CompanionDevice)
                                 {
-                                    Models.Device p = item as Models.Device;
+                                    Companion.CompanionDevice p = item as Companion.CompanionDevice;
                                     if (p != null)
                                     {
-                                        if (string.Equals(p.Name, Name) && string.Equals(p.IpAddress, IP))
+                                        if (string.Equals(p.Name, Name) && string.Equals(p.IPAddress, IP))
                                         {
                                             comboDevice.SelectedIndex = index;
                                             PageStatus = Status.DeviceSelected;
@@ -679,9 +791,9 @@ namespace AudioVideoPlayer.Pages.Remote
         private void RemoveDevice_Click(object sender, RoutedEventArgs e)
         {
             LogMessage("Removing Device ...");
-            if (comboDevice.SelectedItem is Models.Device)
+            if (comboDevice.SelectedItem is Companion.CompanionDevice)
             {
-                ObservableCollection<Models.Device> pll = ViewModelLocator.Settings.DeviceList;
+                ObservableCollection<Companion.CompanionDevice> pll = ViewModelLocator.Settings.DeviceList;
                 if ((pll != null) && (comboDevice.SelectedIndex < pll.Count))
                 {
                     pll.RemoveAt(comboDevice.SelectedIndex);

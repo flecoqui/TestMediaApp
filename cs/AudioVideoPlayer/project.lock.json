@@ -1884,6 +1884,13 @@
           }
         }
       },
+      "CompanionService/1.0.0": {
+        "type": "project",
+        "framework": "Unsupported,Version=v0.0",
+        "dependencies": {
+          "Microsoft.NETCore.UniversalWindowsPlatform": "5.2.3"
+        }
+      },
       "MediaHelpers/1.0.0": {
         "type": "project"
       }
@@ -3628,6 +3635,13 @@
           "lib/netcore50/System.Xml.XmlSerializer.dll": {}
         }
       },
+      "CompanionService/1.0.0": {
+        "type": "project",
+        "framework": "Unsupported,Version=v0.0",
+        "dependencies": {
+          "Microsoft.NETCore.UniversalWindowsPlatform": "5.2.3"
+        }
+      },
       "MediaHelpers/1.0.0": {
         "type": "project"
       }
@@ -5333,6 +5347,13 @@
         },
         "runtime": {
           "runtimes/win8-aot/lib/netcore50/System.Xml.XmlSerializer.dll": {}
+        }
+      },
+      "CompanionService/1.0.0": {
+        "type": "project",
+        "framework": "Unsupported,Version=v0.0",
+        "dependencies": {
+          "Microsoft.NETCore.UniversalWindowsPlatform": "5.2.3"
         }
       },
       "MediaHelpers/1.0.0": {
@@ -7086,6 +7107,13 @@
           "lib/netcore50/System.Xml.XmlSerializer.dll": {}
         }
       },
+      "CompanionService/1.0.0": {
+        "type": "project",
+        "framework": "Unsupported,Version=v0.0",
+        "dependencies": {
+          "Microsoft.NETCore.UniversalWindowsPlatform": "5.2.3"
+        }
+      },
       "MediaHelpers/1.0.0": {
         "type": "project"
       }
@@ -8791,6 +8819,13 @@
         },
         "runtime": {
           "runtimes/win8-aot/lib/netcore50/System.Xml.XmlSerializer.dll": {}
+        }
+      },
+      "CompanionService/1.0.0": {
+        "type": "project",
+        "framework": "Unsupported,Version=v0.0",
+        "dependencies": {
+          "Microsoft.NETCore.UniversalWindowsPlatform": "5.2.3"
         }
       },
       "MediaHelpers/1.0.0": {
@@ -10544,6 +10579,13 @@
           "lib/netcore50/System.Xml.XmlSerializer.dll": {}
         }
       },
+      "CompanionService/1.0.0": {
+        "type": "project",
+        "framework": "Unsupported,Version=v0.0",
+        "dependencies": {
+          "Microsoft.NETCore.UniversalWindowsPlatform": "5.2.3"
+        }
+      },
       "MediaHelpers/1.0.0": {
         "type": "project"
       }
@@ -12249,6 +12291,13 @@
         },
         "runtime": {
           "runtimes/win8-aot/lib/netcore50/System.Xml.XmlSerializer.dll": {}
+        }
+      },
+      "CompanionService/1.0.0": {
+        "type": "project",
+        "framework": "Unsupported,Version=v0.0",
+        "dependencies": {
+          "Microsoft.NETCore.UniversalWindowsPlatform": "5.2.3"
         }
       },
       "MediaHelpers/1.0.0": {
@@ -15499,6 +15548,11 @@
         "system.xml.xmlserializer.nuspec"
       ]
     },
+    "CompanionService/1.0.0": {
+      "type": "project",
+      "path": "../CompanionService/CompanionService.csproj",
+      "msbuildProject": "../CompanionService/CompanionService.csproj"
+    },
     "MediaHelpers/1.0.0": {
       "type": "project",
       "path": "../MediaHelpers/MediaHelpers.vcxproj",
@@ -15526,6 +15580,9 @@
           "projectReferences": {
             "C:\\git\\flecoqui\\TestMediaApp\\cs\\MediaHelpers\\MediaHelpers.vcxproj": {
               "projectPath": "C:\\git\\flecoqui\\TestMediaApp\\cs\\MediaHelpers\\MediaHelpers.vcxproj"
+            },
+            "C:\\git\\flecoqui\\TestMediaApp\\cs\\CompanionService\\CompanionService.csproj": {
+              "projectPath": "C:\\git\\flecoqui\\TestMediaApp\\cs\\CompanionService\\CompanionService.csproj"
             }
           }
         }

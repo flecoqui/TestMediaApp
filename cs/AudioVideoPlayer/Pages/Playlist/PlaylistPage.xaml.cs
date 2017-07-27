@@ -28,7 +28,7 @@ using AudioVideoPlayer.DataModel;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using System.Reflection;
-using Companion;
+using AudioVideoPlayer.Companion;
 using Windows.Security.Cryptography.Core;
 using Windows.Security.Cryptography;
 using Windows.Storage.Streams;

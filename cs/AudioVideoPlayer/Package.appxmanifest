@@ -17,7 +17,7 @@
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
   <Dependencies>
-    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.14393.0" MaxVersionTested="10.0.14393.0" />
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.14393.0" MaxVersionTested="10.0.15063.0" />
   </Dependencies>
   <Resources>
     <Resource Language="x-generate" />
@@ -34,11 +34,6 @@
         </uap:InitialRotationPreference>
       </uap:VisualElements>
       <Extensions>
-        <uap:Extension Category="windows.protocol">
-          <uap:Protocol Name="testmediaapp" DesiredView="useMore">
-            <uap:DisplayName>TestMediaApp</uap:DisplayName>
-          </uap:Protocol>
-        </uap:Extension>
         <uap:Extension Category="windows.fileTypeAssociation">
           <uap:FileTypeAssociation Name="testmediaapp">
             <uap:DisplayName>TestMediaApp</uap:DisplayName>
@@ -62,6 +57,14 @@
             </uap:SupportedFileTypes>
           </uap:FileTypeAssociation>
         </uap:Extension>
+        <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="testmediaapp" DesiredView="useMore">
+            <uap:DisplayName>TestMediaApp</uap:DisplayName>
+          </uap:Protocol>
+        </uap:Extension>
+        <uap:Extension Category="windows.appService" EntryPoint="CompanionService.CompanionServiceTask">
+          <uap3:AppService Name="com.testmediaapp.companionservice"  SupportsRemoteSystems="true"/>
+        </uap:Extension>
       </Extensions>
     </Application>
   </Applications>
@@ -73,6 +76,7 @@
     <uap:Capability Name="musicLibrary" />
     <uap:Capability Name="removableStorage" />
     <uap3:Capability Name="backgroundMediaPlayback" />
+    <uap3:Capability Name="remoteSystem" />
     <!--
     <rescap:Capability Name="hevcPlayback" />
     -->

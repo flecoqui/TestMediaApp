@@ -15,14 +15,14 @@ using Windows.UI.Xaml.Controls;
 
 namespace AudioVideoPlayer.Models
 {
-    public class Device
+    public class DDevice
     {
-        public Device()
+        public DDevice()
         {
             Name = string.Empty;
             IpAddress = string.Empty;
         }
-        public Device(string name, string ip)
+        public DDevice(string name, string ip)
         {
             Name = name;
             IpAddress = ip;

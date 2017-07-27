@@ -126,33 +126,33 @@ namespace AudioVideoPlayer.ViewModels
 
         // Remote Settings
         public const string cALL = "All(Multicast)";
-        private static ObservableCollection<Models.Device> deviceList;
+        private static ObservableCollection<Companion.CompanionDevice> deviceList;
         private static int indexRemoteContent;
         private static string uriRemoteContent;
         private static string uriRemotePlaylist;
 
-        public static ObservableCollection<Models.Device> DeviceList
+        public static ObservableCollection<Companion.CompanionDevice> DeviceList
         {
             get
             {
                 var auto = Helpers.SettingsHelper.ReadSettingsValue(nameof(DeviceList));
                 if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
                 {
-                    deviceList = new ObservableCollection<Models.Device>();
-                    deviceList.Add(new Models.Device(cALL,Companion.CompanionClient.cMulticastAddress) );
-                    deviceList.Add(new Models.Device("MyDeviceHome", "192.168.1.65"));
-                    deviceList.Add(new Models.Device("MyDeviceWork", "10.85.185.182"));
-                    deviceList.Add(new Models.Device("MyDevicePhone", "10.85.197.252"));
-                    deviceList.Add(new Models.Device("MyDevicePhone1", "172.16.0.3"));
-                    deviceList.Add(new Models.Device("MyDevicePC1", "172.16.0.2"));
+                    deviceList = new ObservableCollection<Companion.CompanionDevice>();
+                    deviceList.Add(new Companion.CompanionDevice("0",cALL,Companion.CompanionClient.cMulticastAddress,cALL) );
+                    deviceList.Add(new Companion.CompanionDevice("1","MyDeviceHome", "192.168.1.65","Desktop"));
+                    deviceList.Add(new Companion.CompanionDevice("2", "MyDeviceWork", "10.85.185.182","PC"));
+                    deviceList.Add(new Companion.CompanionDevice("3", "MyDevicePhone", "10.85.197.252","Phone"));
+                    deviceList.Add(new Companion.CompanionDevice("4", "MyDevicePhone1", "172.16.0.3","Phone"));
+                    deviceList.Add(new Companion.CompanionDevice("5", "MyDevicePC1", "172.16.0.2","PC"));
                 }
                 else
-                    deviceList = ObjectSerializer <ObservableCollection<Models.Device>>.FromXml((string)auto);
+                    deviceList = ObjectSerializer <ObservableCollection<Companion.CompanionDevice>>.FromXml((string)auto);
                 return deviceList;
             }
             set
             {
-                string serializeString = ObjectSerializer<ObservableCollection<Models.Device>>.ToXml(value);
+                string serializeString = ObjectSerializer<ObservableCollection<Companion.CompanionDevice>>.ToXml(value);
                 Helpers.SettingsHelper.SaveSettingsValue(nameof(DeviceList), serializeString);
                 deviceList = value;
             }

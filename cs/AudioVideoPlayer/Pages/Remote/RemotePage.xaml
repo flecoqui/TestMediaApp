@@ -26,6 +26,7 @@
     <Page.Resources>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
         <converters:ObjectPropertyToStringConverter x:Key="ObjectPropertyToStringConverter"/>
+
     </Page.Resources>
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"  Margin="5,5,5,5">
         <Grid.RowDefinitions>
@@ -58,7 +59,7 @@
                            SelectionChanged="comboDevice_SelectionChanged"  
                            >
                 </ComboBox>
-                <Button IsEnabled="true" x:Name="DiscoverDeviceButton"  Content="&#xE895;"  Foreground="{ThemeResource ButtonForegroundThemeBrush}" ToolTipService.ToolTip="Discover the devices in the same subnetwork" FontFamily="Segoe MDL2 Assets" IsTabStop="True"  Height="40" Width="40" Margin="1,1,1,1"  Click="DiscoverDevice_Click" />
+                <Button IsEnabled="true" x:Name="DiscoverDeviceButton"  Content="&#xE895;"  Foreground="{ThemeResource ButtonForegroundThemeBrush}"    ToolTipService.ToolTip="Discover the devices in the same subnetwork" FontFamily="Segoe MDL2 Assets" IsTabStop="True"  Height="40" Width="40" Margin="1,1,1,1"  Click="DiscoverDevice_Click" />
                 <Button IsEnabled="true" x:Name="AddDeviceButton" Content="&#xE710;"  Foreground="{ThemeResource ButtonForegroundThemeBrush}" ToolTipService.ToolTip="Add manually a device" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="AddDevice_Click" />
                 <Button IsEnabled="true" x:Name="RemoveDeviceButton" Content="&#xE74D;"  Foreground="{ThemeResource ButtonForegroundThemeBrush}" Height="40" Width="40" ToolTipService.ToolTip="Remove the current device" FontFamily="Segoe MDL2 Assets" IsTabStop="True"  Margin="1,1,1,1" Click="RemoveDevice_Click" />
             </StackPanel>
@@ -66,7 +67,7 @@
                 <TextBlock Grid.Row="6" Grid.Column="0"   Text="Name:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
                 <TextBox x:Name="DeviceName" Margin="5,0,0,0" Width="86" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="{x:Bind comboDevice.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Name',Mode=OneWay}"  />
                 <TextBlock Grid.Row="7" Grid.Column="0" Margin="5,0,0,0" Text="IP:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
-                <TextBox x:Name="DeviceIPAddress" Margin="5,0,0,0" Width="125" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="{x:Bind comboDevice.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='IpAddress',Mode=OneWay}"  TextChanged="IPAddressChanged" />
+                <TextBox x:Name="DeviceIPAddress" Margin="5,0,0,0" Width="125" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="{x:Bind comboDevice.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='IPAddress',Mode=OneWay}" />
             </StackPanel>
             <StackPanel Orientation="Horizontal"  VerticalAlignment="Center">
                 <Button IsEnabled="False" Content="&#xE892;" x:Name="minusButton" Foreground="{ThemeResource ButtonForegroundThemeBrush}" ToolTipService.ToolTip="Send a remote command to select the previous stream in the playlist" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Minus_remote_Click"/>

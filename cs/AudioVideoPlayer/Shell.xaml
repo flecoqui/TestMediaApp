@@ -14,7 +14,7 @@
         <vm:ViewModel x:Name="ViewModel" />
     </Page.DataContext>
     <Page.Resources>
-        <converters:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter"/>
+     <converters:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter"/>   
         <DataTemplate x:Key="ButtonTemplate"
                       x:DataType="local:MenuItem">
             <Grid>

@@ -160,7 +160,7 @@ namespace AudioVideoPlayer.ViewModels
             }
         }
         // Remote Settings
-        public ObservableCollection<Models.Device> DeviceList
+        public ObservableCollection<Companion.CompanionDevice> DeviceList
         {
             get
             {

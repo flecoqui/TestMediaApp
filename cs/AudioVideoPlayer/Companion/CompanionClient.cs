@@ -19,7 +19,7 @@ using Windows.Networking.Connectivity;
 
 using Windows.Storage.Streams;
 
-namespace Companion
+namespace AudioVideoPlayer.Companion
 {
     class CompanionClient
     {

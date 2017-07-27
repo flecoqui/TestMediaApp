@@ -18,6 +18,7 @@
             <RowDefinition Height="20"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="20"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -40,12 +41,18 @@
         <TextBlock Grid.Row="6" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ApplicationVersion }" />
         <TextBlock Grid.Row="7" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Application Architecture: "/>
         <TextBlock Grid.Row="7" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind SystemArchitecture}" />
-        <TextBlock Grid.Row="9" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Device Manufacturer: "/>
-        <TextBlock Grid.Row="9" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind DeviceManufacturer }" />
-        <TextBlock Grid.Row="10" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Device Model: "/>
-        <TextBlock Grid.Row="10" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind DeviceModel }" />
-        <TextBlock Grid.Row="12" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Harddware ID: "/>
-        <TextBlock Grid.Row="12" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind AppSpecificHardwareID }" TextWrapping="Wrap"/>
+
+        <TextBlock Grid.Row="9" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Device Name: "/>
+        <TextBlock Grid.Row="9" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind DeviceName }" />
+
+        <TextBlock Grid.Row="10" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Device Manufacturer: "/>
+        <TextBlock Grid.Row="10" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind DeviceManufacturer }" />
+        <TextBlock Grid.Row="11" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Device Model: "/>
+        <TextBlock Grid.Row="11" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind DeviceModel }" />
+        <TextBlock Grid.Row="13" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Package: "/>
+        <TextBlock Grid.Row="13" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind PackageFamilyName }" TextWrapping="Wrap"/>
+        <TextBlock Grid.Row="14" Grid.Column="0" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Harddware ID: "/>
+        <TextBlock Grid.Row="14" Grid.Column="1" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind AppSpecificHardwareID }" TextWrapping="Wrap"/>
 
     </Grid>
 </Page>

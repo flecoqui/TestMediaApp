@@ -23,6 +23,7 @@ namespace AudioVideoPlayer.Information
     public static class SystemInformation
     {
 
+        public static string DeviceName { get; }
         public static string SystemFamily { get; }
         public static string SystemVersion { get; }
         public static string SystemArchitecture { get; }
@@ -31,6 +32,9 @@ namespace AudioVideoPlayer.Information
         public static string DeviceManufacturer { get; }
         public static string DeviceModel { get; }
         public static string AppSpecificHardwareID { get;  }
+
+
+        public static string PackageFamilyName { get; }
 
         public static string GetWindowsVersion()
         {
@@ -126,12 +130,16 @@ namespace AudioVideoPlayer.Information
 
             // get the device manufacturer and model name
             EasClientDeviceInformation eas = new EasClientDeviceInformation();
+            DeviceName = eas.FriendlyName;
             DeviceManufacturer = eas.SystemManufacturer;
             DeviceModel = eas.SystemProductName;
 
 
             // get App Specific Hardware ID
             AppSpecificHardwareID = GetAppSpecificHardwareID();
+
+            // Family Name
+            PackageFamilyName = Package.Current.Id.FamilyName;
         }
         public static string GetString()
         {
