@@ -9,6 +9,7 @@ using Windows.Foundation.Collections;
 using Windows.Networking.Connectivity;
 using Windows.System;
 using Windows.System.RemoteSystems;
+using CompanionService;
 
 namespace AudioVideoPlayer.Companion
 {
@@ -26,6 +27,8 @@ namespace AudioVideoPlayer.Companion
 
         private RemoteSystemWatcher remoteSystemWatcher;
         private AppServiceConnection receiveConnection;
+
+
 
         public CompanionConnectionManager()
         {
@@ -74,14 +77,17 @@ namespace AudioVideoPlayer.Companion
                 {
                     // Connection established with the background task
                     var inputs = new ValueSet();
-                    inputs.Add("type", "init");
+                    inputs.Add(CompanionServiceMessage.ATT_TYPE, CompanionServiceMessage.TYPE_INIT);
                     AppServiceResponse response = await receiveConnection.SendMessageAsync(inputs);
-                    if (response.Status == AppServiceResponseStatus.Success && response.Message.ContainsKey("result"))
+                    if ((response != null) && (response.Status == AppServiceResponseStatus.Success))
                     {
-                        return true;
+                        if ((response.Message != null) && (response.Message.ContainsKey(CompanionServiceMessage.ATT_TYPE)))
+                        {
+                            string s = (string)response.Message[CompanionServiceMessage.ATT_TYPE];
+                            if (string.Equals(s, CompanionServiceMessage.TYPE_RESULT))
+                                return true;
+                        }
                     }
-
-                    return true;
                 }
             }
             return false;
@@ -102,21 +108,65 @@ namespace AudioVideoPlayer.Companion
             return true;
 
         }
-        private void ReceiveConnection_RequestReceived(Windows.ApplicationModel.AppService.AppServiceConnection sender, Windows.ApplicationModel.AppService.AppServiceRequestReceivedEventArgs args)
+        private async void ReceiveConnection_RequestReceived(Windows.ApplicationModel.AppService.AppServiceConnection sender, Windows.ApplicationModel.AppService.AppServiceRequestReceivedEventArgs args)
         {
-            var input = args.Request.Message;
-            string message = (string)input["message"];
-            if (MessageReceived != null)
-                MessageReceived(this.localCompanionDevice, message);
-        }
-        private void ReceiveConnection_ServiceClosed(AppServiceConnection sender, AppServiceClosedEventArgs args)
-        {
-            if (receiveConnection != null)
+            System.Diagnostics.Debug.WriteLine("ReceiveConnection_RequestReceived");
+            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
-//                receiveConnection.ServiceClosed -= ReceiveConnection_ServiceClosed;
-//                receiveConnection.RequestReceived -= ReceiveConnection_RequestReceived;
- //               receiveConnection = null;
-            }
+                var messageDeferral = args.GetDeferral();
+                try
+                {
+                    if ((args.Request != null) && (args.Request.Message != null))
+                    {
+                        var inputs = args.Request.Message;
+                        if (inputs.ContainsKey(CompanionServiceMessage.ATT_TYPE))
+                        {
+                            string s = (string)inputs[CompanionServiceMessage.ATT_TYPE];
+                            if (string.Equals(s, CompanionServiceMessage.TYPE_DATA))
+                            {
+                                if ((inputs.ContainsKey(CompanionServiceMessage.ATT_SOURCEID)) &&
+                                (inputs.ContainsKey(CompanionServiceMessage.ATT_SOURCEID)) &&
+                                (inputs.ContainsKey(CompanionServiceMessage.ATT_SOURCEIP)) &&
+                                (inputs.ContainsKey(CompanionServiceMessage.ATT_SOURCENAME)) &&
+                                (inputs.ContainsKey(CompanionServiceMessage.ATT_MESSAGE)))
+                                {
+                                    string id = (string)inputs[CompanionServiceMessage.ATT_SOURCEID];
+                                    string name = (string)inputs[CompanionServiceMessage.ATT_SOURCENAME];
+                                    string ip = (string)inputs[CompanionServiceMessage.ATT_SOURCEIP];
+                                    string message = (string)inputs[CompanionServiceMessage.ATT_MESSAGE];
+
+                                    if (MessageReceived != null)
+                                        MessageReceived(this.localCompanionDevice, message);
+                                }
+                            }
+                            else if (string.Equals(s, CompanionServiceMessage.TYPE_INIT))
+                            {
+                                // Background task started
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    //Complete the message deferral so the platform knows we're done responding
+                    messageDeferral.Complete();
+                }
+            });
+        }
+        private async void ReceiveConnection_ServiceClosed(AppServiceConnection sender, AppServiceClosedEventArgs args)
+        {
+            
+            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                //Dispose the connection reference we're holding
+                if (receiveConnection != null)
+                {
+                    receiveConnection.ServiceClosed -= ReceiveConnection_ServiceClosed;
+                    receiveConnection.RequestReceived -= ReceiveConnection_RequestReceived;
+                    receiveConnection.Dispose();
+                    receiveConnection = null;
+                }
+            });
         }
         //
         // Summary:
@@ -385,15 +435,20 @@ namespace AudioVideoPlayer.Companion
                                 {
                                     //Set up the inputs and send a message to the service
                                     var inputs = new ValueSet();
-                                    inputs.Add("type", "data");
-                                    inputs.Add("sourceid", GetSourceId());
-                                    inputs.Add("sourcename", GetSourceName());
-                                    inputs.Add("sourceip", GetSourceIP());
-                                    inputs.Add("message", Message);
+                                    inputs.Add(CompanionServiceMessage.ATT_TYPE, CompanionServiceMessage.TYPE_DATA);
+                                    inputs.Add(CompanionServiceMessage.ATT_SOURCEID, GetSourceId());
+                                    inputs.Add(CompanionServiceMessage.ATT_SOURCENAME, GetSourceName());
+                                    inputs.Add(CompanionServiceMessage.ATT_SOURCEIP, GetSourceIP());
+                                    inputs.Add(CompanionServiceMessage.ATT_MESSAGE, Message);
                                     AppServiceResponse response = await connection.SendMessageAsync(inputs);
-                                    if (response.Status == AppServiceResponseStatus.Success && response.Message.ContainsKey("result"))
+                                    if ((response!=null) &&(response.Status == AppServiceResponseStatus.Success))
                                     {
-                                        return true;
+                                        if ((response.Message != null) && (response.Message.ContainsKey(CompanionServiceMessage.ATT_TYPE)))
+                                        {
+                                            string s = (string) response.Message[CompanionServiceMessage.ATT_TYPE];
+                                            if(string.Equals(s, CompanionServiceMessage.TYPE_RESULT))
+                                                return true;
+                                        }
                                     }
                                 }
                             }

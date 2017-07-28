@@ -168,7 +168,6 @@ namespace AudioVideoPlayer
             if (rootFrame == null)
             {
                 rootFrame = new Frame();
-                rootFrame.Navigate(typeof(Shell));
                 Window.Current.Content = rootFrame;
             }
 
@@ -177,7 +176,18 @@ namespace AudioVideoPlayer
             {
                 LogMessage("OnProtocolActivated");
                 ProtocolActivatedEventArgs protocolArgs = args as ProtocolActivatedEventArgs;
+                if(protocolArgs !=null)
+                {
+                    
+                    rootFrame.Navigate(typeof(Shell), args);
+                }
+                else
+                {
+                    rootFrame.Navigate(typeof(Shell));
+                }
             }
+            else
+                rootFrame.Navigate(typeof(Shell));
 
             Window.Current.Activate();
 

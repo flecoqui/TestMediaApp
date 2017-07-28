@@ -69,7 +69,7 @@ namespace AudioVideoPlayer.Pages.Remote
         /// </summary>
         /// <param name="e">Event data that describes how this page was reached.
         /// This parameter is typically used to configure the page.</param>
-        protected  override void OnNavigatedTo(NavigationEventArgs e)
+        protected  async override void OnNavigatedTo(NavigationEventArgs e)
         {
             // TODO: If your application contains multiple pages, ensure that you are
             // handling the hardware Back button by registering for the
@@ -84,7 +84,7 @@ namespace AudioVideoPlayer.Pages.Remote
             // Register Companion
             RegisterCompanion();
             // Initialize the Companion mode (Remote or Player)
-            InitializeCompanionMode();
+            await InitializeCompanionMode();
 
             // Select first item in the combo box to select multicast option
             comboDevice.DataContext = ViewModels.StaticSettingsViewModel.DeviceList;
@@ -343,7 +343,7 @@ namespace AudioVideoPlayer.Pages.Remote
             companionConnectionManager = new CompanionConnectionManager();
         }
 
-        private async void InitializeCompanionMode()
+        private async System.Threading.Tasks.Task<bool> InitializeCompanionMode()
         {
                 // Show FullWindow on phone
                 if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
@@ -366,6 +366,7 @@ namespace AudioVideoPlayer.Pages.Remote
                     LogMessage("Companion Initialize Send ok");
                 else
                     LogMessage("Error Companion Initialize Send");
+            return true;
 
         }
 

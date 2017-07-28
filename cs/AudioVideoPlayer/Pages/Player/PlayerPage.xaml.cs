@@ -33,6 +33,7 @@ using Windows.Security.Cryptography.Core;
 using Windows.Security.Cryptography;
 using Windows.Storage.Streams;
 using System.Text.RegularExpressions;
+using Windows.ApplicationModel.Activation;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -113,24 +114,78 @@ namespace AudioVideoPlayer.Pages.Player
         }
         // localPath is used to store the path of the content to be played
         string localPath = string.Empty;
-        public async void SetPath(string path)
+
+        public async System.Threading.Tasks.Task<bool> LoadingNewPlaylist(string path)
         {
-            if (IsDataLoaded())
+            try
             {
-                // If the playlist is loaded the application can directly 
-                // play the content
-                mediaUri.Text = "file://" + path;
-                if (ViewModels.StaticSettingsViewModel.AutoStart == true)
+                //   mediaPlayer.Stop();
+                mediaPlayer.Source = null;
+            }
+            catch (Exception)
+            {
+
+            }
+            if (await LoadingData(path) == false)
+                await LoadingData(string.Empty);
+            //Update control and play first video
+            if (ViewModels.StaticSettingsViewModel.AutoStart)
+                PlayCurrentUrl();
+            // Update PlaylistList
+
+            Models.PlayList playlist = await Models.PlayList.GetNewPlaylist(path);
+            if (playlist != null)
+            {
+                if (ViewModelLocator != null)
                 {
-                    SetAutoStartWindowState();
-                    await StartPlay(mediaUri.Text, mediaUri.Text, null, 0, 0);
+                    var p = ViewModelLocator.Settings.PlayListList.FirstOrDefault(x => string.Equals(x.Path, path, StringComparison.OrdinalIgnoreCase) || string.Equals(x.Name, playlist.Name, StringComparison.OrdinalIgnoreCase));
+                    if (p == null)
+                    {
+                        ObservableCollection<Models.PlayList> PlayListList = ViewModelLocator.Settings.PlayListList;
+                        PlayListList.Add(playlist);
+                        ViewModelLocator.Settings.PlayListList = PlayListList;
+                    }
                 }
             }
-            else
+            return true;
+        }
+        public async System.Threading.Tasks.Task<bool> LoadingNewContent(string path)
+        {
+            // If the playlist is loaded the application can directly 
+            // play the content
+            mediaUri.Text = "file://" + path;
+            if (ViewModels.StaticSettingsViewModel.AutoStart == true)
             {
-                // Once the data are loaded 
-                // the content will be played.
-                localPath = "file://" + path;                
+                SetAutoStartWindowState();
+                await StartPlay(mediaUri.Text, mediaUri.Text, null, 0, 0);
+            }
+            return true;
+        }
+        public async void SetPath(string path)
+        {
+            if (!string.IsNullOrEmpty(path))
+            {
+                if (IsDataLoaded())
+                {
+                    if (path.EndsWith(".tma", StringComparison.OrdinalIgnoreCase))
+                    {
+                        LogMessage("Loading new playlist: " + path);
+                        await LoadingNewPlaylist(path);
+
+                    }
+                    else
+                    {
+                        LogMessage("Loading new content: " + path);
+                        await LoadingNewContent(path);
+                    }
+                }
+                else
+                {
+                    // the content or the playlist will be loaded later on.
+                    localPath =  path;
+                }
+
+                UpdateControls();
             }
         }
         Windows.UI.Color titleBarColor = Windows.UI.Colors.Transparent; 
@@ -187,6 +242,40 @@ namespace AudioVideoPlayer.Pages.Player
             // If you are using the NavigationHelper provided by some templates,
             // this event is handled for you.
             LogMessage("PlayerPage OnNavigatedTo");
+            var protocolForResultsArgs = e.Parameter as ProtocolForResultsActivatedEventArgs;
+            if (protocolForResultsArgs != null)
+            {
+                var op = protocolForResultsArgs.ProtocolForResultsOperation;
+                var caller = protocolForResultsArgs.CallerPackageFamilyName;
+                if (string.Equals(caller, Information.SystemInformation.PackageFamilyName))
+
+                {
+                    if((protocolForResultsArgs.Data.Keys.Count == 1)&&
+                        (protocolForResultsArgs.Data.ContainsKey("message")))
+                    {
+                        ValueSet result = new ValueSet();
+                        result["result"] = "OK";
+                        op.ReportCompleted(result);
+                        return;
+                    }
+                }
+            }
+            var protocolArgs = e.Parameter as ProtocolActivatedEventArgs;
+            if (protocolArgs != null)
+            {
+                var caller = protocolArgs.CallerPackageFamilyName;
+                if (string.Equals(caller, Information.SystemInformation.PackageFamilyName))
+
+                {
+                    if ((protocolArgs.Data.Keys.Count == 1) &&
+                        (protocolArgs.Data.ContainsKey("message")))
+                    {
+                        return;
+                    }
+                }
+                //FLECQUI
+                return;
+            }
             await ReadSettings();
                        
             if (e.NavigationMode != NavigationMode.New)
@@ -239,16 +328,27 @@ namespace AudioVideoPlayer.Pages.Player
                 }
             }
 
+            // If the path has been set before
+            // the application will use this path 
+            // to play the content or playlist
+            if (!string.IsNullOrEmpty(localPath))
+            {
 
+                if (localPath.EndsWith(".tma", StringComparison.OrdinalIgnoreCase))
+                {
+                    LogMessage("Loading new playlist: " + localPath);
+                    await LoadingNewPlaylist(localPath);
+                }
+                else
+                {
+                    LogMessage("Loading new content: " + localPath);
+                    await LoadingNewContent(localPath);
+                }
+            }
             // Start to play the first asset
             if (ViewModels.StaticSettingsViewModel.AutoStart)
             {
                 SetAutoStartWindowState();
-                // If the path has been set before
-                // the application will use this path 
-                // to play the content
-                if(!string.IsNullOrEmpty(localPath))
-                    mediaUri.Text = localPath;
                 PlayCurrentUrl();
             }
 

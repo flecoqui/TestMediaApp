@@ -1,0 +1,2 @@
+MainPackage=C:\temp\AudioVideoPlayer\AudioVideoPlayer\bin\x86\Debug\AudioVideoPlayer_1.1.20.0_x86_Debug.appx
+SymbolPackage=C:\temp\AudioVideoPlayer\AudioVideoPlayer\AppPackages\AudioVideoPlayer_1.1.20.0_Debug_Test\AudioVideoPlayer_1.1.20.0_x86_Debug.appxsym

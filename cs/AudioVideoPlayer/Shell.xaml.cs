@@ -25,6 +25,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
+using Windows.ApplicationModel.Activation;
 
 namespace AudioVideoPlayer
 {
@@ -93,7 +94,6 @@ namespace AudioVideoPlayer
 
         protected override async  void OnNavigatedTo(NavigationEventArgs e)
         {
-            base.OnNavigatedTo(e);
             // Set Minimum size for the view
             Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().SetPreferredMinSize(new Windows.Foundation.Size
             {
