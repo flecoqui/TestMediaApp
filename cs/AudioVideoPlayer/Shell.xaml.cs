@@ -26,6 +26,10 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using Windows.ApplicationModel.Activation;
+using System.Text.RegularExpressions;
+using System.Collections.Generic;
+using AudioVideoPlayer.Pages.About;
+using AudioVideoPlayer.Pages.SignIn;
 
 namespace AudioVideoPlayer
 {
@@ -63,30 +67,10 @@ namespace AudioVideoPlayer
                 MainTitleBar.Opacity = 0.5;
             }
         }
-        public void ShowOnlyHeader(string title)
-        {
-            //Title.Text = title;
-        }
-
-        /// <summary>
-        /// Navigates to a Sample via a deep link.
-        /// </summary>
-        /// <param name="deepLink">The deep link. Specified as protocol://[collectionName]?sample=[sampleName]</param>
-        /// <returns>A <see cref="Task"/> representing the
-        /// 
-        /*
-        public  Task NavigateToSampleAsync(string deepLink)
-        {
-             NavigateToSample(typeof(AudioVideoPlayer.Pages.Player.PlayerPage));
-        }
-        */
         public void NavigateToSample(Type pageType,Object parameter)
         {
-
             if (pageType != null)
             {
-
-
                 NavigationFrame.Navigate(pageType,parameter);
             }
         }
@@ -127,21 +111,88 @@ namespace AudioVideoPlayer
             NavigationFrame.Navigating += NavigationFrame_Navigating;
             NavigationFrame.Navigated += NavigationFrameOnNavigated;
             SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
-
-            if (!string.IsNullOrWhiteSpace(e?.Parameter?.ToString()))
-                NavigateToSample(typeof(AudioVideoPlayer.Pages.Player.PlayerPage),e.Parameter);
+            ProtocolActivatedEventArgs a = e.Parameter as ProtocolActivatedEventArgs;
+            if (a!=null)
+                SetProtocolArgs(a.Uri);
             else
-                NavigateToSample(typeof(AudioVideoPlayer.Pages.Player.PlayerPage), null);
+                NavigateToSample(typeof(PlayerPage), null);
+        }
+        private static readonly Regex _regex = new Regex(@"[?|&]([\w\.]+)=([^?|^&]+)");
+
+        public static IReadOnlyDictionary<string, string> ParseQueryString(Uri uri)
+        {
+            var match = _regex.Match(uri.PathAndQuery);
+            var paramaters = new Dictionary<string, string>();
+            while (match.Success)
+            {
+                paramaters.Add(match.Groups[1].Value, match.Groups[2].Value);
+                match = match.NextMatch();
+            }
+            return paramaters;
+        }
+        Type GetPageFromUri(Uri uri)
+        {
+            //Uri
+            // testmediaapp://home/?page=playerpage
+            //
+            Type t = typeof(PlayerPage);
+            IReadOnlyDictionary<string, string> param = ParseQueryString(uri);
+            if(param!=null)
+            {
+                if(param.ContainsKey("page"))
+                {
+                    string pageName = param["page"];
+                    if(!string.IsNullOrEmpty(pageName))
+                    {
+                        if(string.Equals(pageName,nameof(PlayerPage),StringComparison.OrdinalIgnoreCase))
+                            t = typeof(PlayerPage);
+                        else if (string.Equals(pageName, nameof(AboutPage), StringComparison.OrdinalIgnoreCase))
+                            t = typeof(AboutPage);
+                        else if (string.Equals(pageName, nameof(PlaylistPage), StringComparison.OrdinalIgnoreCase))
+                            t = typeof(PlaylistPage);
+                        else if (string.Equals(pageName, nameof(RemotePage), StringComparison.OrdinalIgnoreCase))
+                            t = typeof(RemotePage);
+                        else if (string.Equals(pageName, nameof(SettingsPage), StringComparison.OrdinalIgnoreCase))
+                            t = typeof(SettingsPage);
+                        else if (string.Equals(pageName, nameof(SignInPage), StringComparison.OrdinalIgnoreCase))
+                            t = typeof(SignInPage);
+                    }
+                }
+            }
+            return t;
+        }
+        public async void SetProtocolArgs(Uri uri)
+        {
+            if (uri != null)
+            {
+                Type t  = GetPageFromUri(uri);
+                if ((NavigationFrame.Content == null) || (NavigationFrame.Content.GetType() != t))
+                {
+                    if (!string.IsNullOrWhiteSpace(uri.ToString()))
+                        NavigateToSample(t, uri);
+                    else
+                        NavigateToSample(t, null);
+                }
+                else
+                {
+                    if (t == typeof(PlayerPage))
+                    {
+                        var p = NavigationFrame.Content as PlayerPage;
+                        if(p!=null)
+                            await p.SetProtocolArgs(uri);
+                    }
+                }
+            }
 
         }
-        public void SetPath(string path)
+        public async void SetPath(string path)
         {
             var p = NavigationFrame.Content as PlayerPage;
             if (p == null)
                 NavigateToSample(typeof(AudioVideoPlayer.Pages.Player.PlayerPage), null);
             p = NavigationFrame.Content as PlayerPage;
             if (p != null)
-                p.SetPath(path);
+                await p.SetPath(path);
         }
         private void NavigationFrame_Navigating(object sender, NavigatingCancelEventArgs navigationEventArgs)
         {

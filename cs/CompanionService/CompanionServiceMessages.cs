@@ -21,7 +21,8 @@ namespace CompanionService
         public static string ATT_MESSAGE { get { return "message"; }}
         public static string ATT_SOURCEID { get { return "sourceid"; }}
         public static string ATT_SOURCEIP { get { return "sourceip"; }}
-        public static string ATT_SOURCENAME { get { return "sourcename"; }}
+        public static string ATT_SOURCENAME { get { return "sourcename"; } }
+        public static string ATT_SOURCEKIND { get { return "sourcekind"; } }
         public static string ATT_RESULT { get { return "result"; }}
         public static string VAL_RESULT_OK { get { return "OK"; }}
         public static string VAL_RESULT_ERROR { get { return "ERROR"; }}

@@ -176,14 +176,18 @@ namespace AudioVideoPlayer
             {
                 LogMessage("OnProtocolActivated");
                 ProtocolActivatedEventArgs protocolArgs = args as ProtocolActivatedEventArgs;
-                if(protocolArgs !=null)
+                var p = rootFrame.Content as Shell;
+                if (p == null)
                 {
-                    
-                    rootFrame.Navigate(typeof(Shell), args);
+                    if(protocolArgs != null)
+                        rootFrame.Navigate(typeof(Shell), args); 
+                    else
+                        rootFrame.Navigate(typeof(Shell));
                 }
                 else
                 {
-                    rootFrame.Navigate(typeof(Shell));
+                    LogMessage("SetProtocolArgs:" + protocolArgs.Uri.ToString());
+                    p.SetProtocolArgs(protocolArgs.Uri);
                 }
             }
             else

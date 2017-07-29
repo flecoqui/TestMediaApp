@@ -102,6 +102,7 @@
     <Compile Include="Companion\CompanionClient.cs" />
     <Compile Include="Companion\CompanionConnectionManager.cs" />
     <Compile Include="Companion\CompanionDevice.cs" />
+    <Compile Include="Companion\CompanionProtocol.cs" />
     <Compile Include="Controls\CustomTitleBar\CustomTitleBar.xaml.cs">
       <DependentUpon>CustomTitleBar.xaml</DependentUpon>
     </Compile>

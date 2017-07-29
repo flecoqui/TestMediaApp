@@ -108,6 +108,22 @@ namespace AudioVideoPlayer.Companion
             return true;
 
         }
+        private CompanionDevice GetUniqueDeviceByName(string Name)
+        {
+            CompanionDevice device = null;
+            foreach (var d in listCompanionDevices)
+            {
+                if (string.Equals(d.Value.Name, Name))
+                {
+                    if (device == null)
+                        device = d.Value;
+                    else
+                        // not unique
+                        return null;
+                }
+            }
+            return device;
+        }
         private async void ReceiveConnection_RequestReceived(Windows.ApplicationModel.AppService.AppServiceConnection sender, Windows.ApplicationModel.AppService.AppServiceRequestReceivedEventArgs args)
         {
             System.Diagnostics.Debug.WriteLine("ReceiveConnection_RequestReceived");
@@ -127,16 +143,33 @@ namespace AudioVideoPlayer.Companion
                                 if ((inputs.ContainsKey(CompanionServiceMessage.ATT_SOURCEID)) &&
                                 (inputs.ContainsKey(CompanionServiceMessage.ATT_SOURCEID)) &&
                                 (inputs.ContainsKey(CompanionServiceMessage.ATT_SOURCEIP)) &&
+                                (inputs.ContainsKey(CompanionServiceMessage.ATT_SOURCEKIND)) &&
                                 (inputs.ContainsKey(CompanionServiceMessage.ATT_SOURCENAME)) &&
                                 (inputs.ContainsKey(CompanionServiceMessage.ATT_MESSAGE)))
                                 {
                                     string id = (string)inputs[CompanionServiceMessage.ATT_SOURCEID];
                                     string name = (string)inputs[CompanionServiceMessage.ATT_SOURCENAME];
                                     string ip = (string)inputs[CompanionServiceMessage.ATT_SOURCEIP];
+                                    string kind = (string)inputs[CompanionServiceMessage.ATT_SOURCEKIND];
                                     string message = (string)inputs[CompanionServiceMessage.ATT_MESSAGE];
-
+                                    CompanionDevice d = new CompanionDevice(id, name, ip, kind);
+                                    if(!string.IsNullOrEmpty(ip))
+                                    {
+                                        CompanionDevice a = GetUniqueDeviceByName(name);
+                                        if (a != null)
+                                        {
+                                            if (!string.Equals(a.IPAddress, ip))
+                                            {
+                                                a.IPAddress = ip;
+                                                listCompanionDevices.Remove(a.Id);
+                                                listCompanionDevices.Add(id, a);
+                                                if (CompanionDeviceUpdated != null)
+                                                    CompanionDeviceUpdated(this, a);
+                                            }
+                                        }
+                                    }
                                     if (MessageReceived != null)
-                                        MessageReceived(this.localCompanionDevice, message);
+                                        MessageReceived(d, message);
                                 }
                             }
                             else if (string.Equals(s, CompanionServiceMessage.TYPE_INIT))
@@ -304,7 +337,7 @@ namespace AudioVideoPlayer.Companion
         //     connected to cloud connected, or vice versa.
         public event TypedEventHandler<CompanionConnectionManager, CompanionDevice> CompanionDeviceUpdated;
 
-        public async System.Threading.Tasks.Task<bool> IsCompanionDeviceConnected(CompanionDevice cd)
+        public async System.Threading.Tasks.Task<bool> CheckCompanionDeviceConnected(CompanionDevice cd)
         {
             if ((listCompanionDevices.ContainsKey(cd.Id)) && (listRemoteSystems.ContainsKey(cd.Id)))
             {
@@ -324,6 +357,35 @@ namespace AudioVideoPlayer.Companion
                 }
                 if (listCompanionDevices[cd.Id].Status == CompanionDeviceStatus.Connected)
                     return true; 
+            }
+            return false;
+        }
+        public bool IsCompanionDeviceConnected(CompanionDevice cd)
+        {
+            if ((listCompanionDevices.ContainsKey(cd.Id)) && (listRemoteSystems.ContainsKey(cd.Id)))
+            {
+                return (listCompanionDevices[cd.Id].Status == CompanionDeviceStatus.Connected);
+            }
+            return false;
+        }
+        public async System.Threading.Tasks.Task<bool> CompanionDeviceOpenUri(CompanionDevice cd, string inputUri)
+        {
+            if ((listCompanionDevices.ContainsKey(cd.Id)) && (listRemoteSystems.ContainsKey(cd.Id)))
+            {
+                RemoteSystemConnectionRequest rscr = new RemoteSystemConnectionRequest(listRemoteSystems[cd.Id]);
+                if (rscr != null)
+                {
+                    Uri uri;
+                    if (Uri.TryCreate(inputUri, UriKind.Absolute, out uri))
+                    {
+                        RemoteLaunchUriStatus launchUriStatus = await Windows.System.RemoteLauncher.LaunchUriAsync(rscr, uri);
+                        if (launchUriStatus == RemoteLaunchUriStatus.Success)
+                        {
+                            listCompanionDevices[cd.Id].Status = CompanionDeviceStatus.Connected;
+                            return true;
+                        }
+                    }
+                }
             }
             return false;
         }
@@ -353,6 +415,15 @@ namespace AudioVideoPlayer.Companion
             {
                 if (!string.IsNullOrEmpty(localCompanionDevice.Name))
                     return localCompanionDevice.Name;
+            }
+            return string.Empty;
+        }
+        public string GetSourceKind()
+        {
+            if (localCompanionDevice != null)
+            {
+                if (!string.IsNullOrEmpty(localCompanionDevice.Kind))
+                    return localCompanionDevice.Kind;
             }
             return string.Empty;
         }
@@ -416,7 +487,7 @@ namespace AudioVideoPlayer.Companion
             if (cd != null)
             {
 
-                if (await IsCompanionDeviceConnected(cd))
+                if (await CheckCompanionDeviceConnected(cd))
                 {
                     if (listRemoteSystems.ContainsKey(cd.Id))
                     {
@@ -439,6 +510,7 @@ namespace AudioVideoPlayer.Companion
                                     inputs.Add(CompanionServiceMessage.ATT_SOURCEID, GetSourceId());
                                     inputs.Add(CompanionServiceMessage.ATT_SOURCENAME, GetSourceName());
                                     inputs.Add(CompanionServiceMessage.ATT_SOURCEIP, GetSourceIP());
+                                    inputs.Add(CompanionServiceMessage.ATT_SOURCEKIND, GetSourceKind());
                                     inputs.Add(CompanionServiceMessage.ATT_MESSAGE, Message);
                                     AppServiceResponse response = await connection.SendMessageAsync(inputs);
                                     if ((response!=null) &&(response.Status == AppServiceResponseStatus.Success))

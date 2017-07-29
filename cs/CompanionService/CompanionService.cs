@@ -12,7 +12,7 @@ namespace CompanionService
     public sealed class CompanionServiceTask : IBackgroundTask
     {
         BackgroundTaskDeferral serviceDeferral;
-        AppServiceConnection localConnection;
+        static AppServiceConnection localConnection;
         AppServiceConnection remoteConnection;
 
         public async void Run(IBackgroundTaskInstance taskInstance)
@@ -98,11 +98,13 @@ namespace CompanionService
                             (inputs.ContainsKey(CompanionServiceMessage.ATT_SOURCEID)) &&
                             (inputs.ContainsKey(CompanionServiceMessage.ATT_SOURCEIP)) &&
                             (inputs.ContainsKey(CompanionServiceMessage.ATT_SOURCENAME)) &&
+                            (inputs.ContainsKey(CompanionServiceMessage.ATT_SOURCEKIND)) &&
                             (inputs.ContainsKey(CompanionServiceMessage.ATT_MESSAGE)))
                             {
                                 string id = (string)inputs[CompanionServiceMessage.ATT_SOURCEID];
                                 string name = (string)inputs[CompanionServiceMessage.ATT_SOURCENAME];
                                 string ip = (string)inputs[CompanionServiceMessage.ATT_SOURCEIP];
+                                string kind = (string)inputs[CompanionServiceMessage.ATT_SOURCEKIND];
                                 string message = (string)inputs[CompanionServiceMessage.ATT_MESSAGE];
                                 if (localConnection != null)
                                 {

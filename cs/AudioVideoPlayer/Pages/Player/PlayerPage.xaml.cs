@@ -161,32 +161,40 @@ namespace AudioVideoPlayer.Pages.Player
             }
             return true;
         }
-        public async void SetPath(string path)
+        public async System.Threading.Tasks.Task<bool> SetProtocolArgs(Uri uri)
         {
+            // to be completed
+            return true;
+        }
+        public async System.Threading.Tasks.Task<bool> SetPath(string path)
+        {
+            bool result = false;
             if (!string.IsNullOrEmpty(path))
             {
+
                 if (IsDataLoaded())
                 {
                     if (path.EndsWith(".tma", StringComparison.OrdinalIgnoreCase))
                     {
                         LogMessage("Loading new playlist: " + path);
-                        await LoadingNewPlaylist(path);
+                        result = await LoadingNewPlaylist(path);
 
                     }
                     else
                     {
                         LogMessage("Loading new content: " + path);
-                        await LoadingNewContent(path);
+                        result = await LoadingNewContent(path);
                     }
                 }
                 else
                 {
                     // the content or the playlist will be loaded later on.
                     localPath =  path;
+                    result = true;
                 }
-
                 UpdateControls();
             }
+            return result;
         }
         Windows.UI.Color titleBarColor = Windows.UI.Colors.Transparent; 
         void ShowTitleBar(bool bShow)

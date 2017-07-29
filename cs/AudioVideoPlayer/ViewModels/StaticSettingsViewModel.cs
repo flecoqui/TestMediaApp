@@ -139,12 +139,12 @@ namespace AudioVideoPlayer.ViewModels
                 if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
                 {
                     deviceList = new ObservableCollection<Companion.CompanionDevice>();
-                    deviceList.Add(new Companion.CompanionDevice("0",cALL,Companion.CompanionClient.cMulticastAddress,cALL) );
-                    deviceList.Add(new Companion.CompanionDevice("1","MyDeviceHome", "192.168.1.65","Desktop"));
-                    deviceList.Add(new Companion.CompanionDevice("2", "MyDeviceWork", "10.85.185.182","PC"));
-                    deviceList.Add(new Companion.CompanionDevice("3", "MyDevicePhone", "10.85.197.252","Phone"));
-                    deviceList.Add(new Companion.CompanionDevice("4", "MyDevicePhone1", "172.16.0.3","Phone"));
-                    deviceList.Add(new Companion.CompanionDevice("5", "MyDevicePC1", "172.16.0.2","PC"));
+                   // deviceList.Add(new Companion.CompanionDevice("0",cALL,Companion.CompanionClient.cMulticastAddress,cALL) );
+                    deviceList.Add(new Companion.CompanionDevice("1","MyHomeDevice", "192.168.1.65","Desktop"));
+                  //  deviceList.Add(new Companion.CompanionDevice("2", "MyDeviceWork", "10.85.185.182","PC"));
+                  //  deviceList.Add(new Companion.CompanionDevice("3", "MyDevicePhone", "10.85.197.252","Phone"));
+                  //  deviceList.Add(new Companion.CompanionDevice("4", "MyDevicePhone1", "172.16.0.3","Phone"));
+                  //  deviceList.Add(new Companion.CompanionDevice("5", "MyDevicePC1", "172.16.0.2","PC"));
                 }
                 else
                     deviceList = ObjectSerializer <ObservableCollection<Companion.CompanionDevice>>.FromXml((string)auto);
@@ -424,8 +424,11 @@ namespace AudioVideoPlayer.ViewModels
             }
             set
             {
-                Helpers.SettingsHelper.SaveSettingsValue(nameof(CurrentPlayListPath), value.ToString());
-                currentPlayListPath = value;
+                if (!string.IsNullOrEmpty(value))
+                {
+                    Helpers.SettingsHelper.SaveSettingsValue(nameof(CurrentPlayListPath), value.ToString());
+                    currentPlayListPath = value;
+                }
             }
         }
         public static int CurrentPlayListIndex
@@ -441,8 +444,11 @@ namespace AudioVideoPlayer.ViewModels
             }
             set
             {
-                Helpers.SettingsHelper.SaveSettingsValue(nameof(CurrentPlayListIndex), value.ToString());
-                currentPlayListIndex = value;
+                if (value >= 0)
+                {
+                    Helpers.SettingsHelper.SaveSettingsValue(nameof(CurrentPlayListIndex), value.ToString());
+                    currentPlayListIndex = value;
+                }
             }
         }
         public static string CurrentMediaPath
@@ -458,8 +464,11 @@ namespace AudioVideoPlayer.ViewModels
             }
             set
             {
-                Helpers.SettingsHelper.SaveSettingsValue(nameof(CurrentMediaPath), value.ToString());
-                currentMediaPath = value;
+                if (!string.IsNullOrEmpty(value))
+                {
+                    Helpers.SettingsHelper.SaveSettingsValue(nameof(CurrentMediaPath), value.ToString());
+                    currentMediaPath = value;
+                }
             }
         }
         public static int CurrentMediaIndex
@@ -475,8 +484,11 @@ namespace AudioVideoPlayer.ViewModels
             }
             set
             {
-                Helpers.SettingsHelper.SaveSettingsValue(nameof(CurrentMediaIndex), value.ToString());
-                currentMediaIndex = value;
+                if (value >= 0)
+                {
+                    Helpers.SettingsHelper.SaveSettingsValue(nameof(CurrentMediaIndex), value.ToString());
+                    currentMediaIndex = value;
+                }
             }
         }
         // Companion Settings
