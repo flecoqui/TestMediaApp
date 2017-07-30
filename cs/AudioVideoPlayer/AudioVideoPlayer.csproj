@@ -100,6 +100,11 @@
     </Compile>
     <Compile Include="CommonLicenseRequest.cs" />
     <Compile Include="Companion\CompanionClient.cs" />
+    <Compile Include="Companion\ICompanionConnectionManager.cs" />
+    <Compile Include="Companion\MulticastCompanionConnectionManagerInitializeArgs.cs" />
+    <Compile Include="Companion\CompanionConnectionManagerInitializeArgs.cs" />
+    <Compile Include="Companion\ICompanionConnectionManagerInitializeArgs.cs" />
+    <Compile Include="Companion\MulticastCompanionConnectionManager.cs" />
     <Compile Include="Companion\CompanionConnectionManager.cs" />
     <Compile Include="Companion\CompanionDevice.cs" />
     <Compile Include="Companion\CompanionProtocol.cs" />
@@ -149,7 +154,7 @@
     <Compile Include="Pages\Playlist\PlaylistPage.xaml.cs">
       <DependentUpon>PlaylistPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Remote\RemotePage.xaml.cs">
+    <Compile Include="Pages\About\RemotePage.xaml.cs">
       <DependentUpon>RemotePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\Settings\SettingsPage.xaml.cs">
@@ -226,7 +231,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Pages\Remote\RemotePage.xaml">
+    <Page Include="Pages\About\RemotePage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -259,12 +264,18 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <SDKReference Include="Microsoft.VCLibs, Version=14.0">
+      <Name>Visual C++ 2015 Runtime for Universal Windows Platform Apps</Name>
+    </SDKReference>
     <SDKReference Include="Universal Smooth Streaming Client SDK, Version=1.0">
       <Name>Microsoft Universal Smooth Streaming Client SDK</Name>
     </SDKReference>
     <SDKReference Include="WindowsMobile, Version=10.0.15063.0">
       <Name>Windows Mobile Extensions for the UWP</Name>
     </SDKReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Pages\Remote\" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

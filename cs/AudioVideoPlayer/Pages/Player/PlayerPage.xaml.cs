@@ -161,9 +161,9 @@ namespace AudioVideoPlayer.Pages.Player
             }
             return true;
         }
-        public async System.Threading.Tasks.Task<bool> SetProtocolArgs(Uri uri)
+        public bool SetProtocolArgs(Uri uri)
         {
-            // to be completed
+            LogMessage("Receive URI request for : " + uri.ToString());
             return true;
         }
         public async System.Threading.Tasks.Task<bool> SetPath(string path)
@@ -313,9 +313,7 @@ namespace AudioVideoPlayer.Pages.Player
             // Register Device Watcher
             RegisterDeviceWatcher();
             // Register Companion
-            RegisterCompanion();
-            // Initialize the Companion mode (Remote or Player)
-            InitializeCompanionMode();
+            await InitializeCompanion();
 
 
             // Load Data
@@ -391,7 +389,7 @@ namespace AudioVideoPlayer.Pages.Player
             UnregisterUI();
 
             // Stop Companion reception
-            UnregisterCompanion();
+            UninitializeCompanion();
 
             // Save State
             SaveState();
@@ -453,6 +451,7 @@ namespace AudioVideoPlayer.Pages.Player
             //if (Windows.Foundation.Metadata.ApiInformation.IsEventPresent("Windows.Media.Playback.MediaPlaybackSession", "SeekableRangesChanged"))
             //    mediaPlayer.PlaybackSession.SeekableRangesChanged += PlaybackSession_SeekableRangesChanged;
             mediaPlayerElement.DoubleTapped += doubleTapped;
+            mediaPlayerElement.KeyDown += OnKeyDown;
             IsFullWindowToken = mediaPlayerElement.RegisterPropertyChangedCallback(MediaPlayerElement.IsFullWindowProperty, new DependencyPropertyChangedCallback(IsFullWindowChanged));
 
             // Combobox event
@@ -522,6 +521,7 @@ namespace AudioVideoPlayer.Pages.Player
             //if (Windows.Foundation.Metadata.ApiInformation.IsEventPresent("Windows.Media.Playback.MediaPlaybackSession", "SeekableRangesChanged"))
             //    mediaPlayer.PlaybackSession.SeekableRangesChanged -= PlaybackSession_SeekableRangesChanged;
             mediaPlayerElement.DoubleTapped -= doubleTapped;
+            mediaPlayerElement.KeyDown -= OnKeyDown;
             mediaPlayerElement.UnregisterPropertyChangedCallback(MediaElement.IsFullWindowProperty, IsFullWindowToken);
 
 
@@ -1398,6 +1398,32 @@ namespace AudioVideoPlayer.Pages.Player
             }
         }
         /// <summary>
+        /// Select an Item in the Combo box
+        /// </summary>
+        private void select_Click(object sender, RoutedEventArgs e, int newIndex)
+        {
+            try
+            {
+                if ((newIndex >= 0) && (newIndex < comboStream.Items.Count))
+                {
+                    int Index = comboStream.SelectedIndex;
+                    comboStream.SelectedIndex = newIndex;
+                    if (Index != newIndex)
+                    {
+                        MediaItem ms = comboStream.SelectedItem as MediaItem;
+                        mediaUri.Text = ms.Content;
+                        PlayCurrentUrl();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogMessage("Failed to to play: " + mediaUri.Text + " Exception: " + ex.Message);
+            }
+        }
+
+
+        /// <summary>
         /// Play method which plays the video currently paused by the MediaElement
         /// </summary>
         private void PlayPause_Click(object sender, RoutedEventArgs e)
@@ -1928,7 +1954,7 @@ namespace AudioVideoPlayer.Pages.Player
         /// </summary>
         private void doubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            if (IsFullScreen())
+            if (IsFullScreen() || IsFullWindow())
                 SetWindowMode(WindowMediaState.WindowMode);
         }
 
@@ -3646,54 +3672,65 @@ namespace AudioVideoPlayer.Pages.Player
         }
         #endregion
 
+
+
         #region Companion
-        private CompanionClient companion;
+        private CompanionConnectionManager companionConnectionManager;
+        private CompanionDevice localCompanionDevice;
 
-        private void RegisterCompanion()
+        private async System.Threading.Tasks.Task<bool> InitializeCompanion()
         {
-            companion = new CompanionClient(Information.SystemInformation.DeviceManufacturer + "_" + Information.SystemInformation.DeviceModel + "_" + Information.SystemInformation.SystemFamily,ViewModels.StaticSettingsViewModel.MulticastIPAddress, ViewModels.StaticSettingsViewModel.MulticastUDPPort, ViewModels.StaticSettingsViewModel.UnicastUDPPort);
-            companion.MessageReceived += Companion_MessageReceived;
-
-        }
-
-        private void UnregisterCompanion()
-        {
-            if (companion != null)
+            bool result = false;
+            if (companionConnectionManager != null)
             {
-                companion.StopRecv();
-                companion.MessageReceived -= Companion_MessageReceived;
+                companionConnectionManager.MessageReceived -= CompanionConnectionManager_MessageReceived;
+                companionConnectionManager.Uninitialize();
+                companionConnectionManager = null;
             }
-        }
-
-        private void select_Click(object sender, RoutedEventArgs e, int newIndex)
-        {
-            try
+            if (companionConnectionManager == null)
             {
-                if ((newIndex >= 0) && (newIndex < comboStream.Items.Count))
+                companionConnectionManager = new CompanionConnectionManager();
+                if (companionConnectionManager != null)
                 {
-                    int Index = comboStream.SelectedIndex;
-                    comboStream.SelectedIndex = newIndex;
-                    if (Index != newIndex)
+                    localCompanionDevice = new CompanionDevice(string.Empty, Information.SystemInformation.DeviceName, companionConnectionManager.GetSourceIP(), Information.SystemInformation.SystemFamily);
+                    companionConnectionManager.MessageReceived += CompanionConnectionManager_MessageReceived;
+
+                    CompanionConnectionManagerInitializeArgs args = new CompanionConnectionManagerInitializeArgs();
+                    if (args != null)
                     {
-                        MediaItem ms = comboStream.SelectedItem as MediaItem;
-                        mediaUri.Text = ms.Content;
-                        PlayCurrentUrl();
+                        args.ApplicationUri = "testmediaapp://?page=playerpage";
+                        args.AppServiceName = "com.testmediaapp.companionservice";
+                        //args.PackageFamilyName = "52458FLECOQUI.TestMediaApplication_h29hy11807230";
+                        args.PackageFamilyName = Information.SystemInformation.PackageFamilyName;
+                        result = await companionConnectionManager.Initialize(localCompanionDevice, args);
                     }
                 }
-                /*
-                                LogMessage("Start to play: " + ms.Content);
-                                mediaElement.Source = new Uri(ms.Content);
-                                mediaElement.Play();
-                                */
             }
-            catch (Exception ex)
+            if (result == true)
+                LogMessage("Companion Initialization ok");
+            else
+                LogMessage("Error Companion Initialization");
+            return true;
+        }
+        private bool UninitializeCompanion()
+        {
+            if (companionConnectionManager != null)
             {
-                LogMessage("Failed to to play: " + mediaUri.Text + " Exception: " + ex.Message);
+                companionConnectionManager.MessageReceived -= CompanionConnectionManager_MessageReceived;
+                companionConnectionManager.Uninitialize();
+                companionConnectionManager = null;
             }
+            return true;
         }
 
-        private async void Companion_MessageReceived(CompanionClient sender, string Command, Dictionary<string, string> Parameters)
+        private async void CompanionConnectionManager_MessageReceived(CompanionDevice sender, string args)
         {
+
+            LogMessage("Received a remote command from device: " + sender.Name + " type: " + sender.Kind + " at IP Address: " + sender.IPAddress);
+            LogMessage("Received a remote command : " + args);
+            string Command = CompanionProtocol.GetCommandFromMessage(args);
+            Dictionary<string, string> Parameters = CompanionProtocol.GetParametersFromMessage(args);
+
             if (Parameters == null)
                 LogMessage("Command Received: " + Command);
             else
@@ -3713,12 +3750,12 @@ namespace AudioVideoPlayer.Pages.Player
                 //https://testcertstorage.blob.core.windows.net/images/Video.json
                 //https://testcertstorage.blob.core.windows.net/images/AudioVideoData.json
 
-                case CompanionClient.commandOpenPlaylist:
+                case CompanionProtocol.commandOpenPlaylist:
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
                     {
-                        if ((Parameters != null) && (Parameters.ContainsKey(CompanionClient.parameterContent)))
+                        if ((Parameters != null) && (Parameters.ContainsKey(CompanionProtocol.parameterContent)))
                         {
-                            string Path = Parameters[CompanionClient.parameterContent];
+                            string Path = Parameters[CompanionProtocol.parameterContent];
                             if (Path != null)
                             {
                                 await LoadingData(Path);
@@ -3734,22 +3771,22 @@ namespace AudioVideoPlayer.Pages.Player
                         }
                     });
                     break;
-                case CompanionClient.commandOpen:
+                case CompanionProtocol.commandOpen:
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
                     {
-                        if ((Parameters != null) && (Parameters.ContainsKey(CompanionClient.parameterContent)))
+                        if ((Parameters != null) && (Parameters.ContainsKey(CompanionProtocol.parameterContent)))
                         {
-                            string path = Parameters[CompanionClient.parameterContent];
+                            string path = Parameters[CompanionProtocol.parameterContent];
                             if (path != null)
                             {
                                 string value = string.Empty;
-                                Parameters.TryGetValue(CompanionClient.parameterPosterContent, out value);
+                                Parameters.TryGetValue(CompanionProtocol.parameterPosterContent, out value);
                                 string poster = value;
                                 value = "0";
-                                Parameters.TryGetValue(CompanionClient.parameterStart, out value);
+                                Parameters.TryGetValue(CompanionProtocol.parameterStart, out value);
                                 long start = 0;
                                 long.TryParse(value, out start);
-                                Parameters.TryGetValue(CompanionClient.parameterDuration, out value);
+                                Parameters.TryGetValue(CompanionProtocol.parameterDuration, out value);
                                 long duration = 0;
                                 long.TryParse(value, out duration);
                                 await StartPlay("", path, poster, start, duration);
@@ -3760,65 +3797,65 @@ namespace AudioVideoPlayer.Pages.Player
                         }
                     });
                     break;
-                case CompanionClient.commandPlay:
+                case CompanionProtocol.commandPlay:
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                     {
                         Play_Click(null, null);
                     });
                     break;
-                case CompanionClient.commandStop:
+                case CompanionProtocol.commandStop:
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                     {
                         Stop_Click(null, null);
                     });
                     break;
-                case CompanionClient.commandPause:
+                case CompanionProtocol.commandPause:
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                     {
                         PausePlay_Click(null, null);
                     });
                     break;
-                case CompanionClient.commandPlayPause:
+                case CompanionProtocol.commandPlayPause:
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                     {
                         PlayPause_Click(null, null);
                     });
                     break;
-                case CompanionClient.commandSelect:
+                case CompanionProtocol.commandSelect:
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                     {
                         int newIndex = -1;
                         if ((Parameters != null) &&
-                            (Parameters.ContainsKey(CompanionClient.parameterIndex)))
+                            (Parameters.ContainsKey(CompanionProtocol.parameterIndex)))
                         {
 
-                            if (int.TryParse(Parameters[CompanionClient.parameterIndex], out newIndex))
+                            if (int.TryParse(Parameters[CompanionProtocol.parameterIndex], out newIndex))
                                 select_Click(null, null, newIndex);
                         }
                     });
                     break;
-                case CompanionClient.commandPlus:
+                case CompanionProtocol.commandPlus:
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                     {
                         Plus_Click(null, null);
                     });
                     break;
-                case CompanionClient.commandMinus:
+                case CompanionProtocol.commandMinus:
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                     {
                         Minus_Click(null, null);
                     });
                     break;
-                case CompanionClient.commandFullWindow:
+                case CompanionProtocol.commandFullWindow:
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                     {
-                        if ((IsFullWindow())||(IsFullScreen()))
+                        if ((IsFullWindow()) || (IsFullScreen()))
                             SetWindowMode(WindowMediaState.WindowMode);
                         else
                             Fullwindow_Click(null, null);
                     });
                     break;
-                case CompanionClient.commandFullScreen:
+                case CompanionProtocol.commandFullScreen:
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                     {
                         if ((IsFullWindow()) || (IsFullScreen()))
@@ -3827,85 +3864,55 @@ namespace AudioVideoPlayer.Pages.Player
                             Fullscreen_Click(null, null);
                     });
                     break;
-                case CompanionClient.commandWindow:
+                case CompanionProtocol.commandWindow:
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                     {
                         if (mediaPlayerElement.IsFullWindow == true)
                             mediaPlayerElement.IsFullWindow = false;
                     });
                     break;
-                case CompanionClient.commandMute:
+                case CompanionProtocol.commandMute:
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                     {
                         Mute_Click(null, null);
                     });
                     break;
-                case CompanionClient.commandVolumeUp:
+                case CompanionProtocol.commandVolumeUp:
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                     {
                         VolumeUp_Click(null, null);
                     });
                     break;
-                case CompanionClient.commandVolumeDown:
+                case CompanionProtocol.commandVolumeDown:
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                     {
                         VolumeDown_Click(null, null);
                     });
                     break;
-                case CompanionClient.commandPing:
+                case CompanionProtocol.commandPing:
                     LogMessage("PING Command received");
                     break;
-                case CompanionClient.commandPingResponse:
+                case CompanionProtocol.commandPingResponse:
                     LogMessage("PINGRESPONSE Command received");
                     break;
                 default:
                     LogMessage("Unknown Command");
                     break;
             }
-
         }
 
-        private async void InitializeCompanionMode()
-        {
-            bool bRemote = false;
-            if (bRemote == true)
-            {
-                // Show FullWindow on phone
-                if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
-                {
-                    // Show fullWindow button
-                    fullwindowButton.Visibility = Visibility.Visible;
-                }
 
-                companion.StopRecv();
-                bool result = await companion.InitializeSend();
-                if (result == true)
-                    LogMessage("Companion Initialize Send ok");
-               else
-                    LogMessage("Error Companion Initialize Send");
 
-            }
-            else
-            {
-                // Hide FullWindow on phone
-                if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
-                {
-                    // Hide fullWindow button
-                    fullwindowButton.Visibility = Visibility.Collapsed;
-                }
-                companion.StopSend();
-                bool result = await companion.InitializeRecv();
-                if (result == true)
-                    LogMessage("Companion Initialize Reception ok");
-                else
-                    LogMessage("Error Companion Initialize Reception");
-            }
 
-        }
+
+        #endregion
+
+
+
+
 
   
 
-        #endregion
 
     }
 

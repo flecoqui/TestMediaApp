@@ -125,11 +125,47 @@ namespace AudioVideoPlayer.ViewModels
         }
 
         // Remote Settings
-        public const string cALL = "All(Multicast)";
         private static ObservableCollection<Companion.CompanionDevice> deviceList;
         private static int indexRemoteContent;
+        private static bool multicastDiscovery;
+        private static bool udpTransport;
         private static string uriRemoteContent;
         private static string uriRemotePlaylist;
+
+        public static bool UdpTransport
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(UdpTransport));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    udpTransport = false;
+                else
+                    udpTransport = bool.Parse(auto);
+                return udpTransport;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(UdpTransport), value.ToString());
+                udpTransport = value;
+            }
+        }
+        public static bool MulticastDiscovery
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(MulticastDiscovery));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    multicastDiscovery = false;
+                else
+                    multicastDiscovery = bool.Parse(auto);
+                return multicastDiscovery;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(MulticastDiscovery), value.ToString());
+                multicastDiscovery = value;
+            }
+        }
 
         public static ObservableCollection<Companion.CompanionDevice> DeviceList
         {
@@ -140,7 +176,7 @@ namespace AudioVideoPlayer.ViewModels
                 {
                     deviceList = new ObservableCollection<Companion.CompanionDevice>();
                    // deviceList.Add(new Companion.CompanionDevice("0",cALL,Companion.CompanionClient.cMulticastAddress,cALL) );
-                    deviceList.Add(new Companion.CompanionDevice("1","MyHomeDevice", "192.168.1.65","Desktop"));
+                    // deviceList.Add(new Companion.CompanionDevice("1","MyHomeDevice", "192.168.1.65","Desktop"));
                   //  deviceList.Add(new Companion.CompanionDevice("2", "MyDeviceWork", "10.85.185.182","PC"));
                   //  deviceList.Add(new Companion.CompanionDevice("3", "MyDevicePhone", "10.85.197.252","Phone"));
                   //  deviceList.Add(new Companion.CompanionDevice("4", "MyDevicePhone1", "172.16.0.3","Phone"));

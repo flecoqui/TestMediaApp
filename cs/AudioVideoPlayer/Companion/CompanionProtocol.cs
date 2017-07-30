@@ -1,4 +1,14 @@
-﻿using System;
+﻿//*********************************************************
+//
+// Copyright (c) Microsoft. All rights reserved.
+// This code is licensed under the MIT License (MIT).
+// THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
+// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
+// IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
+// PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
+//
+//*********************************************************
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +16,8 @@ using System.Threading.Tasks;
 
 namespace AudioVideoPlayer.Companion
 {
+    // This static Class implements the protocol to send command towards the devices
+    // Those commands could be sent either over AppToApp Communication or over UDP (unicast or Multicast 
     public static class CompanionProtocol
     {
         public const string cMulticastAddress = "239.11.11.11";
@@ -25,6 +37,8 @@ namespace AudioVideoPlayer.Companion
         public const string commandSelect = "SELECT";
         public const string commandPlus = "PLUS";
         public const string commandMinus = "MINUS";
+        public const string commandPlusPlaylist = "PLUSPLAYLIST";
+        public const string commandMinusPlayist = "MINUSPLAYLIST";
         public const string commandFullWindow = "FULLWINDOW";
         public const string commandFullScreen = "FULLSCREEN";
         public const string commandWindow = "WINDOW";
@@ -48,6 +62,7 @@ namespace AudioVideoPlayer.Companion
         public const string parameterIndex = "INDEX";
         public const string parameterName = "NAME";
         public const string parameterIPAddress = "IP";
+        public const string parameterKind = "KIND";
 
 
         public static string CreateCommand(string command, Dictionary<string, string> parameters)
@@ -84,6 +99,24 @@ namespace AudioVideoPlayer.Companion
                     }
                 }
                 return parameters;
+            }
+            return null;
+        }
+        public static string GetCommandFromMessage(string input)
+        {
+            if (!string.IsNullOrEmpty(input))
+            {
+                int pos = input.IndexOf(cMULTICASTCOMMAND + cQUESTION);
+                string header = cMULTICASTCOMMAND + cQUESTION;
+                string command = input.Substring(pos + header.Length);
+                if(!string.IsNullOrEmpty(command))
+                {
+                    string[] separator = new string[1];
+                    separator[0] = cQUESTION;
+                    string[] array = command.Split(separator, StringSplitOptions.None);
+                    if ((array != null) && (array.Length > 0))
+                        return array[0];
+                }
             }
             return null;
         }

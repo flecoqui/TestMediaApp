@@ -1,4 +1,15 @@
-﻿using System;
+﻿//*********************************************************
+//
+// Copyright (c) Microsoft. All rights reserved.
+// This code is licensed under the MIT License (MIT).
+// THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
+// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
+// IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
+// PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
+//
+//*********************************************************
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,47 +24,36 @@ using CompanionService;
 
 namespace AudioVideoPlayer.Companion
 {
+
+
     class CompanionConnectionManager
     {
-        public CompanionDevice localCompanionDevice { get; set; }
+        public CompanionDevice LocalCompanionDevice { get; set; }
 
-        string applicationUri { get; set; }
-        string appServiceName { get; set; }
-        string packageFamilyName { get; set; }
-
-        string multicastIPAddress { get; set; }
-        int multicastUDPPort { get; set; }
-        int unicastUDPPort { get; set; }
-
-        private RemoteSystemWatcher remoteSystemWatcher;
-        private AppServiceConnection receiveConnection;
+        public string ApplicationUri { get; set; }
+        public string AppServiceName { get; set; }
+        public string PackageFamilyName { get; set; }
 
 
 
+        // Summary:
+        //     CompanionConnectionManager constructor
         public CompanionConnectionManager()
         {
-            localCompanionDevice = null;
-            applicationUri = string.Empty;
-            multicastIPAddress = "239.11.11.11";
-            multicastUDPPort = 1919;
-            unicastUDPPort = 1918;
+            LocalCompanionDevice = null;
+            ApplicationUri = string.Empty;
+            AppServiceName = string.Empty;
+            PackageFamilyName = string.Empty;
         }
-        public bool Initialize()
-        {
-            if (listCompanionDevices == null)
-                listCompanionDevices = new Dictionary<string, CompanionDevice>();
-            if(listRemoteSystems != null)
-                listRemoteSystems = new Dictionary<string, RemoteSystem>();
-
-            return true;
-        }
-        public async System.Threading.Tasks.Task<bool> Initialize(CompanionDevice LocalDevice, string ApplicationUri,string AppServiceName, string PackageFamilyName)
+        // Summary:
+        //     Initialize CompanionConnectionManager
+        public virtual async System.Threading.Tasks.Task<bool> Initialize(CompanionDevice LocalDevice, CompanionConnectionManagerInitializeArgs InitArgs)
         {
             
-            localCompanionDevice = LocalDevice;
-            applicationUri = ApplicationUri;
-            appServiceName = AppServiceName;
-            packageFamilyName = PackageFamilyName;
+            LocalCompanionDevice = LocalDevice;
+            ApplicationUri = InitArgs.ApplicationUri;
+            AppServiceName = InitArgs.AppServiceName;
+            PackageFamilyName = InitArgs.PackageFamilyName;
             if (listCompanionDevices == null)
                 listCompanionDevices = new Dictionary<string, CompanionDevice>();
             if (listRemoteSystems == null)
@@ -68,8 +68,8 @@ namespace AudioVideoPlayer.Companion
             receiveConnection = new AppServiceConnection();
             if (receiveConnection != null)
             {
-                receiveConnection.AppServiceName = appServiceName;
-                receiveConnection.PackageFamilyName = packageFamilyName;
+                receiveConnection.AppServiceName = AppServiceName;
+                receiveConnection.PackageFamilyName = PackageFamilyName;
                 receiveConnection.RequestReceived += ReceiveConnection_RequestReceived;
                 receiveConnection.ServiceClosed += ReceiveConnection_ServiceClosed;
                 Windows.ApplicationModel.AppService.AppServiceConnectionStatus status = await receiveConnection.OpenAsync();
@@ -92,38 +92,22 @@ namespace AudioVideoPlayer.Companion
             }
             return false;
         }
-
-
-
-        public bool Initialize(CompanionDevice LocalDevice, string MulticastIPAddress, int MulticastUDPPort, int UnicastUDPPort)
+        // Summary:
+        //     Uninitialize CompanionConnectionManager
+        public virtual bool Uninitialize()
         {
-            localCompanionDevice = LocalDevice;
-            multicastIPAddress = MulticastIPAddress;
-            multicastUDPPort = MulticastUDPPort;
-            unicastUDPPort = UnicastUDPPort;
-            if (listCompanionDevices != null)
-                listCompanionDevices = new Dictionary<string, CompanionDevice>();
-            if (listRemoteSystems != null)
-                listRemoteSystems = new Dictionary<string, RemoteSystem>();
-            return true;
 
-        }
-        private CompanionDevice GetUniqueDeviceByName(string Name)
-        {
-            CompanionDevice device = null;
-            foreach (var d in listCompanionDevices)
+            //Set up a new app service connection
+            if (receiveConnection != null)
             {
-                if (string.Equals(d.Value.Name, Name))
-                {
-                    if (device == null)
-                        device = d.Value;
-                    else
-                        // not unique
-                        return null;
-                }
+                receiveConnection.ServiceClosed -= ReceiveConnection_ServiceClosed;
+                receiveConnection.RequestReceived -= ReceiveConnection_RequestReceived;
+                receiveConnection = null;
             }
-            return device;
+            return true;
         }
+
+
         private async void ReceiveConnection_RequestReceived(Windows.ApplicationModel.AppService.AppServiceConnection sender, Windows.ApplicationModel.AppService.AppServiceRequestReceivedEventArgs args)
         {
             System.Diagnostics.Debug.WriteLine("ReceiveConnection_RequestReceived");
@@ -204,7 +188,7 @@ namespace AudioVideoPlayer.Companion
         //
         // Summary:
         //     Launch the Discovery Thread.
-        public async System.Threading.Tasks.Task<bool> StartDiscovery()
+        public virtual async System.Threading.Tasks.Task<bool> StartDiscovery()
         {
             // Verify access for Remote Systems. 
             // Note: RequestAccessAsync needs to called from the UI thread.
@@ -303,7 +287,7 @@ namespace AudioVideoPlayer.Companion
         //
         // Summary:
         //     Stop the Discovery Thread.
-        public bool StopDiscovery()
+        public virtual bool StopDiscovery()
         {
             if(remoteSystemWatcher!=null)
             {
@@ -318,26 +302,28 @@ namespace AudioVideoPlayer.Companion
         //
         // Summary:
         //     Stop the Discovery Thread.
-        public bool IsDiscovering()
+        public virtual bool IsDiscovering()
         {
             return (remoteSystemWatcher != null);
         }
         //
         // Summary:
         //     The event that is raised when a new Companion Device is discovered.
-        public event TypedEventHandler<CompanionConnectionManager, CompanionDevice> CompanionDeviceAdded;
+        public virtual event TypedEventHandler<CompanionConnectionManager, CompanionDevice> CompanionDeviceAdded;
         //
         // Summary:
         //     The event that is raised when a previously discovered Companion Device
         //     is no longer visible.
-        public event TypedEventHandler<CompanionConnectionManager, CompanionDevice> CompanionDeviceRemoved;
+        public virtual event TypedEventHandler<CompanionConnectionManager, CompanionDevice> CompanionDeviceRemoved;
         //
         // Summary:
         //     Raised when a previously discovered Companion Device changes from proximally
         //     connected to cloud connected, or vice versa.
-        public event TypedEventHandler<CompanionConnectionManager, CompanionDevice> CompanionDeviceUpdated;
+        public virtual event TypedEventHandler<CompanionConnectionManager, CompanionDevice> CompanionDeviceUpdated;
 
-        public async System.Threading.Tasks.Task<bool> CheckCompanionDeviceConnected(CompanionDevice cd)
+        // Summary:
+        //     Check if the device is connected, if not send a request to launch the application on the remote device
+        public virtual async System.Threading.Tasks.Task<bool> CheckCompanionDeviceConnected(CompanionDevice cd)
         {
             if ((listCompanionDevices.ContainsKey(cd.Id)) && (listRemoteSystems.ContainsKey(cd.Id)))
             {
@@ -347,7 +333,7 @@ namespace AudioVideoPlayer.Companion
                     if (rscr != null)
                     {
                         Uri uri;
-                        if (Uri.TryCreate(applicationUri, UriKind.Absolute, out uri))
+                        if (Uri.TryCreate(ApplicationUri, UriKind.Absolute, out uri))
                         {
                             RemoteLaunchUriStatus launchUriStatus = await Windows.System.RemoteLauncher.LaunchUriAsync(rscr, uri);
                             if (launchUriStatus == RemoteLaunchUriStatus.Success)
@@ -360,7 +346,10 @@ namespace AudioVideoPlayer.Companion
             }
             return false;
         }
-        public bool IsCompanionDeviceConnected(CompanionDevice cd)
+
+        // Summary:
+        //     Check if the device is connected (a ping have been successful)
+        public virtual bool IsCompanionDeviceConnected(CompanionDevice cd)
         {
             if ((listCompanionDevices.ContainsKey(cd.Id)) && (listRemoteSystems.ContainsKey(cd.Id)))
             {
@@ -368,7 +357,10 @@ namespace AudioVideoPlayer.Companion
             }
             return false;
         }
-        public async System.Threading.Tasks.Task<bool> CompanionDeviceOpenUri(CompanionDevice cd, string inputUri)
+        // Summary:
+        //     Open a uri on the emote device
+
+        public virtual async System.Threading.Tasks.Task<bool> CompanionDeviceOpenUri(CompanionDevice cd, string inputUri)
         {
             if ((listCompanionDevices.ContainsKey(cd.Id)) && (listRemoteSystems.ContainsKey(cd.Id)))
             {
@@ -389,100 +381,7 @@ namespace AudioVideoPlayer.Companion
             }
             return false;
         }
-        public string GetSourceId()
-        {
-            if (localCompanionDevice != null)
-            {
-                if(!string.IsNullOrEmpty(localCompanionDevice.Id))
-                    return localCompanionDevice.Id;
-                else
-                {
-                    foreach(var d in listRemoteSystems)
-                    {
-                        if(d.Value.DisplayName == localCompanionDevice.Name)
-                        {
-                            localCompanionDevice.Id = d.Key;
-                            return d.Key;
-                        }
-                    }
-                }
-            }
-            return string.Empty;
-        }
-        public string GetSourceName()
-        {
-            if (localCompanionDevice != null)
-            {
-                if (!string.IsNullOrEmpty(localCompanionDevice.Name))
-                    return localCompanionDevice.Name;
-            }
-            return string.Empty;
-        }
-        public string GetSourceKind()
-        {
-            if (localCompanionDevice != null)
-            {
-                if (!string.IsNullOrEmpty(localCompanionDevice.Kind))
-                    return localCompanionDevice.Kind;
-            }
-            return string.Empty;
-        }
-        public static bool IsIPv4Address(string s)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(s))
-                {
-                    char[] sep = { '.' };
-                    string[] arrayIP = s.Split(sep);
-                    if (arrayIP.Count() == 4)
-                    {
-                        for (int i = 0; i < arrayIP.Count(); i++)
-                        {
-                            int digit = int.Parse(arrayIP[i]);
-                            if ((digit < 0) || (digit > 255))
-                                return false;
-                        }
-                        return true;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("Exception checking IP Address: " + ex.Message);
-            }
-            return false;
-        }
-        public string GetSourceIP()
-        {
-            if (localCompanionDevice != null)
-            {
-                if (!string.IsNullOrEmpty(localCompanionDevice.IPAddress))
-                    return localCompanionDevice.IPAddress;
-                else
-                {
-                    var icp = NetworkInformation.GetInternetConnectionProfile();
-
-                    if (icp?.NetworkAdapter == null) return null;
-
-                    var hostnames = NetworkInformation.GetHostNames();
-
-                    foreach (var hn in hostnames)
-                    {
-                        if ((hn.IPInformation != null) && (hn.IPInformation.NetworkAdapter != null) && (hn.IPInformation.NetworkAdapter.NetworkAdapterId == icp.NetworkAdapter.NetworkAdapterId))
-                        {
-                            if (IsIPv4Address(hn.CanonicalName))
-                            {
-                                localCompanionDevice.IPAddress = hn.CanonicalName;
-                                return hn.CanonicalName;
-                            }
-                        }
-                    }
-                }
-            }
-            return null;
-        }
-        public async System.Threading.Tasks.Task<bool> Send(CompanionDevice cd, string Message)
+        public virtual async System.Threading.Tasks.Task<bool> Send(CompanionDevice cd, string Message)
         {
             if (cd != null)
             {
@@ -497,8 +396,8 @@ namespace AudioVideoPlayer.Companion
                             using (var connection = new AppServiceConnection())
                             {
                                 //Set up a new app service connection
-                                connection.AppServiceName = appServiceName;
-                                connection.PackageFamilyName = packageFamilyName;
+                                connection.AppServiceName = AppServiceName;
+                                connection.PackageFamilyName = PackageFamilyName;
 
 
                                 AppServiceConnectionStatus status = await connection.OpenRemoteAsync(rscr);
@@ -534,12 +433,126 @@ namespace AudioVideoPlayer.Companion
         //
         // Summary:
         //     Raised when a Message is received from a Companion Device
-        public event TypedEventHandler<CompanionDevice, String> MessageReceived;
+        public virtual event TypedEventHandler<CompanionDevice, String> MessageReceived;
+
+
+        public static bool IsIPv4Address(string s)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(s))
+                {
+                    char[] sep = { '.' };
+                    string[] arrayIP = s.Split(sep);
+                    if (arrayIP.Count() == 4)
+                    {
+                        for (int i = 0; i < arrayIP.Count(); i++)
+                        {
+                            int digit = int.Parse(arrayIP[i]);
+                            if ((digit < 0) || (digit > 255))
+                                return false;
+                        }
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception checking IP Address: " + ex.Message);
+            }
+            return false;
+        }
+        public string GetSourceIP()
+        {
+            if (LocalCompanionDevice != null)
+            {
+                if (!string.IsNullOrEmpty(LocalCompanionDevice.IPAddress))
+                    return LocalCompanionDevice.IPAddress;
+                else
+                {
+                    var icp = NetworkInformation.GetInternetConnectionProfile();
+
+                    if (icp?.NetworkAdapter == null) return null;
+
+                    var hostnames = NetworkInformation.GetHostNames();
+
+                    foreach (var hn in hostnames)
+                    {
+                        if ((hn.IPInformation != null) && (hn.IPInformation.NetworkAdapter != null) && (hn.IPInformation.NetworkAdapter.NetworkAdapterId == icp.NetworkAdapter.NetworkAdapterId))
+                        {
+                            if (IsIPv4Address(hn.CanonicalName))
+                            {
+                                LocalCompanionDevice.IPAddress = hn.CanonicalName;
+                                return hn.CanonicalName;
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        }
 
         #region private
-        private Dictionary<string, CompanionDevice> listCompanionDevices;
-        private Dictionary<string, RemoteSystem> listRemoteSystems;
+        protected RemoteSystemWatcher remoteSystemWatcher;
+        protected AppServiceConnection receiveConnection;
 
+        protected Dictionary<string, CompanionDevice> listCompanionDevices;
+        protected Dictionary<string, RemoteSystem> listRemoteSystems;
+
+        protected CompanionDevice GetUniqueDeviceByName(string Name)
+        {
+            CompanionDevice device = null;
+            foreach (var d in listCompanionDevices)
+            {
+                if (string.Equals(d.Value.Name, Name))
+                {
+                    if (device == null)
+                        device = d.Value;
+                    else
+                        // not unique
+                        return null;
+                }
+            }
+            return device;
+        }
+        protected string GetSourceId()
+        {
+            if (LocalCompanionDevice != null)
+            {
+                if (!string.IsNullOrEmpty(LocalCompanionDevice.Id))
+                    return LocalCompanionDevice.Id;
+                else
+                {
+                    foreach (var d in listRemoteSystems)
+                    {
+                        if (d.Value.DisplayName == LocalCompanionDevice.Name)
+                        {
+                            LocalCompanionDevice.Id = d.Key;
+                            return d.Key;
+                        }
+                    }
+                }
+            }
+            return string.Empty;
+        }
+        protected string GetSourceName()
+        {
+            if (LocalCompanionDevice != null)
+            {
+                if (!string.IsNullOrEmpty(LocalCompanionDevice.Name))
+                    return LocalCompanionDevice.Name;
+            }
+            return string.Empty;
+        }
+        protected string GetSourceKind()
+        {
+            if (LocalCompanionDevice != null)
+            {
+                if (!string.IsNullOrEmpty(LocalCompanionDevice.Kind))
+                    return LocalCompanionDevice.Kind;
+            }
+            return string.Empty;
+        }
 
         #endregion private
 

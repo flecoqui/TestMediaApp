@@ -85,6 +85,8 @@ namespace AudioVideoPlayer.Pages.Playlist
                         }
                         index++;
                     }
+                    if (comboPlayList.SelectedIndex < 0)
+                        comboPlayList.SelectedIndex = 0;
                 }
             }
         }
@@ -157,10 +159,11 @@ namespace AudioVideoPlayer.Pages.Playlist
         {
             var filePicker = new Windows.Storage.Pickers.FileOpenPicker();
             filePicker.FileTypeFilter.Add(".json");
+            filePicker.FileTypeFilter.Add(".tma");
             filePicker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
             filePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
             filePicker.SettingsIdentifier = "PlaylistPicker";
-            filePicker.CommitButtonText = "Open JSON Playlist File to Process";
+            filePicker.CommitButtonText = "Add JSON or TMA (TestMEdiaApp)  Playlist File to your list";
             ClearErrorMessage();
 
             var file = await filePicker.PickSingleFileAsync();

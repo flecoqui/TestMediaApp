@@ -108,6 +108,11 @@
                 <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Margin="0,0,0,0"  Text="Companion Settings: "/>
             </StackPanel>
         </StackPanel>
+        <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  Grid.Row="4" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
+            <CheckBox VerticalAlignment="Center" x:Name="MulticastDiscovery" Margin="5,0,5,0" IsChecked="{Binding Settings.MulticastDiscovery,Mode=TwoWay}" ToolTipService.ToolTip="Configure the Companion client to use Multicast for Device discovery instead of RemoteSystem API"   FlowDirection="RightToLeft"  Content="AutoStart:" MinWidth="55" />
+            <CheckBox VerticalAlignment="Center" x:Name="UDPTransport" Margin="5,0,5,0" IsChecked="{Binding Settings.UdpTransport,Mode=TwoWay}" ToolTipService.ToolTip="Configure the remote page to se UDP transport instead of AppService communication"   FlowDirection="RightToLeft" HorizontalAlignment="Left" Content="Loop:" MinWidth="55" />
+        </StackPanel>
+       
         <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  Grid.Row="7" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
             <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Current IP Address: "/>
             <TextBlock x:Name="IPAddress" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  />

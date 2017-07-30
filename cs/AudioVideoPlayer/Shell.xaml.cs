@@ -161,7 +161,7 @@ namespace AudioVideoPlayer
             }
             return t;
         }
-        public async void SetProtocolArgs(Uri uri)
+        public void SetProtocolArgs(Uri uri)
         {
             if (uri != null)
             {
@@ -179,7 +179,7 @@ namespace AudioVideoPlayer
                     {
                         var p = NavigationFrame.Content as PlayerPage;
                         if(p!=null)
-                            await p.SetProtocolArgs(uri);
+                            p.SetProtocolArgs(uri);
                     }
                 }
             }

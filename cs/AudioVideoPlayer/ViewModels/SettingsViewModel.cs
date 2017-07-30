@@ -305,6 +305,30 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
+        public bool MulticastDiscovery
+        {
+            get
+            {
+                return StaticSettingsViewModel.MulticastDiscovery;
+            }
+            set
+            {
+                StaticSettingsViewModel.MulticastDiscovery = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public bool UdpTransport
+        {
+            get
+            {
+                return StaticSettingsViewModel.UdpTransport;
+            }
+            set
+            {
+                StaticSettingsViewModel.UdpTransport = value;
+                NotifyPropertyChanged();
+            }
+        }
     }
 
 
