@@ -147,8 +147,7 @@ namespace AudioVideoPlayer.Companion
                                                 a.IPAddress = ip;
                                                 listCompanionDevices.Remove(a.Id);
                                                 listCompanionDevices.Add(id, a);
-                                                if (CompanionDeviceUpdated != null)
-                                                    CompanionDeviceUpdated(this, a);
+                                                OnDeviceUpdated(this, a);
                                             }
                                         }
                                     }
@@ -233,8 +232,7 @@ namespace AudioVideoPlayer.Companion
                 if (listCompanionDevices.ContainsKey(args.RemoteSystem.Id))
                     listCompanionDevices.Remove(args.RemoteSystem.Id);
                 listCompanionDevices.Add(args.RemoteSystem.Id,d);
-                if (CompanionDeviceUpdated != null)
-                    CompanionDeviceUpdated(this,d);
+                OnDeviceUpdated(this,d);
 
                 if (listRemoteSystems.ContainsKey(args.RemoteSystem.Id))
                     listRemoteSystems.Remove(args.RemoteSystem.Id);
@@ -250,8 +248,7 @@ namespace AudioVideoPlayer.Companion
                 if (listCompanionDevices.ContainsKey(args.RemoteSystemId))
                 {
                     CompanionDevice d = listCompanionDevices[args.RemoteSystemId];
-                    if (CompanionDeviceRemoved != null)
-                        CompanionDeviceRemoved(this, d);
+                    OnDeviceRemoved(this, d);
                     listCompanionDevices.Remove(args.RemoteSystemId);
                 }
             }
@@ -275,8 +272,7 @@ namespace AudioVideoPlayer.Companion
                 if (listCompanionDevices.ContainsKey(args.RemoteSystem.Id))
                     listCompanionDevices.Remove(args.RemoteSystem.Id);
                 listCompanionDevices.Add(args.RemoteSystem.Id, d);
-                if (CompanionDeviceAdded != null)
-                    CompanionDeviceAdded(this, d);
+                OnDeviceAdded(this, d);
 
                 if (listRemoteSystems.ContainsKey(args.RemoteSystem.Id))
                     listRemoteSystems.Remove(args.RemoteSystem.Id);
@@ -306,20 +302,35 @@ namespace AudioVideoPlayer.Companion
         {
             return (remoteSystemWatcher != null);
         }
+        protected virtual void OnDeviceAdded(CompanionConnectionManager m, CompanionDevice d)
+        {
+            if (CompanionDeviceAdded != null)
+                CompanionDeviceAdded(m, d);
+        }
         //
         // Summary:
         //     The event that is raised when a new Companion Device is discovered.
-        public virtual event TypedEventHandler<CompanionConnectionManager, CompanionDevice> CompanionDeviceAdded;
+        public event TypedEventHandler<CompanionConnectionManager, CompanionDevice> CompanionDeviceAdded;
+        protected virtual void OnDeviceRemoved(CompanionConnectionManager m, CompanionDevice d)
+        {
+            if (CompanionDeviceRemoved != null)
+                CompanionDeviceRemoved(m, d);
+        }
         //
         // Summary:
         //     The event that is raised when a previously discovered Companion Device
         //     is no longer visible.
-        public virtual event TypedEventHandler<CompanionConnectionManager, CompanionDevice> CompanionDeviceRemoved;
+        public event TypedEventHandler<CompanionConnectionManager, CompanionDevice> CompanionDeviceRemoved;
+        protected virtual void OnDeviceUpdated(CompanionConnectionManager m, CompanionDevice d)
+        {
+            if (CompanionDeviceUpdated != null)
+                CompanionDeviceUpdated(m, d);
+        }
         //
         // Summary:
         //     Raised when a previously discovered Companion Device changes from proximally
         //     connected to cloud connected, or vice versa.
-        public virtual event TypedEventHandler<CompanionConnectionManager, CompanionDevice> CompanionDeviceUpdated;
+        public event TypedEventHandler<CompanionConnectionManager, CompanionDevice> CompanionDeviceUpdated;
 
         // Summary:
         //     Check if the device is connected, if not send a request to launch the application on the remote device

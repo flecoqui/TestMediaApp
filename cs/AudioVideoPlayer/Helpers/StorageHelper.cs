@@ -9,6 +9,60 @@ namespace AudioVideoPlayer.Helpers
     public static  class StorageHelper
     {
         /// <summary>
+        /// Save Text into File
+        /// </summary>
+        public static bool SaveStringIntoFile(string fileName, string content)
+        {
+            bool result = false;
+            try
+            {
+                // Create sample file; replace if exists.
+                Windows.Storage.StorageFolder storageFolder =
+                    Windows.Storage.ApplicationData.Current.LocalFolder;
+                Windows.Storage.StorageFile SaveFile = Task.Run(async () => {
+                    return await storageFolder.CreateFileAsync(fileName + ".xml",
+                        Windows.Storage.CreationCollisionOption.ReplaceExisting);
+                }).Result;
+
+                Task.Run(async () => {
+                    await Windows.Storage.FileIO.WriteTextAsync(SaveFile, content); }).Wait();
+                result = true;
+            }
+            catch(Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while saving into file: " + ex.Message);
+            }
+            return result;
+        }
+        /// <summary>
+        /// Restore Text from File
+        /// </summary>
+        public static string RestoreStringFromFile(string fileName)
+        {
+            string result = string.Empty;
+            try
+            {
+                // Create sample file; replace if exists.
+                Windows.Storage.StorageFolder storageFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+                Windows.Storage.StorageFile RestoreFile = Task.Run( async () => {
+                    return await storageFolder.CreateFileAsync(fileName + ".xml",
+                        Windows.Storage.CreationCollisionOption.OpenIfExists);
+                }).Result;
+                if (RestoreFile != null)
+                {
+                    result = Task.Run(async () => {
+                        return await Windows.Storage.FileIO.ReadTextAsync(RestoreFile);
+                        }).Result;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while restoring from file: " + ex.Message);
+            }
+            return result;
+        }
+
+        /// <summary>
         /// Create Folder
         /// </summary>
         public static async System.Threading.Tasks.Task<Windows.Storage.StorageFolder> CreateLocalFolder(string folderName)

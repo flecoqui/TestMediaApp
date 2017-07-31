@@ -502,6 +502,24 @@ namespace AudioVideoPlayer.Pages.Remote
                 ObservableCollection<Companion.CompanionDevice> deviceList = ViewModelLocator.Settings.DeviceList;
                 if (deviceList != null)
                 {
+                    Companion.CompanionDevice d = deviceList.FirstOrDefault(device => string.Equals(device.Name, args.Name));
+                    if (d != null)
+                    {
+                        LogMessage("Device: " + args.Name + " IP address: " + args.IPAddress + " added");
+                        deviceList.Add(new Companion.CompanionDevice(args.Id, args.Name, args.IPAddress, args.Kind));
+                    }
+                    else
+                    {
+                        if ((!string.Equals(d.IPAddress, args.IPAddress) && (string.IsNullOrEmpty(d.IPAddress))))
+                        {
+                            args.Id = d.Id;
+                            deviceList.Remove(d);
+                            deviceList.Add(args);
+                            LogMessage("Device: " + args.Name + " IP address: " + args.IPAddress + " updated");
+                        }
+                    }
+
+                    /*
                     Companion.CompanionDevice d = deviceList.FirstOrDefault(device => string.Equals(device.Id, args.Id));
                     if (d != null)
                     {
@@ -511,6 +529,7 @@ namespace AudioVideoPlayer.Pages.Remote
                     ViewModelLocator.Settings.DeviceList = deviceList;
                     UpdateSelection(args.Id);
                     LogMessage("Device: " + args.Name + " IP address: " + args.IPAddress + " Updated ");
+                    */
                 }
             });
         }
@@ -546,13 +565,21 @@ namespace AudioVideoPlayer.Pages.Remote
                 ObservableCollection<Companion.CompanionDevice> deviceList = ViewModelLocator.Settings.DeviceList;
                 if (deviceList != null)
                 {
-                    Companion.CompanionDevice d = deviceList.FirstOrDefault(device => string.Equals(device.Id, args.Id) && string.Equals(device.Name, args.Name));
-                    if (d != null)
+                    Companion.CompanionDevice d = deviceList.FirstOrDefault(device => string.Equals(device.Name, args.Name));
+                    if (d == null)
                     {
-                        deviceList.Remove(d);
+                        LogMessage("Device: " + args.Name + " IP address: " + args.IPAddress + " added");
+                        deviceList.Add(new Companion.CompanionDevice(args.Id, args.Name, args.IPAddress, args.Kind));
                     }
-                    LogMessage("Device: " + args.Name + " IP address: " + args.IPAddress + " added");
-                    deviceList.Add(new Companion.CompanionDevice(args.Id, args.Name, args.IPAddress, args.Kind));
+                    else
+                    {
+                        if ((!string.Equals(d.IPAddress, args.IPAddress)&&(string.IsNullOrEmpty(d.IPAddress))))
+                        {
+                            args.Id = d.Id;
+                            deviceList.Remove(d);
+                            deviceList.Add(args);
+                        }
+                    }
 
                     ViewModelLocator.Settings.DeviceList = deviceList;
                     UpdateSelection(args.Id);

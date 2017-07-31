@@ -167,11 +167,12 @@ namespace AudioVideoPlayer.ViewModels
             }
         }
 
-        public static ObservableCollection<Companion.CompanionDevice> DeviceList
+        public  static  ObservableCollection<Companion.CompanionDevice> DeviceList
         {
             get
             {
-                var auto = Helpers.SettingsHelper.ReadSettingsValue(nameof(DeviceList));
+                var auto = Helpers.StorageHelper.RestoreStringFromFile(nameof(DeviceList));
+                //var auto = Helpers.SettingsHelper.ReadSettingsValue(nameof(DeviceList));
                 if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
                 {
                     deviceList = new ObservableCollection<Companion.CompanionDevice>();
@@ -189,7 +190,8 @@ namespace AudioVideoPlayer.ViewModels
             set
             {
                 string serializeString = ObjectSerializer<ObservableCollection<Companion.CompanionDevice>>.ToXml(value);
-                Helpers.SettingsHelper.SaveSettingsValue(nameof(DeviceList), serializeString);
+                //Helpers.SettingsHelper.SaveSettingsValue(nameof(DeviceList), serializeString);
+                bool result = Helpers.StorageHelper.SaveStringIntoFile(nameof(DeviceList), serializeString);
                 deviceList = value;
             }
 
@@ -425,7 +427,8 @@ namespace AudioVideoPlayer.ViewModels
         {
              get
             {
-                var auto = Helpers.SettingsHelper.ReadSettingsValue(nameof(PlayListList));
+                var auto = Helpers.StorageHelper.RestoreStringFromFile(nameof(PlayListList));
+                //var auto = Helpers.SettingsHelper.ReadSettingsValue(nameof(PlayListList));
                 if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
                 {
 
@@ -443,7 +446,10 @@ namespace AudioVideoPlayer.ViewModels
             set
             {
                 string serializeString = ObjectSerializer<ObservableCollection<Models.PlayList>>.ToXml(value);
-                Helpers.SettingsHelper.SaveSettingsValue(nameof(PlayListList), serializeString);
+
+                //Helpers.SettingsHelper.SaveSettingsValue(nameof(PlayListList), serializeString);
+                bool result = Helpers.StorageHelper.SaveStringIntoFile(nameof(PlayListList), serializeString);
+
                 playListList = value;
             }
         }

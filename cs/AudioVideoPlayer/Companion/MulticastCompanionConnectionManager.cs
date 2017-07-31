@@ -76,8 +76,7 @@ namespace AudioVideoPlayer.Companion
                                 if (listCompanionDevices.ContainsKey(d.Id))
                                     listCompanionDevices.Remove(d.Id);
                                 listCompanionDevices.Add(d.Id, d);
-                                if (CompanionDeviceAdded != null)
-                                    CompanionDeviceAdded(this, d);
+                                OnDeviceAdded(this, d);
 
                             }
                             return true;
@@ -91,53 +90,56 @@ namespace AudioVideoPlayer.Companion
         //     Launch the Discovery Thread.
         public override async System.Threading.Tasks.Task<bool> StartDiscovery()
         {
-            if(MulticastDiscovery==false)
-                return await base.StartDiscovery();
-            else
+            if (await base.StartDiscovery() == true)
             {
-                TimeSpan period = TimeSpan.FromSeconds(10);
-
-                DiscoveryTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
+                if (MulticastDiscovery == true)
                 {
-                    await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
-                        async () =>
-                        {
-                            Dictionary<string, string> parameters = new Dictionary<string, string>();
-                            if (parameters != null)
+                    TimeSpan period = TimeSpan.FromSeconds(10);
+
+                    DiscoveryTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
+                    {
+                        await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+                            async () =>
                             {
-                                parameters.Add(CompanionProtocol.parameterID, LocalCompanionDevice.Id);
-                                parameters.Add(CompanionProtocol.parameterIPAddress, LocalCompanionDevice.IPAddress);
-                                parameters.Add(CompanionProtocol.parameterKind, LocalCompanionDevice.Kind);
-                                parameters.Add(CompanionProtocol.parameterName, LocalCompanionDevice.Name);
-                                string message = CompanionProtocol.CreateCommand(CompanionProtocol.commandPing, parameters);
-                                await Send(MulticastIPAddress, message);
-                            }
+                                Dictionary<string, string> parameters = new Dictionary<string, string>();
+                                if (parameters != null)
+                                {
+                                    parameters.Add(CompanionProtocol.parameterID, LocalCompanionDevice.Id);
+                                    parameters.Add(CompanionProtocol.parameterIPAddress, LocalCompanionDevice.IPAddress);
+                                    parameters.Add(CompanionProtocol.parameterKind, LocalCompanionDevice.Kind);
+                                    parameters.Add(CompanionProtocol.parameterName, LocalCompanionDevice.Name);
+                                    string message = CompanionProtocol.CreateCommand(CompanionProtocol.commandPing, parameters);
+                                    await Send(MulticastIPAddress, message);
+                                }
 
-                        }); ;
+                            }); ;
 
-                }, 
-                period);
-                if (DiscoveryTimer != null)
-                    return true;
+                    },
+                    period);
+                    if (DiscoveryTimer != null)
+                        return true;
 
+                }
             }
             return false;
         }
+
+
+
         // Summary:
         //     Stop the Discovery Thread.
         public override  bool StopDiscovery()
         {
-            if (MulticastDiscovery == false)
-                return base.StopDiscovery();
-            else
+            base.StopDiscovery();
+            if (MulticastDiscovery == true)
             {
-                if(DiscoveryTimer!=null)
+                if (DiscoveryTimer!=null)
                 {
                     DiscoveryTimer.Cancel();
                     DiscoveryTimer = null;
                 }
-                return true;
             }
+            return true;
         }
         //
         // Summary:
@@ -146,10 +148,8 @@ namespace AudioVideoPlayer.Companion
         {
             if (MulticastDiscovery == false)
                 return base.IsDiscovering();
-            else
-            {
-                return (DiscoveryTimer!=null);
-            }
+            else 
+                return (DiscoveryTimer!=null)|| base.IsDiscovering();
         }
         public override  async System.Threading.Tasks.Task<bool> Send(CompanionDevice cd, string Message)
         {
@@ -172,17 +172,17 @@ namespace AudioVideoPlayer.Companion
         //
         // Summary:
         //     The event that is raised when a new Companion Device is discovered.
-        public  override event TypedEventHandler<CompanionConnectionManager, CompanionDevice> CompanionDeviceAdded;
+        //public  override event TypedEventHandler<CompanionConnectionManager, CompanionDevice> CompanionDeviceAdded;
         //
         // Summary:
         //     The event that is raised when a previously discovered Companion Device
         //     is no longer visible.
-        public override event TypedEventHandler<CompanionConnectionManager, CompanionDevice> CompanionDeviceRemoved;
+        //public override event TypedEventHandler<CompanionConnectionManager, CompanionDevice> CompanionDeviceRemoved;
         //
         // Summary:
         //     Raised when a previously discovered Companion Device changes from proximally
         //     connected to cloud connected, or vice versa.
-        public override event TypedEventHandler<CompanionConnectionManager, CompanionDevice> CompanionDeviceUpdated;
+        //public override event TypedEventHandler<CompanionConnectionManager, CompanionDevice> CompanionDeviceUpdated;
         //
         // Summary:
         //     Raised when a Message is received from a Companion Device
@@ -314,8 +314,7 @@ namespace AudioVideoPlayer.Companion
                                 if (listCompanionDevices.ContainsKey(d.Id))
                                     listCompanionDevices.Remove(d.Id);
                                 listCompanionDevices.Add(d.Id, d);
-                                if (CompanionDeviceAdded != null)
-                                    CompanionDeviceAdded(this, d);
+                                OnDeviceAdded(this, d);
 
                             }
                             else
@@ -327,8 +326,7 @@ namespace AudioVideoPlayer.Companion
                                     listCompanionDevices.Remove(d.Id);
                                     listCompanionDevices.Add(d.Id, d);
                                     // Update device
-                                    if (CompanionDeviceUpdated != null)
-                                        CompanionDeviceUpdated(this, d);
+                                    OnDeviceUpdated(this, d);
                                 }
                             }
                         }
