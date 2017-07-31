@@ -1,2 +1,0 @@
-MainPackage=C:\git\flecoqui\TestMediaApp\cs\AudioVideoPlayer\bin\ARM\Debug\AudioVideoPlayer_1.1.21.0_ARM_Debug.appx
-SymbolPackage=C:\git\flecoqui\TestMediaApp\cs\AudioVideoPlayer\AppPackages\AudioVideoPlayer_1.1.21.0_Debug_Test\AudioVideoPlayer_1.1.21.0_ARM_Debug.appxsym

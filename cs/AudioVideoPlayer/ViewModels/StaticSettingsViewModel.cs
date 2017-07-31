@@ -506,7 +506,8 @@ namespace AudioVideoPlayer.ViewModels
             }
             set
             {
-                if (!string.IsNullOrEmpty(value))
+                //if (!string.IsNullOrEmpty(value))
+                if (value!=null)
                 {
                     Helpers.SettingsHelper.SaveSettingsValue(nameof(CurrentMediaPath), value.ToString());
                     currentMediaPath = value;

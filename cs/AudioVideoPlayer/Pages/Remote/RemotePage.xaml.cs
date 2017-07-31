@@ -134,7 +134,8 @@ namespace AudioVideoPlayer.Pages.Remote
                      if (PageStatus == Status.DeviceSelected)
                      {
 
-                         if ((IsCurrentDeviceConnected())||(string.Equals(GetIPAddress(),ViewModelLocator.Settings.MulticastIPAddress)))
+                         if ( (((ViewModelLocator.Settings.UdpTransport==true) || (ViewModelLocator.Settings.MulticastDiscovery == true)) &&(!string.IsNullOrEmpty(GetIPAddress()))) ||
+                               (((ViewModelLocator.Settings.UdpTransport == false) && (ViewModelLocator.Settings.MulticastDiscovery == false)) &&(IsCurrentDeviceConnected())))
                          {
                              playButton.IsEnabled = true;
                              playPauseButton.IsEnabled = true;
@@ -503,7 +504,7 @@ namespace AudioVideoPlayer.Pages.Remote
                 if (deviceList != null)
                 {
                     Companion.CompanionDevice d = deviceList.FirstOrDefault(device => string.Equals(device.Name, args.Name));
-                    if (d != null)
+                    if (d == null)
                     {
                         LogMessage("Device: " + args.Name + " IP address: " + args.IPAddress + " added");
                         deviceList.Add(new Companion.CompanionDevice(args.Id, args.Name, args.IPAddress, args.Kind));
@@ -518,6 +519,8 @@ namespace AudioVideoPlayer.Pages.Remote
                             LogMessage("Device: " + args.Name + " IP address: " + args.IPAddress + " updated");
                         }
                     }
+                    ViewModelLocator.Settings.DeviceList = deviceList;
+                    UpdateSelection(args.Id);
 
                     /*
                     Companion.CompanionDevice d = deviceList.FirstOrDefault(device => string.Equals(device.Id, args.Id));
