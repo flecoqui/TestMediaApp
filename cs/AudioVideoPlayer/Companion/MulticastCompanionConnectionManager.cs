@@ -13,6 +13,7 @@ using CompanionService;
 using Windows.Networking.Sockets;
 using Windows.Networking;
 using Windows.Storage.Streams;
+using Windows.System.Threading;
 
 namespace AudioVideoPlayer.Companion
 {
@@ -45,21 +46,43 @@ namespace AudioVideoPlayer.Companion
         }
 
 
-        public async System.Threading.Tasks.Task<bool> Initialize(CompanionDevice LocalDevice, MulticastCompanionConnectionManagerInitializeArgs InitArgs)
+        public override async System.Threading.Tasks.Task<bool> Initialize(CompanionDevice LocalDevice, CompanionConnectionManagerInitializeArgs InitArgs)
         {
             await base.Initialize(LocalDevice, InitArgs);
-            MulticastIPAddress = InitArgs.MulticastIPAddress;
-            MulticastUDPPort = InitArgs.MulticastUDPPort;
-            UnicastUDPPort = InitArgs.UnicastUDPPort;
-            UDPTransport = InitArgs.UDPTransport;
-            MulticastDiscovery = InitArgs.MulticastDiscovery;
-            SendInterfaceAddress = InitArgs.SendInterfaceAddress;
-            if(await InitializeMulticastRecv())
+            MulticastCompanionConnectionManagerInitializeArgs mInitArgs = InitArgs as MulticastCompanionConnectionManagerInitializeArgs;
+            if (mInitArgs != null)
             {
-                if (await InitializeUnicastRecv())
+                MulticastIPAddress = mInitArgs.MulticastIPAddress;
+                MulticastUDPPort = mInitArgs.MulticastUDPPort;
+                UnicastUDPPort = mInitArgs.UnicastUDPPort;
+                UDPTransport = mInitArgs.UDPTransport;
+                MulticastDiscovery = mInitArgs.MulticastDiscovery;
+                SendInterfaceAddress = mInitArgs.SendInterfaceAddress;
+                if (await InitializeMulticastRecv())
                 {
-                    if (await InitializeSend())
-                        return true;
+                    if (await InitializeUnicastRecv())
+                    {
+                        if (await InitializeSend())
+                        {
+                            var searchDevice = listCompanionDevices.FirstOrDefault(device => string.Equals(device.Value.IPAddress, MulticastIPAddress));
+                            if (searchDevice.Value == null)
+                            {
+                                CompanionDevice d = new CompanionDevice();
+                                d.Id = "0";
+                                d.IPAddress = MulticastIPAddress;
+                                d.Name = CompanionProtocol.MulticastDeviceName;
+                                d.Kind = CompanionProtocol.MulticastDeviceKind;
+                                d.IsMulticast = true;
+                                if (listCompanionDevices.ContainsKey(d.Id))
+                                    listCompanionDevices.Remove(d.Id);
+                                listCompanionDevices.Add(d.Id, d);
+                                if (CompanionDeviceAdded != null)
+                                    CompanionDeviceAdded(this, d);
+
+                            }
+                            return true;
+                        }
+                    }
                 }
             }
             return false;
@@ -72,16 +95,31 @@ namespace AudioVideoPlayer.Companion
                 return await base.StartDiscovery();
             else
             {
-                Dictionary<string, string> parameters = new Dictionary<string, string>();
-                if (parameters != null)
+                TimeSpan period = TimeSpan.FromSeconds(10);
+
+                DiscoveryTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
                 {
-                    parameters.Add(CompanionProtocol.parameterID, LocalCompanionDevice.Id);
-                    parameters.Add(CompanionProtocol.parameterIPAddress, LocalCompanionDevice.IPAddress);
-                    parameters.Add(CompanionProtocol.parameterKind, LocalCompanionDevice.Kind);
-                    parameters.Add(CompanionProtocol.parameterName, LocalCompanionDevice.Name);
-                    string message = CompanionProtocol.CreateCommand(CompanionProtocol.commandPing, parameters);
-                    return await Send(MulticastIPAddress, message);
-                }
+                    await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+                        async () =>
+                        {
+                            Dictionary<string, string> parameters = new Dictionary<string, string>();
+                            if (parameters != null)
+                            {
+                                parameters.Add(CompanionProtocol.parameterID, LocalCompanionDevice.Id);
+                                parameters.Add(CompanionProtocol.parameterIPAddress, LocalCompanionDevice.IPAddress);
+                                parameters.Add(CompanionProtocol.parameterKind, LocalCompanionDevice.Kind);
+                                parameters.Add(CompanionProtocol.parameterName, LocalCompanionDevice.Name);
+                                string message = CompanionProtocol.CreateCommand(CompanionProtocol.commandPing, parameters);
+                                await Send(MulticastIPAddress, message);
+                            }
+
+                        }); ;
+
+                }, 
+                period);
+                if (DiscoveryTimer != null)
+                    return true;
+
             }
             return false;
         }
@@ -93,6 +131,11 @@ namespace AudioVideoPlayer.Companion
                 return base.StopDiscovery();
             else
             {
+                if(DiscoveryTimer!=null)
+                {
+                    DiscoveryTimer.Cancel();
+                    DiscoveryTimer = null;
+                }
                 return true;
             }
         }
@@ -105,7 +148,7 @@ namespace AudioVideoPlayer.Companion
                 return base.IsDiscovering();
             else
             {
-                return true;
+                return (DiscoveryTimer!=null);
             }
         }
         public override  async System.Threading.Tasks.Task<bool> Send(CompanionDevice cd, string Message)
@@ -149,12 +192,13 @@ namespace AudioVideoPlayer.Companion
         private DatagramSocket msocketSend;
         private DatagramSocket msocketRecv;
         private DatagramSocket usocketRecv;
+        ThreadPoolTimer DiscoveryTimer;
         async Task<bool> Send(string ip, string Message)
         {
             try
             {
                 if (msocketSend == null)
-                    await InitializeSend();
+                    return false;
 
                 // Add Device Information
                 string command = CompanionProtocol.GetCommandFromMessage(Message);
@@ -252,6 +296,7 @@ namespace AudioVideoPlayer.Companion
                 string Command = CompanionProtocol.GetCommandFromMessage(message);
                 Dictionary<string, string> Parameters = CompanionProtocol.GetParametersFromMessage(message);
                 CompanionDevice d = GetCompanionDeviceFromParameters(Parameters);
+                System.Diagnostics.Debug.WriteLine("Received command: " + message);
 
                 if (string.Equals(Command, CompanionClient.commandPingResponse))
                 {
@@ -259,12 +304,15 @@ namespace AudioVideoPlayer.Companion
                     {
                         if(d!=null)
                         {
-
-                            var searchDevice = listCompanionDevices.FirstOrDefault(device => string.Equals(device.Value.Name, d.Name) && string.Equals(device.Value.IPAddress, d.IPAddress));
+                            var searchDevice = listCompanionDevices.FirstOrDefault(device => string.Equals(device.Value.Name, d.Name) );
                             if (searchDevice.Value == null)
                             {
                                 // Add Device
                                 d.Status = CompanionDeviceStatus.Connected;
+                                if (string.IsNullOrEmpty(d.Id))
+                                    d.Id = Guid.NewGuid().ToString(); 
+                                if (listCompanionDevices.ContainsKey(d.Id))
+                                    listCompanionDevices.Remove(d.Id);
                                 listCompanionDevices.Add(d.Id, d);
                                 if (CompanionDeviceAdded != null)
                                     CompanionDeviceAdded(this, d);
@@ -272,34 +320,59 @@ namespace AudioVideoPlayer.Companion
                             }
                             else
                             {
-                                d.Id  = searchDevice.Value.Id;
-                                d.Status = CompanionDeviceStatus.Connected;
-                                listCompanionDevices.Remove(d.Id);
-                                listCompanionDevices.Add(d.Id, d);
-                                // Update device
-                                if (CompanionDeviceUpdated != null)
-                                    CompanionDeviceUpdated(this, d);
+                                if (!string.Equals(d.IPAddress, searchDevice.Value.IPAddress))
+                                {
+                                    d.Id = searchDevice.Value.Id;
+                                    d.Status = CompanionDeviceStatus.Connected;
+                                    listCompanionDevices.Remove(d.Id);
+                                    listCompanionDevices.Add(d.Id, d);
+                                    // Update device
+                                    if (CompanionDeviceUpdated != null)
+                                        CompanionDeviceUpdated(this, d);
+                                }
                             }
                         }
                     });
                 }
                 else if (string.Equals(Command, CompanionClient.commandPing))
                 {
-                    await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                    await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
                     {
                         if (d != null)
                         {
-
-                            var searchDevice = listCompanionDevices.FirstOrDefault(device => string.Equals(device.Value.Name, d.Name) && string.Equals(device.Value.IPAddress, d.IPAddress));
+                            /*
+                            var searchDevice = listCompanionDevices.FirstOrDefault(device => string.Equals(device.Value.Name, d.Name) );
                             if (searchDevice.Value == null)
                             {
                                 d.Status = CompanionDeviceStatus.Connected;
                                 listCompanionDevices.Add(d.Id, d);
+                                if (CompanionDeviceAdded != null)
+                                    CompanionDeviceAdded(this, d);
                             }
                             else
                             {
-                                // Update device
-
+                                if ((!string.Equals(d.Id, searchDevice.Value.Id)) ||
+                                    (!string.Equals(d.IPAddress, searchDevice.Value.IPAddress)))
+                                {
+                                    d.Id = searchDevice.Value.Id;
+                                    d.Status = CompanionDeviceStatus.Connected;
+                                    listCompanionDevices.Remove(d.Id);
+                                    listCompanionDevices.Add(d.Id, d);
+                                    // Update device
+                                    if (CompanionDeviceUpdated != null)
+                                        CompanionDeviceUpdated(this, d);
+                                }
+                            }
+                            */
+                            Dictionary<string, string> parameters = new Dictionary<string, string>();
+                            if (parameters != null)
+                            {
+                                parameters.Add(CompanionProtocol.parameterID, LocalCompanionDevice.Id);
+                                parameters.Add(CompanionProtocol.parameterIPAddress, LocalCompanionDevice.IPAddress);
+                                parameters.Add(CompanionProtocol.parameterKind, LocalCompanionDevice.Kind);
+                                parameters.Add(CompanionProtocol.parameterName, LocalCompanionDevice.Name);
+                                string m = CompanionProtocol.CreateCommand(CompanionProtocol.commandPingResponse, parameters);
+                                await Send(d.IPAddress, m);
                             }
                         }
                     });
@@ -367,12 +440,10 @@ namespace AudioVideoPlayer.Companion
             {
                 if (msocketSend != null)
                 {
-                    //    msocketSend.MessageReceived -= UDPMulticastMessageReceived;
                     msocketSend.Dispose();
                     msocketSend = null;
                 }
                 msocketSend = new DatagramSocket();
-                //  msocketSend.MessageReceived += UDPMulticastMessageReceived;
 
                 NetworkAdapter adapter = GetDefaultNetworkAdapter();
                 if (adapter != null)
@@ -402,7 +473,11 @@ namespace AudioVideoPlayer.Companion
                 msocketRecv = new DatagramSocket();
                 msocketRecv.Control.MulticastOnly = true;
                 msocketRecv.MessageReceived += UDPMulticastMessageReceived;
-                await msocketRecv.BindServiceNameAsync(MulticastUDPPort.ToString());
+                NetworkAdapter adapter = GetDefaultNetworkAdapter();
+                if (adapter != null)
+                    await msocketRecv.BindServiceNameAsync(MulticastUDPPort.ToString(), adapter);
+                else
+                    await msocketRecv.BindServiceNameAsync(MulticastUDPPort.ToString());
                 HostName mcast = new HostName(MulticastIPAddress);
                 msocketRecv.JoinMulticastGroup(mcast);
                 return true;
@@ -430,7 +505,12 @@ namespace AudioVideoPlayer.Companion
                 }
                 usocketRecv = new DatagramSocket();
                 usocketRecv.MessageReceived += UDPMulticastMessageReceived;
-                await usocketRecv.BindServiceNameAsync(UnicastUDPPort.ToString());
+              //  NetworkAdapter adapter = GetDefaultNetworkAdapter();
+              //  if (adapter != null)
+              //      await msocketRecv.BindServiceNameAsync(UnicastUDPPort.ToString(), adapter);
+              //  else
+                    await usocketRecv.BindServiceNameAsync(UnicastUDPPort.ToString());
+
                 return true;
             }
             catch (Exception e)

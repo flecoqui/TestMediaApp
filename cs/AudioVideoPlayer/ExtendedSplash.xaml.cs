@@ -99,7 +99,7 @@ namespace AudioVideoPlayer
         private async void ExtendedSplash_Loaded(object sender, RoutedEventArgs e)
         {
 
-            await Task.Delay(TimeSpan.FromSeconds(5));
+            await Task.Delay(TimeSpan.FromSeconds(2));
             // Navigate to mainpage
             rootFrame.Navigate(typeof(Shell));
             // Place the frame in the current Window

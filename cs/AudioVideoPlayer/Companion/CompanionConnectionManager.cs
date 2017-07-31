@@ -468,23 +468,22 @@ namespace AudioVideoPlayer.Companion
             {
                 if (!string.IsNullOrEmpty(LocalCompanionDevice.IPAddress))
                     return LocalCompanionDevice.IPAddress;
-                else
+            }
+            else
+            {
+                var icp = NetworkInformation.GetInternetConnectionProfile();
+
+                if (icp?.NetworkAdapter == null) return null;
+
+                var hostnames = NetworkInformation.GetHostNames();
+
+                foreach (var hn in hostnames)
                 {
-                    var icp = NetworkInformation.GetInternetConnectionProfile();
-
-                    if (icp?.NetworkAdapter == null) return null;
-
-                    var hostnames = NetworkInformation.GetHostNames();
-
-                    foreach (var hn in hostnames)
+                    if ((hn.IPInformation != null) && (hn.IPInformation.NetworkAdapter != null) && (hn.IPInformation.NetworkAdapter.NetworkAdapterId == icp.NetworkAdapter.NetworkAdapterId))
                     {
-                        if ((hn.IPInformation != null) && (hn.IPInformation.NetworkAdapter != null) && (hn.IPInformation.NetworkAdapter.NetworkAdapterId == icp.NetworkAdapter.NetworkAdapterId))
+                        if (IsIPv4Address(hn.CanonicalName))
                         {
-                            if (IsIPv4Address(hn.CanonicalName))
-                            {
-                                LocalCompanionDevice.IPAddress = hn.CanonicalName;
-                                return hn.CanonicalName;
-                            }
+                            return hn.CanonicalName;
                         }
                     }
                 }

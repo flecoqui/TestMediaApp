@@ -133,7 +133,8 @@ namespace AudioVideoPlayer.Pages.Remote
                  {
                      if (PageStatus == Status.DeviceSelected)
                      {
-                         if (IsCurrentDeviceConnected())
+
+                         if ((IsCurrentDeviceConnected())||(string.Equals(GetIPAddress(),ViewModelLocator.Settings.MulticastIPAddress)))
                          {
                              playButton.IsEnabled = true;
                              playPauseButton.IsEnabled = true;
@@ -387,34 +388,63 @@ namespace AudioVideoPlayer.Pages.Remote
         private async System.Threading.Tasks.Task<bool> InitializeCompanion()
         {
             bool result = false;
-            if (companionConnectionManager!=null)
-            {
-                companionConnectionManager.MessageReceived -= CompanionConnectionManager_MessageReceived;
-                companionConnectionManager.CompanionDeviceAdded -= CompanionConnectionManager_CompanionDeviceAdded;
-                companionConnectionManager.CompanionDeviceRemoved -= CompanionConnectionManager_CompanionDeviceRemoved;
-                companionConnectionManager.CompanionDeviceUpdated -= CompanionConnectionManager_CompanionDeviceUpdated;
-                companionConnectionManager.Uninitialize();
-                companionConnectionManager = null;
-            }
+            UninitializeCompanion();
             if (companionConnectionManager == null)
             {
-                companionConnectionManager = new CompanionConnectionManager();
 
-                localCompanionDevice = new CompanionDevice(string.Empty, Information.SystemInformation.DeviceName, companionConnectionManager.GetSourceIP(), Information.SystemInformation.SystemFamily);
-                companionConnectionManager.MessageReceived += CompanionConnectionManager_MessageReceived;
-                companionConnectionManager.CompanionDeviceAdded += CompanionConnectionManager_CompanionDeviceAdded;
-                companionConnectionManager.CompanionDeviceRemoved += CompanionConnectionManager_CompanionDeviceRemoved;
-                companionConnectionManager.CompanionDeviceUpdated += CompanionConnectionManager_CompanionDeviceUpdated;
 
-                CompanionConnectionManagerInitializeArgs args = new CompanionConnectionManagerInitializeArgs();
-                if (args != null)
+                if ((ViewModelLocator.Settings.MulticastDiscovery == false) &&
+                    (ViewModelLocator.Settings.UdpTransport == false))
                 {
-                    args.ApplicationUri = "testmediaapp://?page=playerpage";
-                    args.AppServiceName = "com.testmediaapp.companionservice";
-                    //args.PackageFamilyName= "52458FLECOQUI.TestMediaApplication_h29hy11807230";
-                    args.PackageFamilyName = Information.SystemInformation.PackageFamilyName;
-                    result = await companionConnectionManager.Initialize(localCompanionDevice, args);
+
+                    companionConnectionManager = new CompanionConnectionManager();
+                    if (companionConnectionManager != null)
+                    {
+                        localCompanionDevice = new CompanionDevice(string.Empty, Information.SystemInformation.DeviceName, companionConnectionManager.GetSourceIP(), Information.SystemInformation.SystemFamily);
+                        companionConnectionManager.MessageReceived += CompanionConnectionManager_MessageReceived;
+                        companionConnectionManager.CompanionDeviceAdded += CompanionConnectionManager_CompanionDeviceAdded;
+                        companionConnectionManager.CompanionDeviceRemoved += CompanionConnectionManager_CompanionDeviceRemoved;
+                        companionConnectionManager.CompanionDeviceUpdated += CompanionConnectionManager_CompanionDeviceUpdated;
+                        CompanionConnectionManagerInitializeArgs args = new CompanionConnectionManagerInitializeArgs();
+                        if (args != null)
+                        {
+                            args.ApplicationUri = "testmediaapp://?page=playerpage";
+                            args.AppServiceName = "com.testmediaapp.companionservice";
+                            //args.PackageFamilyName= "52458FLECOQUI.TestMediaApplication_h29hy11807230";
+                            args.PackageFamilyName = Information.SystemInformation.PackageFamilyName;
+                            result = await companionConnectionManager.Initialize(localCompanionDevice, args);
+                        }
+                    }
                 }
+                else
+                {
+                    companionConnectionManager = new MulticastCompanionConnectionManager();
+                    if (companionConnectionManager != null)
+                    {
+                        localCompanionDevice = new CompanionDevice(string.Empty, Information.SystemInformation.DeviceName, companionConnectionManager.GetSourceIP(), Information.SystemInformation.SystemFamily);
+                        companionConnectionManager.MessageReceived += CompanionConnectionManager_MessageReceived;
+                        companionConnectionManager.CompanionDeviceAdded += CompanionConnectionManager_CompanionDeviceAdded;
+                        companionConnectionManager.CompanionDeviceRemoved += CompanionConnectionManager_CompanionDeviceRemoved;
+                        companionConnectionManager.CompanionDeviceUpdated += CompanionConnectionManager_CompanionDeviceUpdated;
+                        MulticastCompanionConnectionManagerInitializeArgs args = new MulticastCompanionConnectionManagerInitializeArgs();
+                        if (args != null)
+                        {
+                            args.ApplicationUri = "testmediaapp://?page=playerpage";
+                            args.AppServiceName = "com.testmediaapp.companionservice";
+                            //args.PackageFamilyName= "52458FLECOQUI.TestMediaApplication_h29hy11807230";
+                            args.PackageFamilyName = Information.SystemInformation.PackageFamilyName;
+                            args.MulticastDiscovery = ViewModelLocator.Settings.MulticastDiscovery;
+                            args.UDPTransport = ViewModelLocator.Settings.UdpTransport;
+                            args.MulticastIPAddress = ViewModelLocator.Settings.MulticastIPAddress;
+                            args.MulticastUDPPort = ViewModelLocator.Settings.MulticastUDPPort;
+                            args.UnicastUDPPort = ViewModelLocator.Settings.UnicastUDPPort;
+
+                            result = await companionConnectionManager.Initialize(localCompanionDevice, args);
+                        }
+                    }
+
+                }
+
             }
             if (result == true)
                 LogMessage("Companion Initialization ok");

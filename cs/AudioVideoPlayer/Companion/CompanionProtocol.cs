@@ -64,7 +64,8 @@ namespace AudioVideoPlayer.Companion
         public const string parameterIPAddress = "IP";
         public const string parameterKind = "KIND";
 
-
+        public const string MulticastDeviceName = "Multicast";
+        public const string MulticastDeviceKind = "Virtual";
         public static string CreateCommand(string command, Dictionary<string, string> parameters)
         {
             string s = cMULTICASTCOMMAND + cQUESTION + command ;
