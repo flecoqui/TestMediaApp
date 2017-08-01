@@ -41,10 +41,14 @@ namespace AudioVideoPlayer.Companion
         public string Name {get;set; }
         public string IPAddress { get;set; }
         public string Kind { get; set; }
-        public bool IsAvailableBySpatialProximity { get; set; }
+        // Anniversary issue
+
+       // public bool IsAvailableBySpatialProximity { get; set; }
         public bool IsAvailableByProximity { get; set; }
         public CompanionDeviceStatus Status { get; set; }
         public bool IsMulticast { get; set; }
+        public bool IsRemoteSystemDevice { get; set; }
+
         public CompanionDevice()
         {
             Id = string.Empty;
@@ -52,20 +56,24 @@ namespace AudioVideoPlayer.Companion
             IPAddress = string.Empty;
             Kind = string.Empty;
             IsAvailableByProximity = false;
-            IsAvailableBySpatialProximity = false;
+            // Anniversary issue
+            // IsAvailableBySpatialProximity = false;
             Status = CompanionDeviceStatus.Unknown;
             IsMulticast = false;
+            IsRemoteSystemDevice = false;
         }
-        public CompanionDevice(string id, string name, string ipAddress, string kind)
+        public CompanionDevice(string id, bool isRemoteSytemDevice, string name, string ipAddress, string kind)
         {
             Id = id;
             Name = name;
             IPAddress = ipAddress;
             Kind = kind;
             IsAvailableByProximity = false;
-            IsAvailableBySpatialProximity = false;
+            // Anniversary issue
+            //IsAvailableBySpatialProximity = false;
             Status = CompanionDeviceStatus.Unknown;
             IsMulticast = false;
+            IsRemoteSystemDevice = isRemoteSytemDevice;
         }
 
     }

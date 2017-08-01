@@ -69,6 +69,7 @@ namespace AudioVideoPlayer.Companion
                             {
                                 CompanionDevice d = new CompanionDevice();
                                 d.Id = "0";
+                                d.IsRemoteSystemDevice = false;
                                 d.IPAddress = MulticastIPAddress;
                                 d.Name = CompanionProtocol.MulticastDeviceName;
                                 d.Kind = CompanionProtocol.MulticastDeviceKind;
@@ -87,6 +88,22 @@ namespace AudioVideoPlayer.Companion
             return false;
         }
         // Summary:
+        //     Send Multicast ping
+        async System.Threading.Tasks.Task<bool> SendPing()
+        {
+            Dictionary<string, string> parameters = new Dictionary<string, string>();
+            if (parameters != null)
+            {
+                parameters.Add(CompanionProtocol.parameterID, LocalCompanionDevice.Id);
+                parameters.Add(CompanionProtocol.parameterIPAddress, LocalCompanionDevice.IPAddress);
+                parameters.Add(CompanionProtocol.parameterKind, LocalCompanionDevice.Kind);
+                parameters.Add(CompanionProtocol.parameterName, LocalCompanionDevice.Name);
+                string message = CompanionProtocol.CreateCommand(CompanionProtocol.commandPing, parameters);
+                return await Send(MulticastIPAddress, message);
+            }
+            return false;
+        }
+        // Summary:
         //     Launch the Discovery Thread.
         public override async System.Threading.Tasks.Task<bool> StartDiscovery()
         {
@@ -94,23 +111,14 @@ namespace AudioVideoPlayer.Companion
             {
                 if (MulticastDiscovery == true)
                 {
+                    await SendPing();
                     TimeSpan period = TimeSpan.FromSeconds(10);
-
                     DiscoveryTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
                     {
                         await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
                             async () =>
                             {
-                                Dictionary<string, string> parameters = new Dictionary<string, string>();
-                                if (parameters != null)
-                                {
-                                    parameters.Add(CompanionProtocol.parameterID, LocalCompanionDevice.Id);
-                                    parameters.Add(CompanionProtocol.parameterIPAddress, LocalCompanionDevice.IPAddress);
-                                    parameters.Add(CompanionProtocol.parameterKind, LocalCompanionDevice.Kind);
-                                    parameters.Add(CompanionProtocol.parameterName, LocalCompanionDevice.Name);
-                                    string message = CompanionProtocol.CreateCommand(CompanionProtocol.commandPing, parameters);
-                                    await Send(MulticastIPAddress, message);
-                                }
+                                 await SendPing();
 
                             }); ;
 
@@ -168,7 +176,56 @@ namespace AudioVideoPlayer.Companion
             }
             return false;
         }
+        public static NetworkAdapter GetDefaultNetworkAdapter(string InterfaceAddress)
+        {
+            NetworkAdapter adapter = null;
+            if (!string.IsNullOrEmpty(InterfaceAddress))
+                adapter = GetNetworkAdapterByIPAddress(InterfaceAddress);
+            if (adapter == null)
+            {
+                ConnectionProfile connectionProfile = NetworkInformation.GetInternetConnectionProfile();
+                if (connectionProfile != null)
+                    adapter = connectionProfile.NetworkAdapter;
+            }
+            return adapter;
 
+        }
+        public static string GetNetworkAdapterIPAddress()
+        {
+            var icp = NetworkInformation.GetInternetConnectionProfile();
+
+            if (icp?.NetworkAdapter == null) return null;
+
+            var hostnames = NetworkInformation.GetHostNames();
+
+            foreach (var hn in hostnames)
+            {
+                if ((hn.IPInformation != null) && (hn.IPInformation.NetworkAdapter != null) && (hn.IPInformation.NetworkAdapter.NetworkAdapterId == icp.NetworkAdapter.NetworkAdapterId))
+                {
+                    if (IsIPv4Address(hn.CanonicalName))
+                        return hn.CanonicalName;
+                    //                    System.Diagnostics.Debug.WriteLine("IP Address: " + hn.CanonicalName);
+                }
+            }
+            return null;
+        }
+        public static NetworkAdapter GetNetworkAdapterByIPAddress(string ipAddress)
+        {
+
+            NetworkAdapter adapter = null;
+            var hostnames = NetworkInformation.GetHostNames();
+
+            foreach (var hn in hostnames)
+            {
+
+                if (hn.IPInformation != null && hn.DisplayName == ipAddress)
+                {
+                    adapter = hn.IPInformation.NetworkAdapter;
+                    break;
+                }
+            }
+            return adapter;
+        }
         //
         // Summary:
         //     The event that is raised when a new Companion Device is discovered.
@@ -278,7 +335,7 @@ namespace AudioVideoPlayer.Companion
                             string Id = Parameters[CompanionProtocol.parameterID];
                             if (Id != null)
                             {
-                                d = new CompanionDevice(Id, Name, IP, Kind);
+                                d = new CompanionDevice(Id, false,Name, IP, Kind);
                             }
                         }
                     }
@@ -298,7 +355,7 @@ namespace AudioVideoPlayer.Companion
                 CompanionDevice d = GetCompanionDeviceFromParameters(Parameters);
                 System.Diagnostics.Debug.WriteLine("Received command: " + message);
 
-                if (string.Equals(Command, CompanionClient.commandPingResponse))
+                if (string.Equals(Command, CompanionProtocol.commandPingResponse))
                 {
                     await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                     {
@@ -332,7 +389,7 @@ namespace AudioVideoPlayer.Companion
                         }
                     });
                 }
-                else if (string.Equals(Command, CompanionClient.commandPing))
+                else if (string.Equals(Command, CompanionProtocol.commandPing))
                 {
                     await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
                     {
@@ -399,37 +456,7 @@ namespace AudioVideoPlayer.Companion
                 }
             }
         }
-        NetworkAdapter GetDefaultNetworkAdapter()
-        {
-            NetworkAdapter adapter = null;
-            if (!string.IsNullOrEmpty(SendInterfaceAddress))
-                adapter = GetNetworkAdapterByIPAddress(SendInterfaceAddress);
-            if (adapter == null)
-            {
-                ConnectionProfile connectionProfile = NetworkInformation.GetInternetConnectionProfile();
-                if (connectionProfile != null)
-                    adapter = connectionProfile.NetworkAdapter;
-            }
-            return adapter;
 
-        }
-        static NetworkAdapter GetNetworkAdapterByIPAddress(string ipAddress)
-        {
-
-            NetworkAdapter adapter = null;
-            var hostnames = NetworkInformation.GetHostNames();
-
-            foreach (var hn in hostnames)
-            {
-
-                if (hn.IPInformation != null && hn.DisplayName == ipAddress)
-                {
-                    adapter = hn.IPInformation.NetworkAdapter;
-                    break;
-                }
-            }
-            return adapter;
-        }
 
         async Task<bool> InitializeSend()
         {
@@ -443,7 +470,7 @@ namespace AudioVideoPlayer.Companion
                 }
                 msocketSend = new DatagramSocket();
 
-                NetworkAdapter adapter = GetDefaultNetworkAdapter();
+                NetworkAdapter adapter = GetDefaultNetworkAdapter(SendInterfaceAddress);
                 if (adapter != null)
                     await msocketSend.BindServiceNameAsync("", adapter);
                 result = true;
@@ -471,7 +498,7 @@ namespace AudioVideoPlayer.Companion
                 msocketRecv = new DatagramSocket();
                 msocketRecv.Control.MulticastOnly = true;
                 msocketRecv.MessageReceived += UDPMulticastMessageReceived;
-                NetworkAdapter adapter = GetDefaultNetworkAdapter();
+                NetworkAdapter adapter = GetDefaultNetworkAdapter(SendInterfaceAddress);
                 if (adapter != null)
                     await msocketRecv.BindServiceNameAsync(MulticastUDPPort.ToString(), adapter);
                 else

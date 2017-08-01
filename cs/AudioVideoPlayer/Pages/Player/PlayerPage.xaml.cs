@@ -3681,10 +3681,10 @@ namespace AudioVideoPlayer.Pages.Player
         private async System.Threading.Tasks.Task<bool> InitializeCompanion()
         {
             bool result = false;
+            string multicast = string.Empty;
             UninitializeCompanion();
             if (companionConnectionManager == null)
             {
-
 
                 if ((ViewModelLocator.Settings.MulticastDiscovery == false) &&
                     (ViewModelLocator.Settings.UdpTransport == false))
@@ -3693,7 +3693,7 @@ namespace AudioVideoPlayer.Pages.Player
                     companionConnectionManager = new CompanionConnectionManager();
                     if (companionConnectionManager != null)
                     {
-                        localCompanionDevice = new CompanionDevice(string.Empty, Information.SystemInformation.DeviceName, companionConnectionManager.GetSourceIP(), Information.SystemInformation.SystemFamily);
+                        localCompanionDevice = new CompanionDevice(string.Empty, false,Information.SystemInformation.DeviceName, companionConnectionManager.GetSourceIP(), Information.SystemInformation.SystemFamily);
                         companionConnectionManager.MessageReceived += CompanionConnectionManager_MessageReceived;
                         CompanionConnectionManagerInitializeArgs args = new CompanionConnectionManagerInitializeArgs();
                         if (args != null)
@@ -3708,10 +3708,11 @@ namespace AudioVideoPlayer.Pages.Player
                 }
                 else
                 {
+                    multicast = "Multicast ";
                     companionConnectionManager = new MulticastCompanionConnectionManager();
                     if (companionConnectionManager != null)
                     {
-                        localCompanionDevice = new CompanionDevice(string.Empty, Information.SystemInformation.DeviceName, companionConnectionManager.GetSourceIP(), Information.SystemInformation.SystemFamily);
+                        localCompanionDevice = new CompanionDevice(string.Empty, false,Information.SystemInformation.DeviceName, companionConnectionManager.GetSourceIP(), Information.SystemInformation.SystemFamily);
                         companionConnectionManager.MessageReceived += CompanionConnectionManager_MessageReceived;
                         MulticastCompanionConnectionManagerInitializeArgs args = new MulticastCompanionConnectionManagerInitializeArgs();
                         if (args != null)
@@ -3734,9 +3735,9 @@ namespace AudioVideoPlayer.Pages.Player
 
             }
             if (result == true)
-                LogMessage("Companion Initialization ok");
+                LogMessage(multicast + "Companion Initialization ok");
             else
-                LogMessage("Error Companion Initialization");
+                LogMessage(multicast +  "Companion Initialization Error" );
             return true;
         }
         private bool UninitializeCompanion()

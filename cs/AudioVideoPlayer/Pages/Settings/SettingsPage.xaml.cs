@@ -58,7 +58,7 @@ namespace AudioVideoPlayer.Pages.Settings
                 // Show fullWindow button
                 WindowModeFull.Visibility = Visibility.Collapsed;
             }
-            string s = CompanionClient.GetNetworkAdapterIPAddress();
+            string s = MulticastCompanionConnectionManager.GetNetworkAdapterIPAddress();
             if (!string.IsNullOrEmpty(s))
                 IPAddress.Text = s; 
         }
@@ -124,7 +124,7 @@ namespace AudioVideoPlayer.Pages.Settings
             TextBox tb = sender as TextBox;
             if (tb != null)
             {
-                if (!CompanionClient.IsIPv4Address(tb.Text))
+                if (!MulticastCompanionConnectionManager.IsIPv4Address(tb.Text))
                 {
                         tb.Text = ViewModels.StaticSettingsViewModel.MulticastIPAddress.ToString();
                 }

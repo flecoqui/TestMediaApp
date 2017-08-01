@@ -202,7 +202,7 @@ namespace AudioVideoPlayer.Pages.Remote
                          }
                          comboDevice.IsEnabled = true;
                          DiscoverDeviceButton.IsEnabled = true;
-                         AddDeviceButton.IsEnabled = true;
+                        // AddDeviceButton.IsEnabled = true;
                          RemoveDeviceButton.IsEnabled = true;
                          DeviceName.IsReadOnly = true;
                          DeviceIPAddress.IsReadOnly = true;
@@ -248,7 +248,7 @@ namespace AudioVideoPlayer.Pages.Remote
                          EnterRemoteButton.IsEnabled = false;
 
                          DiscoverDeviceButton.IsEnabled = true;
-                         AddDeviceButton.IsEnabled = true;
+                         //AddDeviceButton.IsEnabled = true;
                          RemoveDeviceButton.IsEnabled = false;
                          DeviceName.IsReadOnly = true;
                          DeviceIPAddress.IsReadOnly = true;
@@ -292,7 +292,7 @@ namespace AudioVideoPlayer.Pages.Remote
                          EnterRemoteButton.IsEnabled = false;
 
                          DiscoverDeviceButton.IsEnabled = false;
-                         AddDeviceButton.IsEnabled = true;
+                         //AddDeviceButton.IsEnabled = true;
                          RemoveDeviceButton.IsEnabled = false;
                          DeviceName.IsReadOnly = false;
                          DeviceIPAddress.IsReadOnly = false;
@@ -389,6 +389,7 @@ namespace AudioVideoPlayer.Pages.Remote
         private async System.Threading.Tasks.Task<bool> InitializeCompanion()
         {
             bool result = false;
+            string multicast = string.Empty;
             UninitializeCompanion();
             if (companionConnectionManager == null)
             {
@@ -401,7 +402,7 @@ namespace AudioVideoPlayer.Pages.Remote
                     companionConnectionManager = new CompanionConnectionManager();
                     if (companionConnectionManager != null)
                     {
-                        localCompanionDevice = new CompanionDevice(string.Empty, Information.SystemInformation.DeviceName, companionConnectionManager.GetSourceIP(), Information.SystemInformation.SystemFamily);
+                        localCompanionDevice = new CompanionDevice(string.Empty, false,Information.SystemInformation.DeviceName, companionConnectionManager.GetSourceIP(), Information.SystemInformation.SystemFamily);
                         companionConnectionManager.MessageReceived += CompanionConnectionManager_MessageReceived;
                         companionConnectionManager.CompanionDeviceAdded += CompanionConnectionManager_CompanionDeviceAdded;
                         companionConnectionManager.CompanionDeviceRemoved += CompanionConnectionManager_CompanionDeviceRemoved;
@@ -419,10 +420,12 @@ namespace AudioVideoPlayer.Pages.Remote
                 }
                 else
                 {
+                    multicast = "Multicast ";
+
                     companionConnectionManager = new MulticastCompanionConnectionManager();
                     if (companionConnectionManager != null)
                     {
-                        localCompanionDevice = new CompanionDevice(string.Empty, Information.SystemInformation.DeviceName, companionConnectionManager.GetSourceIP(), Information.SystemInformation.SystemFamily);
+                        localCompanionDevice = new CompanionDevice(string.Empty, false, Information.SystemInformation.DeviceName, companionConnectionManager.GetSourceIP(), Information.SystemInformation.SystemFamily);
                         companionConnectionManager.MessageReceived += CompanionConnectionManager_MessageReceived;
                         companionConnectionManager.CompanionDeviceAdded += CompanionConnectionManager_CompanionDeviceAdded;
                         companionConnectionManager.CompanionDeviceRemoved += CompanionConnectionManager_CompanionDeviceRemoved;
@@ -448,9 +451,10 @@ namespace AudioVideoPlayer.Pages.Remote
 
             }
             if (result == true)
-                LogMessage("Companion Initialization ok");
+                LogMessage(multicast + "Companion Initialization ok");
             else
-                LogMessage("Error Companion Initialization");
+                LogMessage(multicast + "Companion Initialization Error");
+
             return true;
         }
         private bool UninitializeCompanion()
@@ -507,7 +511,7 @@ namespace AudioVideoPlayer.Pages.Remote
                     if (d == null)
                     {
                         LogMessage("Device: " + args.Name + " IP address: " + args.IPAddress + " added");
-                        deviceList.Add(new Companion.CompanionDevice(args.Id, args.Name, args.IPAddress, args.Kind));
+                        deviceList.Add(new Companion.CompanionDevice(args.Id, args.IsRemoteSystemDevice, args.Name, args.IPAddress, args.Kind));
                     }
                     else
                     {
@@ -572,7 +576,7 @@ namespace AudioVideoPlayer.Pages.Remote
                     if (d == null)
                     {
                         LogMessage("Device: " + args.Name + " IP address: " + args.IPAddress + " added");
-                        deviceList.Add(new Companion.CompanionDevice(args.Id, args.Name, args.IPAddress, args.Kind));
+                        deviceList.Add(new Companion.CompanionDevice(args.Id, args.IsRemoteSystemDevice, args.Name, args.IPAddress, args.Kind));
                     }
                     else
                     {
@@ -866,7 +870,7 @@ namespace AudioVideoPlayer.Pages.Remote
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
             {
-                string commandString = CompanionClient.parameterContent + CompanionClient.cEQUAL + contentUri.Text;
+                string commandString = CompanionProtocol.parameterContent + CompanionProtocol.cEQUAL + contentUri.Text;
                 Dictionary<string, string> p = CompanionProtocol.GetParametersFromMessage(commandString);
                 await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandOpen, p));
             }
@@ -878,7 +882,7 @@ namespace AudioVideoPlayer.Pages.Remote
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
             {
-                string commandString = CompanionClient.parameterContent + CompanionClient.cEQUAL + playlistUri.Text;
+                string commandString = CompanionProtocol.parameterContent + CompanionProtocol.cEQUAL + playlistUri.Text;
                 Dictionary<string, string> p = CompanionProtocol.GetParametersFromMessage(commandString);
                 await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandOpenPlaylist, p));
             }
@@ -891,7 +895,7 @@ namespace AudioVideoPlayer.Pages.Remote
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
             {
-                string commandString = CompanionClient.parameterIndex + CompanionClient.cEQUAL + contentNumber.Text;
+                string commandString = CompanionProtocol.parameterIndex + CompanionProtocol.cEQUAL + contentNumber.Text;
                 Dictionary<string, string> p = CompanionProtocol.GetParametersFromMessage(commandString);
                 await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandSelect, p));
             }
@@ -904,71 +908,6 @@ namespace AudioVideoPlayer.Pages.Remote
         #endregion
 
 
-        private async void Companion_MessageReceived(CompanionClient sender, string Command, Dictionary<string, string> Parameters)
-        {
-            if (Parameters == null)
-                LogMessage("Command Received: " + Command);
-            else
-            {
-                string parameter = string.Empty;
-                foreach (var v in Parameters)
-                {
-                    parameter += " " + v.Key + "=" + v.Value;
-                }
-                LogMessage("Command Received: " + Command + " Parameter: " + parameter);
-            }
-            switch (Command)
-            {
-                case CompanionClient.commandPingResponse:
-                    await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,  () =>
-                    {
-                        if ((Parameters != null) && (Parameters.ContainsKey(CompanionClient.parameterName)) && (Parameters.ContainsKey(CompanionClient.parameterIPAddress)))
-                        {
-                            string Name = Parameters[CompanionClient.parameterName];
-                            if (Name != null)
-                            {
-                                string IP = Parameters[CompanionClient.parameterIPAddress];
-                                if (IP != null)
-                                {
-                                    ObservableCollection<Companion.CompanionDevice> deviceList = ViewModelLocator.Settings.DeviceList;
-                                    if (deviceList != null)
-                                    {
-                                        Companion.CompanionDevice d = deviceList.FirstOrDefault(device => string.Equals(device.Name, Name) && string.Equals(device.IPAddress, IP));
-                                        if (d == null)
-                                        {
-                                            LogMessage("Device: " + Name + " IP address: " + IP + " discovered");
-                                            deviceList.Add(new Companion.CompanionDevice(Guid.NewGuid().ToString(), Name, IP,string.Empty));
-
-                                            ViewModelLocator.Settings.DeviceList = deviceList;
-                                            int index = 0;
-                                            PageStatus = Status.NoDeviceSelected;
-                                            foreach (var item in comboDevice.Items)
-                                            {
-                                                if (item is Companion.CompanionDevice)
-                                                {
-                                                    Companion.CompanionDevice p = item as Companion.CompanionDevice;
-                                                    if (p != null)
-                                                    {
-                                                        if (string.Equals(p.Name, Name)&& string.Equals(p.IPAddress,IP))
-                                                        {
-                                                            comboDevice.SelectedIndex = index;
-                                                            PageStatus = Status.DeviceSelected;
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                                index++;
-                                            }
-                                        }
-                                    }
-                                    UpdateControls();
-                                }
-                            }
-                        }
-                    });
-                    break;
-            }
-        }
         private void comboDevice_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
@@ -1012,13 +951,14 @@ namespace AudioVideoPlayer.Pages.Remote
             }
             UpdateControls();
         }
+        /*
         private void AddDevice_Click(object sender, RoutedEventArgs e)
         {
             LogMessage("Adding Device ...");
             if (string.Equals(AddDeviceButton.Content,"\xE710"))
             {
                 LogMessage("Adding Device ...");
-                AddDeviceButton.Content = "\xE8FB";
+                //AddDeviceButton.Content = "\xE8FB";
                 PageStatus = Status.AddingDevice;
             }
             else
@@ -1027,7 +967,7 @@ namespace AudioVideoPlayer.Pages.Remote
 
                 string Name = DeviceName.Text;
                 string IP = DeviceIPAddress.Text;
-                if ((!string.IsNullOrEmpty(Name)) && (CompanionClient.IsIPv4Address(IP)))
+                if ((!string.IsNullOrEmpty(Name)) && (MulticastCompanionConnectionManager.IsIPv4Address(IP)))
                 {
                     ObservableCollection<Companion.CompanionDevice> deviceList = ViewModelLocator.Settings.DeviceList;
                     if (deviceList != null)
@@ -1036,7 +976,7 @@ namespace AudioVideoPlayer.Pages.Remote
                         if (d == null)
                         {
                             LogMessage("Device: " + Name + " IP address: " + IP + " added");
-                            deviceList.Add(new Companion.CompanionDevice(Guid.NewGuid().ToString(), Name, IP,string.Empty));
+                            deviceList.Add(new Companion.CompanionDevice(Guid.NewGuid().ToString(),false, Name, IP,string.Empty));
 
                             ViewModelLocator.Settings.DeviceList = deviceList;
                             int index = 0;
@@ -1065,6 +1005,7 @@ namespace AudioVideoPlayer.Pages.Remote
             }
             UpdateControls();
         }
+        */
         private void RemoveDevice_Click(object sender, RoutedEventArgs e)
         {
             LogMessage("Removing Device ...");

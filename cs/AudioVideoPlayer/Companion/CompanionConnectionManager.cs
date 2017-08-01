@@ -136,7 +136,7 @@ namespace AudioVideoPlayer.Companion
                                     string ip = (string)inputs[CompanionServiceMessage.ATT_SOURCEIP];
                                     string kind = (string)inputs[CompanionServiceMessage.ATT_SOURCEKIND];
                                     string message = (string)inputs[CompanionServiceMessage.ATT_MESSAGE];
-                                    CompanionDevice d = new CompanionDevice(id, name, ip, kind);
+                                    CompanionDevice d = new CompanionDevice(id,false, name, ip, kind);
                                     if(!string.IsNullOrEmpty(ip))
                                     {
                                         CompanionDevice a = GetUniqueDeviceByName(name);
@@ -223,11 +223,12 @@ namespace AudioVideoPlayer.Companion
         }
         private void RemoteSystemWatcher_RemoteSystemUpdated(RemoteSystemWatcher sender, RemoteSystemUpdatedEventArgs args)
         {
-            CompanionDevice d = new CompanionDevice(args.RemoteSystem.Id, args.RemoteSystem.DisplayName,string.Empty, args.RemoteSystem.Kind);
+            CompanionDevice d = new CompanionDevice(args.RemoteSystem.Id,true, args.RemoteSystem.DisplayName,string.Empty, args.RemoteSystem.Kind);
             if ((d != null)&&(listCompanionDevices !=null )&&(listRemoteSystems!=null))
             {
                 d.IsAvailableByProximity = args.RemoteSystem.IsAvailableByProximity;
-                d.IsAvailableBySpatialProximity = args.RemoteSystem.IsAvailableBySpatialProximity;
+                // Anniversary issue
+                //d.IsAvailableBySpatialProximity = args.RemoteSystem.IsAvailableBySpatialProximity;
                 d.Status = CompanionDeviceStatus.Available;
                 if (listCompanionDevices.ContainsKey(args.RemoteSystem.Id))
                     listCompanionDevices.Remove(args.RemoteSystem.Id);
@@ -263,11 +264,12 @@ namespace AudioVideoPlayer.Companion
 
         private void RemoteSystemWatcher_RemoteSystemAdded(RemoteSystemWatcher sender, RemoteSystemAddedEventArgs args)
         {
-            CompanionDevice d = new CompanionDevice(args.RemoteSystem.Id, args.RemoteSystem.DisplayName, string.Empty, args.RemoteSystem.Kind);
+            CompanionDevice d = new CompanionDevice(args.RemoteSystem.Id, true, args.RemoteSystem.DisplayName, string.Empty, args.RemoteSystem.Kind);
             if ((d != null) && (listCompanionDevices != null) && (listRemoteSystems != null))
             {
                 d.IsAvailableByProximity = args.RemoteSystem.IsAvailableByProximity;
-                d.IsAvailableBySpatialProximity = args.RemoteSystem.IsAvailableBySpatialProximity;
+                // Anniversary issue
+//                d.IsAvailableBySpatialProximity = args.RemoteSystem.IsAvailableBySpatialProximity;
                 d.Status = CompanionDeviceStatus.Available;
                 if (listCompanionDevices.ContainsKey(args.RemoteSystem.Id))
                     listCompanionDevices.Remove(args.RemoteSystem.Id);
