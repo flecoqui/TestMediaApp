@@ -148,6 +148,20 @@
                 Value="{StaticResource ButtonForegroundThemeBrush}" />
 
         </Style>
+
+        <Style x:Key="VerticalScrollViewerStyle"
+           TargetType="ScrollViewer">
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility"
+                Value="Disabled" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility"
+                Value="Auto" />
+            <Setter Property="ScrollViewer.HorizontalScrollMode"
+                Value="Disabled" />
+            <Setter Property="ScrollViewer.VerticalScrollMode"
+                Value="Enabled" />
+            <Setter Property="ScrollViewer.ZoomMode"
+                Value="Disabled" />
+        </Style>
         
         <Style TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource Brush-Grey-01}" />
@@ -156,7 +170,6 @@
         <Style TargetType="Button">
             <Setter Property="Foreground" Value="{StaticResource Brush-Grey-01}" />
         </Style>
-        
 
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
@@ -389,6 +402,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
 
     </Application.Resources>
 
