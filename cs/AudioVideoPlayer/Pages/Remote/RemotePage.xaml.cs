@@ -102,11 +102,14 @@ namespace AudioVideoPlayer.Pages.Remote
             }
 
             // start discovering devices
-            if (!companionConnectionManager.IsDiscovering())
+            if (companionConnectionManager != null)
             {
-                LogMessage("Start Discovering Devices ...");
-                await companionConnectionManager.StartDiscovery();
-                DiscoverDeviceButton.Content = "\xE894";
+                if (!companionConnectionManager.IsDiscovering())
+                {
+                    LogMessage("Start Discovering Devices ...");
+                    await companionConnectionManager.StartDiscovery();
+                    DiscoverDeviceButton.Content = "\xE894";
+                }
             }
             // Update Controls
             UpdateControls();
@@ -316,7 +319,7 @@ namespace AudioVideoPlayer.Pages.Remote
             CompanionDevice cd = comboDevice.SelectedItem as CompanionDevice;
             if(cd!=null)
             {
-                if (companionConnectionManager.IsCompanionDeviceConnected(cd))
+                if ((companionConnectionManager!=null) &&(companionConnectionManager.IsCompanionDeviceConnected(cd)))
                 {
                     cd.Status = CompanionDeviceStatus.Connected;
                     return true;
@@ -610,11 +613,14 @@ namespace AudioVideoPlayer.Pages.Remote
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
             {
-                bool result = await companionConnectionManager.CompanionDeviceOpenUri(cd, "testmediaapp://?page=playerpage");
-                if(result==true)
-                    LogMessage("Player Page sucessfully opened on " + GetName());
-                else
-                    LogMessage("Error while opening Player Page on " + GetName() +  " Is the application installed? Is the device connected?" );
+                if (companionConnectionManager != null)
+                {
+                    bool result = await companionConnectionManager.CompanionDeviceOpenUri(cd, "testmediaapp://?page=playerpage");
+                    if (result == true)
+                        LogMessage("Player Page sucessfully opened on " + GetName());
+                    else
+                        LogMessage("Error while opening Player Page on " + GetName() + " Is the application installed? Is the device connected?");
+                }
             }
             UpdateControls();
 
@@ -625,11 +631,14 @@ namespace AudioVideoPlayer.Pages.Remote
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
             {
-                bool result = await companionConnectionManager.CompanionDeviceOpenUri(cd, "testmediaapp://?page=playlistpage");
-                if (result == true)
-                    LogMessage("Playlist Page sucessfully opened on " + GetName());
-                else
-                    LogMessage("Error while opening Playlist Page on " + GetName() + " Is the application installed? Is the device connected?");
+                if (companionConnectionManager != null)
+                {
+                    bool result = await companionConnectionManager.CompanionDeviceOpenUri(cd, "testmediaapp://?page=playlistpage");
+                    if (result == true)
+                        LogMessage("Playlist Page sucessfully opened on " + GetName());
+                    else
+                        LogMessage("Error while opening Playlist Page on " + GetName() + " Is the application installed? Is the device connected?");
+                }
             }
             UpdateControls();
         }
@@ -639,11 +648,14 @@ namespace AudioVideoPlayer.Pages.Remote
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
             {
-                bool result = await companionConnectionManager.CompanionDeviceOpenUri(cd, "testmediaapp://?page=remotepage");
-                if (result == true)
-                    LogMessage("Remote Page sucessfully opened on " + GetName());
-                else
-                    LogMessage("Error while opening Remote Page on " + GetName() + " Is the application installed? Is the device connected?");
+                if (companionConnectionManager != null)
+                {
+                    bool result = await companionConnectionManager.CompanionDeviceOpenUri(cd, "testmediaapp://?page=remotepage");
+                    if (result == true)
+                        LogMessage("Remote Page sucessfully opened on " + GetName());
+                    else
+                        LogMessage("Error while opening Remote Page on " + GetName() + " Is the application installed? Is the device connected?");
+                }
             }
             UpdateControls();
 
@@ -654,11 +666,14 @@ namespace AudioVideoPlayer.Pages.Remote
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
             {
-                bool result = await companionConnectionManager.CompanionDeviceOpenUri(cd, "testmediaapp://?page=settingspage");
-                if (result == true)
-                    LogMessage("Settings Page sucessfully opened on " + GetName());
-                else
-                    LogMessage("Error while opening Settings Page on " + GetName() + " Is the application installed? Is the device connected?");
+                if (companionConnectionManager != null)
+                {
+                    bool result = await companionConnectionManager.CompanionDeviceOpenUri(cd, "testmediaapp://?page=settingspage");
+                    if (result == true)
+                        LogMessage("Settings Page sucessfully opened on " + GetName());
+                    else
+                        LogMessage("Error while opening Settings Page on " + GetName() + " Is the application installed? Is the device connected?");
+                }
             }
             UpdateControls();
         }
@@ -669,11 +684,14 @@ namespace AudioVideoPlayer.Pages.Remote
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
             {
-                bool result = await companionConnectionManager.CompanionDeviceOpenUri(cd, "testmediaapp://?page=aboutpage");
-                if (result == true)
-                    LogMessage("About Page sucessfully opened on " + GetName());
-                else
-                    LogMessage("Error while opening About Page on " + GetName() + " Is the application installed? Is the device connected?");
+                if (companionConnectionManager != null)
+                {
+                    bool result = await companionConnectionManager.CompanionDeviceOpenUri(cd, "testmediaapp://?page=aboutpage");
+                    if (result == true)
+                        LogMessage("About Page sucessfully opened on " + GetName());
+                    else
+                        LogMessage("Error while opening About Page on " + GetName() + " Is the application installed? Is the device connected?");
+                }
             }
             UpdateControls();
         }
@@ -684,7 +702,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Sending Stop event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandStop, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandStop, null));
+                }
             UpdateControls();
 
         }
@@ -693,7 +714,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Sending Play event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandPlay, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandPlay, null));
+                }
             UpdateControls();
 
         }
@@ -702,7 +726,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Sending Playpause event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandPlayPause, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandPlayPause, null));
+                }
             UpdateControls();
 
         }
@@ -711,7 +738,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Sending Pause event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandPause, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandPause, null));
+                }
             UpdateControls();
 
 
@@ -721,7 +751,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Sending Plus event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandPlus, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandPlus, null));
+                }
             UpdateControls();
 
         }
@@ -730,7 +763,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Sending Minus event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                 await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandMinus,null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandMinus, null));
+                }
             UpdateControls();
         }
         private async void Fullscreen_remote_Click(object sender, RoutedEventArgs e)
@@ -738,7 +774,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Sending Fullscreen event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandFullScreen, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandFullScreen, null));
+                }
             UpdateControls();
 
         }
@@ -747,7 +786,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Sending Fullwindow event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandFullWindow, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandFullWindow, null));
+                }
             UpdateControls();
         }
         private async void Window_remote_Click(object sender, RoutedEventArgs e)
@@ -755,7 +797,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Sending window event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandWindow, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandWindow, null));
+                }
             UpdateControls();
         }
         private async void Mute_remote_Click(object sender, RoutedEventArgs e)
@@ -763,7 +808,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Sending Mute event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandMute, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandMute, null));
+                }
             UpdateControls();
         }
         private async void VolumeUp_remote_Click(object sender, RoutedEventArgs e)
@@ -771,7 +819,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Sending Volume Up event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandVolumeUp, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandVolumeUp, null));
+                }
             UpdateControls();
 
         }
@@ -780,7 +831,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Sending Volume Down event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandVolumeDown, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandVolumeDown, null));
+                }
             UpdateControls();
         }
         private async void Down_remote_Click(object sender, RoutedEventArgs e)
@@ -788,7 +842,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Sending Down event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandDown, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandDown, null));
+                }
             UpdateControls();
         }
         private async void Up_remote_Click(object sender, RoutedEventArgs e)
@@ -796,7 +853,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Sending Up event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandUp, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandUp, null));
+                }
             UpdateControls();
         }
         private async void Left_remote_Click(object sender, RoutedEventArgs e)
@@ -804,7 +864,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Sending Left event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandLeft, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandLeft, null));
+                }
             UpdateControls();
         }
         private async void Right_remote_Click(object sender, RoutedEventArgs e)
@@ -812,7 +875,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Sending Right event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandRight, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandRight, null));
+                }
             UpdateControls();
         }
         private async void Enter_remote_Click(object sender, RoutedEventArgs e)
@@ -820,7 +886,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Sending Enter event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandEnter, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandEnter, null));
+                }
             UpdateControls();
         }
 
@@ -829,7 +898,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Down event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandDown, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandDown, null));
+                }
             UpdateControls();
         }
         private async void up_remote_Click(object sender, RoutedEventArgs e)
@@ -837,7 +909,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Up event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandUp, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandUp, null));
+                }
             UpdateControls();
         }
         private async void left_remote_Click(object sender, RoutedEventArgs e)
@@ -845,7 +920,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Left event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandLeft, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandLeft, null));
+                }
             UpdateControls();
         }
         private async void right_remote_Click(object sender, RoutedEventArgs e)
@@ -853,7 +931,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Right event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandRight, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandRight, null));
+                }
             UpdateControls();
         }
         private async void enter_remote_Click(object sender, RoutedEventArgs e)
@@ -861,7 +942,10 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("Enter event to " + GetName());
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandEnter, null));
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandEnter, null));
+                }
             UpdateControls();
         }
         private async void open_remote_Click(object sender, RoutedEventArgs e)
@@ -870,9 +954,12 @@ namespace AudioVideoPlayer.Pages.Remote
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
             {
-                string commandString = CompanionProtocol.parameterContent + CompanionProtocol.cEQUAL + contentUri.Text;
-                Dictionary<string, string> p = CompanionProtocol.GetParametersFromMessage(commandString);
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandOpen, p));
+                if (companionConnectionManager != null)
+                {
+                    string commandString = CompanionProtocol.parameterContent + CompanionProtocol.cEQUAL + contentUri.Text;
+                    Dictionary<string, string> p = CompanionProtocol.GetParametersFromMessage(commandString);
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandOpen, p));
+                }
             }
             UpdateControls();
         }
@@ -882,9 +969,12 @@ namespace AudioVideoPlayer.Pages.Remote
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
             {
-                string commandString = CompanionProtocol.parameterContent + CompanionProtocol.cEQUAL + playlistUri.Text;
-                Dictionary<string, string> p = CompanionProtocol.GetParametersFromMessage(commandString);
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandOpenPlaylist, p));
+                if (companionConnectionManager != null)
+                {
+                    string commandString = CompanionProtocol.parameterContent + CompanionProtocol.cEQUAL + playlistUri.Text;
+                    Dictionary<string, string> p = CompanionProtocol.GetParametersFromMessage(commandString);
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandOpenPlaylist, p));
+                }
             }
             UpdateControls();
         }
@@ -895,9 +985,12 @@ namespace AudioVideoPlayer.Pages.Remote
             CompanionDevice cd = GetCurrentDevice();
             if (cd != null)
             {
-                string commandString = CompanionProtocol.parameterIndex + CompanionProtocol.cEQUAL + contentNumber.Text;
-                Dictionary<string, string> p = CompanionProtocol.GetParametersFromMessage(commandString);
-                await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandSelect, p));
+                if (companionConnectionManager != null)
+                {
+                    string commandString = CompanionProtocol.parameterIndex + CompanionProtocol.cEQUAL + contentNumber.Text;
+                    Dictionary<string, string> p = CompanionProtocol.GetParametersFromMessage(commandString);
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandSelect, p));
+                }
             }
             UpdateControls();
 
@@ -937,17 +1030,21 @@ namespace AudioVideoPlayer.Pages.Remote
         }
         private async void DiscoverDevice_Click(object sender, RoutedEventArgs e)
         {
-            if (!companionConnectionManager.IsDiscovering())
+
+            if (companionConnectionManager != null)
             {
-                LogMessage("Start Discovering Devices ...");
-                await companionConnectionManager.StartDiscovery();
-                DiscoverDeviceButton.Content = "\xE894";
-            }
-            else
-            {
-                LogMessage("Stop Discovering Devices ...");
-                companionConnectionManager.StopDiscovery();
-                DiscoverDeviceButton.Content = "\xE895";
+                if (!companionConnectionManager.IsDiscovering())
+                {
+                    LogMessage("Start Discovering Devices ...");
+                    await companionConnectionManager.StartDiscovery();
+                    DiscoverDeviceButton.Content = "\xE894";
+                }
+                else
+                {
+                    LogMessage("Stop Discovering Devices ...");
+                    companionConnectionManager.StopDiscovery();
+                    DiscoverDeviceButton.Content = "\xE895";
+                }
             }
             UpdateControls();
         }

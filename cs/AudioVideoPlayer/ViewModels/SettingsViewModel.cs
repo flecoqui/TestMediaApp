@@ -67,11 +67,6 @@ namespace AudioVideoPlayer.ViewModels
             {
                 return StaticSettingsViewModel.BackgroundColor;
             }
-            set
-            {
-                StaticSettingsViewModel.BackgroundColor = value;
-                NotifyPropertyChanged();
-            }
         }
         public Color ForegroundColor
         {
@@ -79,12 +74,80 @@ namespace AudioVideoPlayer.ViewModels
             {
                 return StaticSettingsViewModel.ForegroundColor;
             }
-            set
+        }
+        public Color BorderColor
+        {
+            get
             {
-                StaticSettingsViewModel.ForegroundColor = value;
-                NotifyPropertyChanged();
+                return StaticSettingsViewModel.BorderColor;
             }
         }
+
+        public Color BackgroundPointerOverColor
+        {
+            get
+            {
+                return StaticSettingsViewModel.BackgroundPointerOverColor;
+            }
+        }
+        public Color ForegroundPointerOverColor
+        {
+            get
+            {
+                return StaticSettingsViewModel.ForegroundPointerOverColor;
+            }
+        }
+        public Color BorderPointerOverColor
+        {
+            get
+            {
+                return StaticSettingsViewModel.BorderPointerOverColor;
+            }
+        }
+        public Color BackgroundPressedColor
+        {
+            get
+            {
+                return StaticSettingsViewModel.BackgroundPressedColor;
+            }
+        }
+        public Color ForegroundPressedColor
+        {
+            get
+            {
+                return StaticSettingsViewModel.ForegroundPressedColor;
+            }
+        }
+        public Color BorderPressedColor
+        {
+            get
+            {
+                return StaticSettingsViewModel.BorderPressedColor;
+            }
+        }
+        public Color BackgroundDisabledColor
+        {
+            get
+            {
+                return StaticSettingsViewModel.BackgroundDisabledColor;
+            }
+        }
+        public Color ForegroundDisabledColor
+        {
+            get
+            {
+                return StaticSettingsViewModel.ForegroundDisabledColor;
+            }
+        }
+        public Color BorderDisabledColor
+        {
+            get
+            {
+                return StaticSettingsViewModel.BorderDisabledColor;
+            }
+        }
+
+
         public bool DarkTheme
         {
             get

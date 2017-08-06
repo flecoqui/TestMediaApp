@@ -296,6 +296,9 @@ namespace AudioVideoPlayer
 
             if (NavigationFrame.CurrentSourcePageType != appPage.PageType)
             {
+
+
+                
                 var backStack = NavigationFrame.BackStack;
                 var backStackCount = backStack.Count;
 
@@ -304,7 +307,6 @@ namespace AudioVideoPlayer
                     var masterPageEntry = backStack[backStackCount - 1];
                     backStack.RemoveAt(backStackCount - 1);
                 }
-
                 NavigationFrame.Navigate(appPage.PageType);
                 HamburgerMenu.IsPaneOpen = false;
                 

@@ -336,56 +336,112 @@ namespace AudioVideoPlayer.ViewModels
         {
             get
             {
-                var color = Helpers.SettingsHelper.ReadSettingsValue(nameof(ForegroundColor));
-                if ((color == null) || (string.IsNullOrEmpty(color.ToString())))
-                {
-
-                    foregroundColor = Windows.UI.Colors.Black;
-                }
-                else
-                {
-                    var s = color.ToString();
-                    var c = new Color();
-                    c.A = byte.Parse(s.Substring(1, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
-                    c.R = byte.Parse(s.Substring(3, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
-                    c.G = byte.Parse(s.Substring(5, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
-                    c.B = byte.Parse(s.Substring(7, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
-                    foregroundColor = c;
-                }
-                return foregroundColor;
-            }
-            set
-            {
-                Helpers.SettingsHelper.SaveSettingsValue(nameof(ForegroundColor), value.ToString());
-                foregroundColor = value;
+                return MenuForegroundColor;
             }
         }
         public static Color BackgroundColor
         {
             get
             {
-                var color = Helpers.SettingsHelper.ReadSettingsValue(nameof(BackgroundColor));
-                if ((color == null) || (string.IsNullOrEmpty(color.ToString())))
-                {
-
-                    backgroundColor = Windows.UI.Colors.White;
-                }
-                else
-                {
-                    var s = color.ToString();
-                    var c = new Color();
-                    c.A = byte.Parse(s.Substring(1, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
-                    c.R = byte.Parse(s.Substring(3, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
-                    c.G = byte.Parse(s.Substring(5, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
-                    c.B = byte.Parse(s.Substring(7, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
-                    backgroundColor = c;
-                }
-                return backgroundColor;
+                return MenuBackgroundColor;
             }
-            set
+        }
+        public static Color BorderColor
+        {
+            get
             {
-                Helpers.SettingsHelper.SaveSettingsValue(nameof(BackgroundColor), value.ToString());
-                backgroundColor = value;
+                return MenuBackgroundColor;
+            }
+        }
+        public static Color ForegroundPointerOverColor
+        {
+            get
+            {
+                return MenuForegroundColor;
+            }
+        }
+        public static Color BackgroundPointerOverColor
+        {
+            get
+            {
+                return MenuBackgroundColor;
+            }
+        }
+        public static Color BorderPointerOverColor
+        {
+            get
+            {
+                return MenuForegroundColor;
+            }
+        }
+        public static Color ForegroundPressedColor
+        {
+            get
+            {
+                return MenuForegroundColor;
+            }
+        }
+        public static Color BackgroundPressedColor
+        {
+            get
+            {
+                var s = MenuBackgroundColor.ToString();
+                var c = new Color();
+                c.A = 0xA0;
+                c.R = byte.Parse(s.Substring(3, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
+                c.G = byte.Parse(s.Substring(5, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
+                c.B = byte.Parse(s.Substring(7, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
+
+                return c;
+            }
+        }
+        public static Color BorderPressedColor
+        {
+            get
+            {
+                var s = MenuBackgroundColor.ToString();
+                var c = new Color();
+                c.A = 0xA0;
+                c.R = byte.Parse(s.Substring(3, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
+                c.G = byte.Parse(s.Substring(5, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
+                c.B = byte.Parse(s.Substring(7, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
+
+                return c;
+            }
+        }
+        public static Color ForegroundDisabledColor
+        {
+            get
+            {
+                return MenuForegroundColor;
+            }
+        }
+        public static Color BackgroundDisabledColor
+        {
+            get
+            {
+                var s = MenuBackgroundColor.ToString();
+                var c = new Color();
+                c.A = 0x50;
+                c.R = byte.Parse(s.Substring(3, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
+                c.G = byte.Parse(s.Substring(5, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
+                c.B = byte.Parse(s.Substring(7, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
+
+                return c;
+            }
+        }
+        public static Color BorderDisabledColor
+        {
+            get
+            {
+                var s = MenuBackgroundColor.ToString();
+                var c = new Color();
+                c.A = 0x50;
+                c.R = byte.Parse(s.Substring(3, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
+                c.G = byte.Parse(s.Substring(5, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
+                c.B = byte.Parse(s.Substring(7, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
+
+                return c;
             }
         }
         public static bool DarkTheme

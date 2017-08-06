@@ -76,7 +76,21 @@ namespace AudioVideoPlayer.Pages.Settings
             // this event is handled for you.
         }
 
-        private void ApplyColor_Click(object sender, RoutedEventArgs e)
+        public bool Reload()
+        {
+            if (!this.Frame.BackStack.Any())
+                return false;
+            int backStackCount = this.Frame.BackStack.Count;
+            if (backStackCount > 0)
+            {
+                var current = this.Frame.BackStack[backStackCount - 1];
+                if(current.SourcePageType == typeof(SettingsPage))
+                    this.Frame.BackStack.RemoveAt(backStackCount - 1);
+                return this.Frame.Navigate(typeof(SettingsPage), null);
+            }
+            return false;
+        }
+        private async void ApplyColor_Click(object sender, RoutedEventArgs e)
         {
             Windows.UI.Color c = (Windows.UI.Color) ColorCombo.SelectedItem;
             // Save Theme
@@ -85,6 +99,28 @@ namespace AudioVideoPlayer.Pages.Settings
             ViewModelLocator.Settings.MenuBackgroundColor = c;
             // Refresh the pages with the new Color                         
             AudioVideoPlayer.Shell.Current.UpdateTitleBarAndColor(true);
+            Reload();
+
+/*
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+    () =>
+    {
+        AppThemeSwitch.Style = (Style) Application.Current.Resources["CustomToggleSwitchStyle"];
+        AppThemeSwitch.InvalidateArrange();
+        
+        WindowModeWindow.Style = (Style)Application.Current.Resources["CustomRadioButtonStyle"];
+        WindowModeWindow.InvalidateArrange();
+
+        WindowModeFull.Style = (Style)Application.Current.Resources["CustomRadioButtonStyle"]; ;
+        WindowModeFull.InvalidateArrange();
+
+        WindowModeFullscreen.Style = (Style)Application.Current.Resources["CustomRadioButtonStyle"]; 
+        WindowModeFullscreen.InvalidateArrange();
+
+        ApplyColor.Style = (Style)Application.Current.Resources["CustomButtonStyle"];
+        ApplyColor.InvalidateArrange();
+    });
+    */
         }
         /// <summary>
         /// This method is called when the UDPPort fields are changed
