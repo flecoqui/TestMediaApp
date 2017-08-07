@@ -332,9 +332,10 @@ namespace AudioVideoPlayer
         Windows.ApplicationModel.Core.CoreApplicationViewTitleBar coreTitleBar;
         public void UpdateTitleBarAndColor(bool bShowTitleBar)
         {
-            Windows.UI.Color backgroundColor = ViewModel.Settings.MenuBackgroundColor;
-            Windows.UI.Color foregroundColor = ViewModel.Settings.MenuForegroundColor;
-            bool darkTheme = ViewModel.Settings.DarkTheme;
+            Windows.UI.Color backgroundColor = ViewModelLocator.Settings.MenuBackgroundColor;
+            Windows.UI.Color foregroundColor = ViewModelLocator.Settings.MenuForegroundColor;
+            waitRingRectangle.Fill = new Windows.UI.Xaml.Media.SolidColorBrush(ViewModelLocator.Settings.BackgroundColor); 
+            bool darkTheme = ViewModelLocator.Settings.DarkTheme;
             
             if (coreTitleBar != null)
             {

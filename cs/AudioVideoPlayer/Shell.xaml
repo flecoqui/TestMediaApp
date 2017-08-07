@@ -11,7 +11,7 @@
       SizeChanged="Page_SizeChanged"
     mc:Ignorable="d">
     <Page.DataContext>
-        <vm:ViewModel x:Name="ViewModel" />
+        <vm:ViewModel x:Name="ViewModelLocator" />
     </Page.DataContext>
     <Page.Resources>
      <converters:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter"/>   
@@ -63,7 +63,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid Background="{Binding Settings.MenuBackgroundColor,Converter={StaticResource ColorToSolidColorBrushConverter}}" Grid.Row="0" x:Name="TitleBar" Height="40"  Canvas.ZIndex="3">
+        <Grid Background="{Binding ViewModelLocator.Settings.MenuBackgroundColor,Converter={StaticResource ColorToSolidColorBrushConverter}}" Grid.Row="0" x:Name="TitleBar" Height="40"  Canvas.ZIndex="3">
            <!-- 
             <Rectangle x:Name="BackgroundElement" Fill="{Binding Settings.MenuBackgroundColor,Converter={StaticResource ColorToSolidColorBrushConverter}}" />
             -->
@@ -121,8 +121,8 @@
                       Grid.RowSpan="2"
                       Grid.ColumnSpan="2"
                       Visibility="Collapsed">
-                    <Rectangle Fill="Black"
-                               Opacity="0.2" />
+                    <Rectangle x:Name="waitRingRectangle" Fill="{Binding Settings.BackgroundColor,Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                               Opacity="0.6" />
                     <ProgressRing Width="100"
                                   Height="100"
                                   HorizontalAlignment="Center"

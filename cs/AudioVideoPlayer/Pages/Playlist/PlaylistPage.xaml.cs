@@ -172,7 +172,8 @@ namespace AudioVideoPlayer.Pages.Playlist
                 string fileToken = Windows.Storage.AccessCache.StorageApplicationPermissions.FutureAccessList.Add(file);
                 try
                 {
-                    Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Wait, 1);
+                    Shell.Current.DisplayWaitRing = true;
+                    //Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Wait, 1);
                     Models.PlayList playlist = await Models.PlayList.GetNewPlaylist(file.Path);
                     if (playlist != null)
                     {
@@ -203,7 +204,8 @@ namespace AudioVideoPlayer.Pages.Playlist
                 }
                 finally
                 {
-                    Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+                    Shell.Current.DisplayWaitRing = false;
+                    //Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
                 }
             }
         }

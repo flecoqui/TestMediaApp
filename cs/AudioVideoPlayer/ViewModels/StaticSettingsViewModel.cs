@@ -254,8 +254,6 @@ namespace AudioVideoPlayer.ViewModels
         private static List<Color> menuBackgroundColors;
         private static Color menuBackgroundColor;
         private static Color menuForegroundColor;
-        private static Color backgroundColor;
-        private static Color foregroundColor;
         private static bool darkTheme;
         public static List<Color> MenuBackgroundColors
         {

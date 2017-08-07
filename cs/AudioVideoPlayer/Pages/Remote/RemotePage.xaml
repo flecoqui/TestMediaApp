@@ -23,10 +23,6 @@
     <Page.DataContext>
         <vm:ViewModel x:Name="ViewModelLocator" />
     </Page.DataContext>
-    <Page.Resources>
-        <converters:StringFormatConverter x:Key="StringFormatConverter"/>
-        <converters:ObjectPropertyToStringConverter x:Key="ObjectPropertyToStringConverter"/>
-    </Page.Resources>
     <ScrollViewer Style="{StaticResource VerticalScrollViewerStyle}" >
 
         <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"  Margin="5,5,5,5">

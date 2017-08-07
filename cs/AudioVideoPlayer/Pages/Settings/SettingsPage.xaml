@@ -24,10 +24,6 @@
     <Page.DataContext>
         <vm:ViewModel x:Name="ViewModelLocator" />
     </Page.DataContext>
-    <Page.Resources>
-        <converters:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter"/>
-        <converters:WindowModeToBoolConverter x:Key="WindowModeToBoolConverter"/>
-    </Page.Resources>
 
     <ScrollViewer Style="{StaticResource VerticalScrollViewerStyle}" >
         <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="5,5,5,5" >

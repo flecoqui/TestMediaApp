@@ -566,7 +566,7 @@ namespace AudioVideoPlayer.Pages.Player
 
             try
             {
-                Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Wait, 1);
+                Shell.Current.DisplayWaitRing = true;
                 UpdateControls(true);
 
                 MediaDataSource.Clear();
@@ -597,7 +597,7 @@ namespace AudioVideoPlayer.Pages.Player
             }
             finally
             {
-                Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+                Shell.Current.DisplayWaitRing = false;
                 UpdateControls();
 
             }

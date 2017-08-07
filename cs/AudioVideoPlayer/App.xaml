@@ -22,6 +22,9 @@
     <Application.Resources>
         <!--  Converter  -->
         <converters:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter"/>
+        <converters:StringFormatConverter x:Key="StringFormatConverter"/>
+        <converters:ObjectPropertyToStringConverter x:Key="ObjectPropertyToStringConverter"/>
+        <converters:WindowModeToBoolConverter x:Key="WindowModeToBoolConverter"/>
 
         <!--  Colors  -->
         <Color x:Key="Grey-01">#FF333333</Color>
