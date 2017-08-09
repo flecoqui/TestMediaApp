@@ -53,26 +53,28 @@
                 <TextBlock  Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Style="{StaticResource HeaderTextBlockStyle}" Margin="50,8,0,0" >Settings</TextBlock>
             </StackPanel>
             <StackPanel Grid.Row="1" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2"  >
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Top" >
-                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Margin="0,0,0,0"  Text="User Experience Settings: "/>
-                </StackPanel>
+                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Margin="0,0,8,0"  Text="User Experience Settings: "/>
             </StackPanel>
             <StackPanel Grid.Row="2" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2"  >
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Top" >
                     <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Theme: "/>
-                    <ToggleSwitch Margin="2,2,2,2" x:Name="AppThemeSwitch" MinWidth="100"
-                                          OffContent="Light"
-                                          OnContent="Dark"
+                    <ToggleSwitch Margin="6,2,0,2" x:Name="AppThemeSwitch" MinWidth="100"
+                                          OffContent="Dark"
+                                          OnContent="Light"
                                           VerticalAlignment="Center"
                                           Style="{ThemeResource CustomToggleSwitchStyle}"                                  
-                                          IsOn="{Binding Settings.DarkTheme, Mode=TwoWay}">
+                                          IsOn="{Binding Settings.LightTheme, Mode=TwoWay}" Toggled="ApplyTheme_Click" 
+                                 >
+                        <!--Toggled="ApplyTheme_Click"  SelectionChanged="ColorCombo_SelectionChanged"
+                        -->
                     </ToggleSwitch>
 
                     <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Color: "/>
                     <ComboBox x:Name="ColorCombo" Margin="2,2,2,2"  ItemsSource="{Binding Settings.MenuBackgroundColors}"
                                       SelectedItem="{Binding Settings.MenuBackgroundColor, Mode=OneWay}"
                                       Width="100"                                     
-                                      VerticalAlignment="Center">
+                                      VerticalAlignment="Center" 
+                                      SelectionChanged="ColorCombo_SelectionChanged">
                         <ComboBox.ItemTemplate >
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
@@ -86,54 +88,108 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Top" >
-                    <Button x:Name="ApplyColor" Margin="2,2,2,2" Style="{ThemeResource  CustomButtonStyle}"    Content="Apply" Click="ApplyColor_Click"  />
-                </StackPanel>
             </StackPanel>
             <StackPanel Grid.Row="3" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2"  >
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Top" >
-                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Margin="0,0,0,0"  Text="Player Settings: "/>
+                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Margin="0,8,0,8"  Text="Player Settings: "/>
+            </StackPanel>
+            <StackPanel Orientation="Vertical"  VerticalAlignment="Center"  Grid.Row="4" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top" >
+                    <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Auto Start: "/>
+                    <ToggleSwitch Margin="6,2,2,2" x:Name="AutoSkip" MinWidth="100"
+                                          OffContent="Off"
+                                          OnContent="On"
+                                          VerticalAlignment="Center"
+                                          Style="{ThemeResource CustomToggleSwitchStyle}"                                  
+                                          IsOn="{Binding Settings.AutoStart, Mode=TwoWay}"
+                              ToolTipService.ToolTip="Configure the playlist to start automatically and jump to the next stream at the end of the previous one" >
+                    </ToggleSwitch>
+                </StackPanel>
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top" >
+                    <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Playlist Loop: "/>
+                    <ToggleSwitch Margin="2,2,2,2" x:Name="PlaylistLoop" MinWidth="100"
+                                          OffContent="Off"
+                                          OnContent="On"
+                                          VerticalAlignment="Center"
+                                          Style="{ThemeResource CustomToggleSwitchStyle}"                                  
+                                          IsOn="{Binding Settings.PlaylistLoop, Mode=TwoWay}"
+                              ToolTipService.ToolTip="Configure the player to loop at the end of the playlist"    >
+                </ToggleSwitch>
+                </StackPanel>
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top" >
+                    <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Content Loop: "/>
+                    <ToggleSwitch Margin="2,2,2,2" x:Name="ContentLoop" MinWidth="100"
+                                          OffContent="Off"
+                                          OnContent="On"
+                                          VerticalAlignment="Center"
+                                          Style="{ThemeResource CustomToggleSwitchStyle}"                                  
+                                          IsOn="{Binding Settings.ContentLoop, Mode=TwoWay}"
+                              ToolTipService.ToolTip="Configure the player to loop at the end of the current content"    >
+                </ToggleSwitch>
+                </StackPanel>
+                <StackPanel Orientation="Vertical"  VerticalAlignment="Center"  >
+                    <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Default Player Window Mode: "/>
+                    <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  Grid.Row="5" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
+                        <RadioButton GroupName="WindowMode" Content="Window" Style="{ThemeResource CustomRadioButtonStyle}" MinWidth="86" x:Name="WindowModeWindow" IsChecked="{Binding Settings.WindowState,Mode=TwoWay,Converter={StaticResource WindowModeToBoolConverter },ConverterParameter=0}" />
+                        <RadioButton GroupName="WindowMode" Content="FullWindow" Style="{ThemeResource CustomRadioButtonStyle}" x:Name="WindowModeFull" MinWidth="110" IsChecked="{Binding Settings.WindowState,Mode=TwoWay,Converter={StaticResource WindowModeToBoolConverter },ConverterParameter=1}"/>
+                        <RadioButton GroupName="WindowMode" Content="FullScreen" Style="{ThemeResource CustomRadioButtonStyle}" x:Name="WindowModeFullscreen" MinWidth="100" IsChecked="{Binding Settings.WindowState,Mode=TwoWay,Converter={StaticResource WindowModeToBoolConverter },ConverterParameter=2}" />
+                    </StackPanel>
                 </StackPanel>
             </StackPanel>
-            <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  Grid.Row="4" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
-                <CheckBox VerticalAlignment="Center" x:Name="AutoSkip" Margin="5,0,5,0" IsChecked="{Binding Settings.AutoStart,Mode=TwoWay}" ToolTipService.ToolTip="Configure the playlist to start automatically and jump to the next stream at the end of the previous one"   FlowDirection="RightToLeft"  Content="AutoStart:" MinWidth="55" />
-                <CheckBox VerticalAlignment="Center" x:Name="AutoLoop" Margin="5,0,5,0" IsChecked="{Binding Settings.Loop,Mode=TwoWay}" ToolTipService.ToolTip="Configure the playlist to loop at the end of the playlist"   FlowDirection="RightToLeft" HorizontalAlignment="Left" Content="Loop:" MinWidth="55" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  Grid.Row="5" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
-                <RadioButton GroupName="WindowMode" Content="Window" Style="{ThemeResource CustomRadioButtonStyle}" MinWidth="86" x:Name="WindowModeWindow" IsChecked="{Binding Settings.WindowState,Mode=TwoWay,Converter={StaticResource WindowModeToBoolConverter },ConverterParameter=0}" />
-                <RadioButton GroupName="WindowMode" Content="FullWindow" Style="{ThemeResource CustomRadioButtonStyle}" x:Name="WindowModeFull" MinWidth="110" IsChecked="{Binding Settings.WindowState,Mode=TwoWay,Converter={StaticResource WindowModeToBoolConverter },ConverterParameter=1}"/>
-                <RadioButton GroupName="WindowMode" Content="FullScreen" Style="{ThemeResource CustomRadioButtonStyle}" x:Name="WindowModeFullscreen" MinWidth="100" IsChecked="{Binding Settings.WindowState,Mode=TwoWay,Converter={StaticResource WindowModeToBoolConverter },ConverterParameter=2}" />
-            </StackPanel>
-            <StackPanel Grid.Row="6" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2"  >
+            <StackPanel Grid.Row="5" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2"  >
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Top" >
-                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Margin="0,0,0,0"  Text="Companion Settings: "/>
+                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Margin="0,8,0,8"  Text="Companion Settings: "/>
                 </StackPanel>
             </StackPanel>
-            <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  Grid.Row="7" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
-                <CheckBox VerticalAlignment="Center" x:Name="MulticastDiscovery" Margin="5,0,5,0" IsChecked="{Binding Settings.MulticastDiscovery,Mode=TwoWay}" ToolTipService.ToolTip="Configure the Companion client to use Multicast for Device discovery instead of RemoteSystem API"   FlowDirection="RightToLeft"  Content="Multicast Discovery:" MinWidth="55" />
-                <CheckBox VerticalAlignment="Center" x:Name="UDPTransport" Margin="5,0,5,0" IsChecked="{Binding Settings.UdpTransport,Mode=TwoWay}" ToolTipService.ToolTip="Configure the remote page to se UDP transport instead of AppService communication"   FlowDirection="RightToLeft" HorizontalAlignment="Left" Content="UDP Transport:" MinWidth="55" />
+            <StackPanel Orientation="Vertical"  VerticalAlignment="Center"  Grid.Row="6" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
+                <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  >
+                    <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Current IP Address: "/>
+                    <TextBlock x:Name="IPAddress" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  />
+                </StackPanel>
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top" >
+                    <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Margin="0,4,0,4" Text="Multicast Discovery: "/>
+                    <ToggleSwitch Margin="2,2,2,2" x:Name="MulticastDiscovery" MinWidth="100"
+                                          OffContent="Off"
+                                          OnContent="On"
+                                          VerticalAlignment="Center"
+                                          Style="{ThemeResource CustomToggleSwitchStyle}"                                  
+                                          IsOn="{Binding Settings.MulticastDiscovery, Mode=TwoWay}"
+                              ToolTipService.ToolTip="Configure the Companion client to use Multicast for Device discovery instead of RemoteSystem API"    >
+
+                    </ToggleSwitch>
+                </StackPanel>
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top" >
+                    <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Margin="0,4,0,4" Text="UDP Transport: "/>
+                    <ToggleSwitch Margin="2,2,2,2" x:Name="UDPTransport" MinWidth="100"
+                                          OffContent="Off"
+                                          OnContent="On"
+                                          VerticalAlignment="Center"
+                                          Style="{ThemeResource CustomToggleSwitchStyle}"                                  
+                                          IsOn="{Binding Settings.UdpTransport, Mode=TwoWay}"
+                              ToolTipService.ToolTip="Configure the remote page to se UDP transport instead of AppService communication"    >
+                </ToggleSwitch>
+                </StackPanel>
+
+              <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  >
+                      <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Margin="0,4,0,4" Text="Multicast configuration: "/>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  >
+                      <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Margin="0,4,0,4" Text="Address: "/>
+                  <TextBox x:Name="MulticastAddress" Margin="5,0,0,0" MinWidth="100" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="{Binding Settings.MulticastIPAddress,Mode=TwoWay}"  TextChanged="IPAddressChanged" />
+              </StackPanel>
+              <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  >
+                      <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Margin="0,4,0,4" Text="UDP Port: "/>
+                  <TextBox x:Name="MulticastUDPPort" Margin="5,0,0,0" MinWidth="50" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="{Binding Settings.MulticastUDPPort,Mode=TwoWay}" TextChanged="UDPPortChanged" />
+              </StackPanel>
+              <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  >
+                      <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Margin="0,4,0,4" Text="Unicast configuration: "/>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  >
+                      <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Margin="0,4,0,4"  Text="UDP Port: "/>
+                  <TextBox x:Name="UnicastUDPPort" Margin="5,0,0,0" MinWidth="50" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="{Binding Settings.UnicastUDPPort,Mode=TwoWay}" TextChanged="UDPPortChanged" />
+              </StackPanel>
+
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  Grid.Row="8" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
-                <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Current IP Address: "/>
-                <TextBlock x:Name="IPAddress" Margin="5,0,0,0" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  Grid.Row="9" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
-                <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Multicast configuration: "/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  Grid.Row="10" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
-                <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Address: "/>
-                <TextBox x:Name="MulticastAddress" Margin="5,0,0,0" MinWidth="100" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="{Binding Settings.MulticastIPAddress,Mode=TwoWay}"  TextChanged="IPAddressChanged" />
-                <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="UDP Port: "/>
-                <TextBox x:Name="MulticastUDPPort" Margin="5,0,0,0" MinWidth="50" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="{Binding Settings.MulticastUDPPort,Mode=TwoWay}" TextChanged="UDPPortChanged" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  Grid.Row="11" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
-                <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Unicast configuration: "/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  Grid.Row="12" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
-                <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="UDP Port: "/>
-                <TextBox x:Name="UnicastUDPPort" Margin="5,0,0,0" MinWidth="50" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="{Binding Settings.UnicastUDPPort,Mode=TwoWay}" TextChanged="UDPPortChanged" />
-            </StackPanel>
 
         </Grid>
     </ScrollViewer>

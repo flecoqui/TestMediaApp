@@ -335,7 +335,7 @@ namespace AudioVideoPlayer
             Windows.UI.Color backgroundColor = ViewModelLocator.Settings.MenuBackgroundColor;
             Windows.UI.Color foregroundColor = ViewModelLocator.Settings.MenuForegroundColor;
             waitRingRectangle.Fill = new Windows.UI.Xaml.Media.SolidColorBrush(ViewModelLocator.Settings.BackgroundColor); 
-            bool darkTheme = ViewModelLocator.Settings.DarkTheme;
+            bool darkTheme = !ViewModelLocator.Settings.LightTheme;
             
             if (coreTitleBar != null)
             {

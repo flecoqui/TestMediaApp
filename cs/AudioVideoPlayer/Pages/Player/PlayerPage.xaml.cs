@@ -801,7 +801,11 @@ namespace AudioVideoPlayer.Pages.Player
                     if (ViewModels.StaticSettingsViewModel.AutoStart)
                     {
                         LogMessage("Skipping to next Media on media end...");
-                        Plus_Click(null, null);
+
+                        if (ViewModels.StaticSettingsViewModel.ContentLoop)
+                            Loop_Click(null, null);
+                        else
+                            Plus_Click(null, null);
                     }
                 });
         }
@@ -941,7 +945,10 @@ namespace AudioVideoPlayer.Pages.Player
                         if (ViewModels.StaticSettingsViewModel.AutoStart)
                         {
                             LogMessage("Skipping to next Media on timer tick...");
-                            Plus_Click(null, null);
+                            if (ViewModels.StaticSettingsViewModel.ContentLoop)
+                                Loop_Click(null, null);
+                            else
+                                Plus_Click(null, null);
                         }
                     }
                 }
@@ -953,7 +960,10 @@ namespace AudioVideoPlayer.Pages.Player
                         if (ViewModels.StaticSettingsViewModel.AutoStart)
                         {
                             LogMessage("Skipping to next Media on timer tick...");
-                            Plus_Click(null, null);
+                            if (ViewModels.StaticSettingsViewModel.ContentLoop)
+                                Loop_Click(null, null);
+                            else
+                                Plus_Click(null, null);
                         }
                     }
                 }
@@ -1500,7 +1510,37 @@ namespace AudioVideoPlayer.Pages.Player
             }
         }
 
+        /// <summary>
+        /// Loop method 
+        /// </summary>
+        private void Loop_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                int Index = comboStream.SelectedIndex;
+                if (Index >= 0)
+                {
+                    comboStream.SelectedIndex = Index;
+                    MediaItem ms = comboStream.SelectedItem as MediaItem;
+                    if (ms != null)
+                    {
+                        mediaUri.Text = ms.Content;
+                        PlayReadyLicenseUrl = ms.PlayReadyUrl;
+                        httpHeadersString = ms.HttpHeaders;
+                        httpHeaders = GetHttpHeaders(httpHeadersString);
+                        PlayReadyChallengeCustomData = ms.PlayReadyCustomData;
+                    }
+                    PlayCurrentUrl();
+                }
+                else
+                    LogMessage("Error getting current playlis index");
 
+            }
+            catch (Exception ex)
+            {
+                LogMessage("Failed to to play: " + mediaUri.Text + " Exception: " + ex.Message);
+            }
+        }
         /// <summary>
         /// Channel up method 
         /// </summary>
@@ -1511,7 +1551,7 @@ namespace AudioVideoPlayer.Pages.Player
                 int Index = comboStream.SelectedIndex;
                 if ((Index + 1) >= comboStream.Items.Count)
                 {
-                    if (ViewModels.StaticSettingsViewModel.Loop == true)
+                    if (ViewModels.StaticSettingsViewModel.PlaylistLoop == true)
                         Index = 0;
                     else
                         Index = -1;
@@ -1554,7 +1594,7 @@ namespace AudioVideoPlayer.Pages.Player
                     --Index;
                 else
                 {
-                    if (ViewModels.StaticSettingsViewModel.Loop == true)
+                    if (ViewModels.StaticSettingsViewModel.PlaylistLoop == true)
                         Index = comboStream.Items.Count - 1;
                     else
                         Index = -1; 

@@ -26,7 +26,8 @@ namespace AudioVideoPlayer.ViewModels
         };
         // Player Settings
         private static bool autoStart;
-        private static bool loop;
+        private static bool contentLoop;
+        private static bool playlistLoop;
         private static PlayerWindowState windowState;
         private static int maxBitrate;
         private static int minBitrate;
@@ -49,23 +50,41 @@ namespace AudioVideoPlayer.ViewModels
                 autoStart = value;
             }
         }
-        public static bool Loop
+        public static bool ContentLoop
         {
             get
             {
-                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(Loop));
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(ContentLoop));
                 if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
-                    loop = false;
+                    contentLoop = false;
                 else
-                    loop = bool.Parse(auto);
-                return loop;
+                    contentLoop = bool.Parse(auto);
+                return contentLoop;
             }
             set
             {
-                Helpers.SettingsHelper.SaveSettingsValue(nameof(Loop), value.ToString());
-                loop = value;
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(ContentLoop), value.ToString());
+                contentLoop = value;
             }
         }
+        public static bool PlaylistLoop
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(PlaylistLoop));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    playlistLoop = false;
+                else
+                    playlistLoop = bool.Parse(auto);
+                return playlistLoop;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(PlaylistLoop), value.ToString());
+                playlistLoop = value;
+            }
+        }
+
         public static PlayerWindowState WindowState
         {
             get
@@ -254,7 +273,7 @@ namespace AudioVideoPlayer.ViewModels
         private static List<Color> menuBackgroundColors;
         private static Color menuBackgroundColor;
         private static Color menuForegroundColor;
-        private static bool darkTheme;
+        private static bool lightTheme;
         public static List<Color> MenuBackgroundColors
         {
             get
@@ -264,11 +283,14 @@ namespace AudioVideoPlayer.ViewModels
                     menuBackgroundColors = new List<Color>();
                     if (menuBackgroundColors != null)
                     {
-                        menuBackgroundColors.Add(Windows.UI.Colors.DeepSkyBlue);
+                        menuBackgroundColors.Add(Windows.UI.Colors.Gray);
                         menuBackgroundColors.Add(Windows.UI.Colors.Purple);
+                        menuBackgroundColors.Add(Windows.UI.Colors.Red);
                         menuBackgroundColors.Add(Windows.UI.Colors.Orange);
                         menuBackgroundColors.Add(Windows.UI.Colors.Green);
-                        menuBackgroundColors.Add(Windows.UI.Colors.Gray);
+                        menuBackgroundColors.Add(Windows.UI.Colors.LightGreen);
+                        menuBackgroundColors.Add(Windows.UI.Colors.DeepSkyBlue);
+                        menuBackgroundColors.Add(Windows.UI.Colors.LightSkyBlue);
                     }
                 }
                 return menuBackgroundColors;
@@ -442,15 +464,15 @@ namespace AudioVideoPlayer.ViewModels
                 return c;
             }
         }
-        public static bool DarkTheme
+        public static bool LightTheme
         {
             get
             {
-                var theme = Helpers.SettingsHelper.ReadSettingsValue(nameof(DarkTheme));
+                var theme = Helpers.SettingsHelper.ReadSettingsValue(nameof(LightTheme));
                 if ((theme == null) || (string.IsNullOrEmpty(theme.ToString())))
                 {
 
-                    darkTheme = true;
+                    lightTheme = true;
                 }
                 else
                 {
@@ -458,14 +480,14 @@ namespace AudioVideoPlayer.ViewModels
                     bool c = true;
                     if (!string.IsNullOrEmpty(s))
                         bool.TryParse(s, out c);
-                    darkTheme = c;
+                    lightTheme = c;
                 }
-                return darkTheme;
+                return lightTheme;
             }
             set
             {
-                Helpers.SettingsHelper.SaveSettingsValue(nameof(DarkTheme), value.ToString());
-                darkTheme = value;
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(LightTheme), value.ToString());
+                lightTheme = value;
             }
         }
 

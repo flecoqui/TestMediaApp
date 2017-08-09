@@ -92,14 +92,28 @@ namespace AudioVideoPlayer.Pages.Settings
         }
         private void ApplyColor_Click(object sender, RoutedEventArgs e)
         {
-            Windows.UI.Color c = (Windows.UI.Color) ColorCombo.SelectedItem;
-            // Save Theme
-            ViewModelLocator.Settings.DarkTheme = AppThemeSwitch.IsOn;
-            // Save the new Color
-            ViewModelLocator.Settings.MenuBackgroundColor = c;
-            // Refresh the pages with the new Color                         
-            AudioVideoPlayer.Shell.Current.UpdateTitleBarAndColor(true);
-            Reload();
+            if (ColorCombo.SelectedItem != null)
+            {
+                Windows.UI.Color c = (Windows.UI.Color)ColorCombo.SelectedItem;
+                if (c != ViewModelLocator.Settings.MenuBackgroundColor)
+                {
+                    // Save the new Color
+                    ViewModelLocator.Settings.MenuBackgroundColor = c;
+                    // Refresh the pages with the new Color                         
+                    AudioVideoPlayer.Shell.Current.UpdateTitleBarAndColor(true);
+                    Reload();
+                }
+            }
+        }
+        private void ApplyTheme_Click(object sender, RoutedEventArgs e)
+        {
+            if (ColorCombo.SelectedItem != null)
+            {
+                // Save Theme
+                ViewModelLocator.Settings.LightTheme = AppThemeSwitch.IsOn;
+                // Refresh the pages with the new Color                         
+                AudioVideoPlayer.Shell.Current.UpdateTitleBarAndColor(true);
+            }
         }
         /// <summary>
         /// This method is called when the UDPPort fields are changed
@@ -144,6 +158,11 @@ namespace AudioVideoPlayer.Pages.Settings
                         tb.Text = ViewModels.StaticSettingsViewModel.MulticastIPAddress.ToString();
                 }
             }
+        }
+
+        private void ColorCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ApplyColor_Click(null,null);
         }
     }
 

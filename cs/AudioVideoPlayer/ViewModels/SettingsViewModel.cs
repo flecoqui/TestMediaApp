@@ -148,15 +148,15 @@ namespace AudioVideoPlayer.ViewModels
         }
 
 
-        public bool DarkTheme
+        public bool LightTheme
         {
             get
             {
-                return StaticSettingsViewModel.DarkTheme;
+                return StaticSettingsViewModel.LightTheme;
             }
             set
             {
-                StaticSettingsViewModel.DarkTheme = value;
+                StaticSettingsViewModel.LightTheme = value;
                 NotifyPropertyChanged();
             }
         }
@@ -174,15 +174,27 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
-        public bool Loop
+        public bool ContentLoop
         {
             get
             {
-                return StaticSettingsViewModel.Loop;
+                return StaticSettingsViewModel.ContentLoop;
             }
             set
             {
-                StaticSettingsViewModel.Loop = value;
+                StaticSettingsViewModel.ContentLoop = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public bool PlaylistLoop
+        {
+            get
+            {
+                return StaticSettingsViewModel.PlaylistLoop;
+            }
+            set
+            {
+                StaticSettingsViewModel.PlaylistLoop = value;
                 NotifyPropertyChanged();
             }
         }
