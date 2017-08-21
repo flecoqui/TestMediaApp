@@ -109,9 +109,13 @@ namespace AudioVideoPlayer.Pages.Remote
             {
                 if (!companionConnectionManager.IsDiscovering())
                 {
-                    LogMessage("Start Discovering Devices ...");
-                    await companionConnectionManager.StartDiscovery();
-                    DiscoverDeviceButton.Content = "\xE894";
+                    if (await companionConnectionManager.StartDiscovery() == true)
+                    {
+                        LogMessage("Start Discovering Devices ...");
+                        DiscoverDeviceButton.Content = "\xE894";
+                    }
+                    else
+                        LogMessage("Error while starting Discovering Devices ...");
                 }
             }
             // Update Controls
@@ -1041,9 +1045,13 @@ namespace AudioVideoPlayer.Pages.Remote
             {
                 if (!companionConnectionManager.IsDiscovering())
                 {
-                    LogMessage("Start Discovering Devices ...");
-                    await companionConnectionManager.StartDiscovery();
-                    DiscoverDeviceButton.Content = "\xE894";
+                    if (await companionConnectionManager.StartDiscovery() == true)
+                    {
+                        LogMessage("Start Discovering Devices ...");
+                        DiscoverDeviceButton.Content = "\xE894";
+                    }
+                    else
+                        LogMessage("Error while starting Discovering Devices ...");
                 }
                 else
                 {

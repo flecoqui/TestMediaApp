@@ -191,33 +191,41 @@ namespace AudioVideoPlayer.Companion
         {
             // Verify access for Remote Systems. 
             // Note: RequestAccessAsync needs to called from the UI thread.
-            RemoteSystemAccessStatus accessStatus = await RemoteSystem.RequestAccessAsync();
-
-            if (accessStatus == RemoteSystemAccessStatus.Allowed)
+            try
             {
-                // Stop Discovery service if it was running
-                StopDiscovery();
-                // Clear the current list of devices
-                if(listCompanionDevices!=null)listCompanionDevices.Clear();
-                if(listRemoteSystems!=null) listRemoteSystems.Clear();
+                RemoteSystemAccessStatus accessStatus = await RemoteSystem.RequestAccessAsync();
 
-                // Build a watcher to continuously monitor for all remote systems.
-                remoteSystemWatcher = RemoteSystem.CreateWatcher();
-                if (remoteSystemWatcher != null)
+                if (accessStatus == RemoteSystemAccessStatus.Allowed)
                 {
-                    // Subscribing to the event that will be raised when a new remote system is found by the watcher.
-                    remoteSystemWatcher.RemoteSystemAdded += RemoteSystemWatcher_RemoteSystemAdded;
+                    // Stop Discovery service if it was running
+                    StopDiscovery();
+                    // Clear the current list of devices
+                    if (listCompanionDevices != null) listCompanionDevices.Clear();
+                    if (listRemoteSystems != null) listRemoteSystems.Clear();
 
-                    // Subscribing to the event that will be raised when a previously found remote system is no longer available.
-                    remoteSystemWatcher.RemoteSystemRemoved += RemoteSystemWatcher_RemoteSystemRemoved;
+                    // Build a watcher to continuously monitor for all remote systems.
+                    remoteSystemWatcher = RemoteSystem.CreateWatcher();
+                    if (remoteSystemWatcher != null)
+                    {
+                        // Subscribing to the event that will be raised when a new remote system is found by the watcher.
+                        remoteSystemWatcher.RemoteSystemAdded += RemoteSystemWatcher_RemoteSystemAdded;
 
-                    // Subscribing to the event that will be raised when a previously found remote system is updated.
-                    remoteSystemWatcher.RemoteSystemUpdated += RemoteSystemWatcher_RemoteSystemUpdated;
+                        // Subscribing to the event that will be raised when a previously found remote system is no longer available.
+                        remoteSystemWatcher.RemoteSystemRemoved += RemoteSystemWatcher_RemoteSystemRemoved;
 
-                    // Start the watcher.
-                    remoteSystemWatcher.Start();
-                    return true;
+                        // Subscribing to the event that will be raised when a previously found remote system is updated.
+                        remoteSystemWatcher.RemoteSystemUpdated += RemoteSystemWatcher_RemoteSystemUpdated;
+
+                        // Start the watcher.
+                        remoteSystemWatcher.Start();
+                        return true;
+                    }
                 }
+            }
+            catch(Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while starting discovery: " + ex.Message);
+                remoteSystemWatcher = null;
             }
             return false;
         }
@@ -287,15 +295,24 @@ namespace AudioVideoPlayer.Companion
         //     Stop the Discovery Thread.
         public virtual bool StopDiscovery()
         {
-            if(remoteSystemWatcher!=null)
+            try
             {
-                remoteSystemWatcher.Stop();
-                remoteSystemWatcher.RemoteSystemAdded -= RemoteSystemWatcher_RemoteSystemAdded;
-                remoteSystemWatcher.RemoteSystemRemoved -= RemoteSystemWatcher_RemoteSystemRemoved;
-                remoteSystemWatcher.RemoteSystemUpdated -= RemoteSystemWatcher_RemoteSystemUpdated;
-                remoteSystemWatcher = null;
+                if (remoteSystemWatcher != null)
+                {
+                    remoteSystemWatcher.Stop();
+                    remoteSystemWatcher.RemoteSystemAdded -= RemoteSystemWatcher_RemoteSystemAdded;
+                    remoteSystemWatcher.RemoteSystemRemoved -= RemoteSystemWatcher_RemoteSystemRemoved;
+                    remoteSystemWatcher.RemoteSystemUpdated -= RemoteSystemWatcher_RemoteSystemUpdated;
+                    remoteSystemWatcher = null;
+                }
+                return true;
             }
-            return true;
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while starting discovery: " + ex.Message);
+            }
+
+            return false;
         }
         //
         // Summary:
