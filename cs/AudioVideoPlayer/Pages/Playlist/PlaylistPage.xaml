@@ -56,52 +56,51 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="40"/>
-                            <RowDefinition Height="40"/>
-                            <RowDefinition Height="40"/>
-                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="170"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <StackPanel Orientation="Horizontal" Grid.Column="0"   >
-                            <TextBlock  Grid.Row="0" Text="Add a playlist:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
-                            <Button Grid.Row="0" IsEnabled="true" Content="&#xE710;"  Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Add a plylist in the list from an existing JSON file" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="AddPlaylist_Click" />
+                            <TextBlock  Grid.Row="0" Grid.Column="0" Text="Add a playlist:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
+                        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
+                            <Button IsEnabled="true" Content="&#xE710;"  Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Add a plylist in the list from an existing JSON file" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="AddPlaylist_Click" />
+                            <TextBlock x:Name="ErrorMessage"   Foreground="{ThemeResource ButtonForegroundThemeBrush}" VerticalAlignment="Center" TextWrapping="Wrap"  ></TextBlock>
                         </StackPanel>
-                        <TextBlock x:Name="ErrorMessage"   Grid.Row="0" Grid.Column="1" Foreground="{ThemeResource ButtonForegroundThemeBrush}" VerticalAlignment="Center" TextWrapping="Wrap"  ></TextBlock>
-                        <TextBlock  Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"  Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Select a playlist:" Style="{StaticResource LabelTextBoldBlockStyle}" HorizontalAlignment="Left" />
-                        <ComboBox  Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Name="comboPlayList" 
-                           
+
+                        <TextBlock  Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"  Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Select the current playlist:" Style="{StaticResource LabelTextBoldBlockStyle}" HorizontalAlignment="Left" />
+                        <ComboBox  Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Name="comboPlayList"                            
                            DisplayMemberPath="Name"
                            ToolTipService.ToolTip="Name of the current selected  playlist"    
-                           HorizontalAlignment="Stretch" 
+                           HorizontalAlignment="Left" 
                            ItemsSource="{x:Bind ViewModelLocator.Settings.PlayListList,Mode=OneWay}" 
                            SelectedValuePath="Name"
                            IsTabStop="True" 
-                           Loaded="comboPlayList_Loaded" 
-                               
-                           SelectionChanged="comboPlayList_SelectionChanged"    
-                               >
+                           Loaded="comboPlayList_Loaded"                                
+                           SelectionChanged="comboPlayList_SelectionChanged"  
+                           MinWidth="270"
+                              >
                         </ComboBox>
-                        <TextBlock Grid.Row="3" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Path: "  VerticalAlignment="Center"/>
-                        <TextBlock  Grid.Row="3" Grid.Column="1"   ToolTipService.ToolTip="Path of the imported Playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Path',Mode=OneWay}"   TextWrapping="Wrap" VerticalAlignment="Center"  MinHeight="40" />
+                        <TextBlock Grid.Row="3" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Original Path: "  VerticalAlignment="Top"/>
+                        <TextBox IsReadOnly="True" BorderThickness="0" Grid.Row="3" Grid.Column="1"   ToolTipService.ToolTip="Original path of the Playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Path',Mode=OneWay}"   TextWrapping="Wrap" VerticalAlignment="Center"  MinHeight="30" />
                         <TextBlock Grid.Row="4" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Number of items: "/>
-                        <TextBlock  Grid.Row="4" Grid.Column="1" ToolTipService.ToolTip="Path of the imported Playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Count',Mode=OneWay}"   VerticalAlignment="Center"  />
-                        <TextBlock Grid.Row="5" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Curent Index: "/>
-                        <TextBlock  Grid.Row="5" Grid.Column="1" ToolTipService.ToolTip="Path of the imported Playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Index',Mode=OneWay}"   VerticalAlignment="Center"   />
-                        <TextBlock Grid.Row="6" Grid.Column="0"   Text="Remove the playlist:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
+                        <TextBox IsReadOnly="True" BorderThickness="0"  Grid.Row="4" Grid.Column="1" ToolTipService.ToolTip="Number of items in the playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Count',Mode=OneWay}"   VerticalAlignment="Center"  MinHeight="30" />
+                        <TextBlock Grid.Row="5" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Current Index: "/>
+                        <TextBox IsReadOnly="True" BorderThickness="0"   Grid.Row="5" Grid.Column="1" ToolTipService.ToolTip="Index of the latest item played in the current playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Index',Mode=OneWay}"   VerticalAlignment="Center"   MinHeight="30" />
+                        <TextBlock Grid.Row="6" Grid.Column="0"   Text="Remove playlist:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
                         <Button Grid.Row="6" Grid.Column="1"  IsEnabled="true"  x:Name="RemoveButton"  Content="&#xE74D;"  Style="{StaticResource CustomButtonStyle}"  Height="40" Width="40" ToolTipService.ToolTip="Remove the current playlist" FontFamily="Segoe MDL2 Assets" IsTabStop="True"  Margin="1,1,1,1" Click="RemovePlaylist_Click" />
                         <TextBlock Grid.Row="7" Grid.Column="0"  Text="Import playlist:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
                         <Button Grid.Row="7" Grid.Column="1" IsEnabled="false" x:Name="ImportButton" Content="&#xE8B6;"  Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Import the playlist in the local machine" FontFamily="Segoe MDL2 Assets" IsTabStop="True"  Height="40" Width="40" Margin="1,1,1,1"  Click="ImportPlaylist_Click" />
-                        <TextBlock Grid.Row="8" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Imported Path: "/>
-                        <TextBlock Grid.Row="8" Grid.Column="1" ToolTipService.ToolTip="Path of the imported Playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='ImportedPath',Mode=OneWay}"  TextWrapping="Wrap" VerticalAlignment="Center" MinHeight="40"/>
+                        <TextBlock Grid.Row="8" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Imported Path: " VerticalAlignment="Top"/>
+                        <TextBox IsReadOnly="True" BorderThickness="0" Grid.Row="8" Grid.Column="1" ToolTipService.ToolTip="Path of the imported Playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='ImportedPath',Mode=OneWay}"  TextWrapping="Wrap" VerticalAlignment="Center" MinHeight="30"/>
+                        <TextBlock Grid.Row="9" Grid.Column="0" Text="Current playlist Path:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
+                        <TextBox IsReadOnly="True" BorderThickness="0" Grid.Row="9" Grid.Column="1" ToolTipService.ToolTip="Path/Uri of current selected Playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{Binding Settings.CurrentPlayListPath}" TextWrapping="Wrap" />
                     </Grid>
-                </StackPanel>
-                <StackPanel>
-                    <TextBlock  Text="Current playlist Path:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
-                    <TextBlock   ToolTipService.ToolTip="Path/Uri of the current selected Playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{Binding Settings.CurrentPlayListPath}" TextWrapping="Wrap" />
                 </StackPanel>
             </StackPanel>
         </Grid>

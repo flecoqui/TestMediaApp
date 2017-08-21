@@ -314,6 +314,8 @@ namespace AudioVideoPlayer.Pages.Player
             RegisterDeviceWatcher();
             // Register Companion
             await InitializeCompanion();
+            // Register NetworkHelper
+            RegisterNetworkHelper();
 
 
             // Load Data
@@ -390,6 +392,9 @@ namespace AudioVideoPlayer.Pages.Player
 
             // Stop Companion reception
             UninitializeCompanion();
+
+            // Unregister NetworkHelper
+            UnregisterNetworkHelper();
 
             // Save State
             SaveState();
@@ -3976,10 +3981,74 @@ namespace AudioVideoPlayer.Pages.Player
         #endregion
 
 
+        #region Network
+
+        Helpers.NetworkHelper networkHelper;
+
+        bool RegisterNetworkHelper()
+        {
+            UnregisterNetworkHelper();
+            if (networkHelper == null)
+            {
+                networkHelper = new Helpers.NetworkHelper();
+                networkHelper.InternetConnectionChanged += NetworkHelper_InternetConnectionChanged;
+                NetworkHelper_InternetConnectionChanged(this, Helpers.NetworkHelper.IsInternetAvailable());
+            }
+            return true;
+        }
+        bool IsNetworkRequired()
+        {
+            bool bNetworkRequired = false;
+            string s = ViewModels.StaticSettingsViewModel.CurrentPlayListPath;
+            if (!string.IsNullOrEmpty(s))
+            {
+                if (s.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                    bNetworkRequired = true;
+                else if (s.StartsWith("redirect://", StringComparison.OrdinalIgnoreCase))
+                    bNetworkRequired = true;
+                else if (s.StartsWith("redirects://", StringComparison.OrdinalIgnoreCase))
+                    bNetworkRequired = true;
+
+                var p = ViewModelLocator.Settings.PlayListList.FirstOrDefault(x => string.Equals(x.Path, s, StringComparison.OrdinalIgnoreCase) || string.Equals(x.ImportedPath, s, StringComparison.OrdinalIgnoreCase));
+                if (p != null)
+                {
+                    if (p.bRemoteItem == true)
+                        bNetworkRequired = true;
+                }
+            }           
+            return bNetworkRequired;
+        }
+        private async void NetworkHelper_InternetConnectionChanged(object sender, bool e)
+        {
+            if (e == true)
+            {
+                await Shell.Current.DisplayNetworkWarning(false, "");
+                LogMessage("Internet Network Connection is on");
+            }
+            else
+            {
+                if (IsNetworkRequired())
+                {
+                    await Shell.Current.DisplayNetworkWarning(true, "The current playlist: " + ViewModels.StaticSettingsViewModel.CurrentPlayListPath + " requires an internet connection" );
+                }
+                LogMessage("Internet Network Connection is off");
+            }
+
+        }
+
+        bool UnregisterNetworkHelper()
+        {
+            if (networkHelper != null)
+            {
+                networkHelper.InternetConnectionChanged -= NetworkHelper_InternetConnectionChanged;
+                networkHelper = null;
+            }
+            return true;
+        }
+        #endregion Network
 
 
 
-  
 
 
     }

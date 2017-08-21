@@ -38,7 +38,7 @@ namespace AudioVideoPlayer.Models
                     playlist.Count = audio_video.Items.Count;
                     foreach (var item in audio_video.Items)
                     {
-                        if (string.IsNullOrEmpty(item.PosterContent))
+                        if (!string.IsNullOrEmpty(item.PosterContent))
                         {
                             if (item.PosterContent.StartsWith("http", StringComparison.OrdinalIgnoreCase))
                                 playlist.bRemoteItem = true;
@@ -47,7 +47,7 @@ namespace AudioVideoPlayer.Models
                             if (item.PosterContent.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
                                 playlist.bLocalItem = true;
                         }
-                        if (string.IsNullOrEmpty(item.Content))
+                        if (!string.IsNullOrEmpty(item.Content))
                         {
 
                             if (item.Content.StartsWith("http", StringComparison.OrdinalIgnoreCase))
@@ -55,8 +55,6 @@ namespace AudioVideoPlayer.Models
                             else if (item.Content.StartsWith("redirect://", StringComparison.OrdinalIgnoreCase))
                                 playlist.bRemoteItem = true;
                             else if (item.Content.StartsWith("redirects://", StringComparison.OrdinalIgnoreCase))
-                                playlist.bRemoteItem = true;
-                            else if (item.Content.StartsWith("http", StringComparison.OrdinalIgnoreCase))
                                 playlist.bRemoteItem = true;
                             else if (item.Content.StartsWith("ms-appx://", StringComparison.OrdinalIgnoreCase))
                                 playlist.bLocalItem = true;

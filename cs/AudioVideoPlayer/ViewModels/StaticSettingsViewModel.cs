@@ -521,6 +521,7 @@ namespace AudioVideoPlayer.ViewModels
             }
             set
             {
+                playListList = value;
                 string serializeString = ObjectSerializer<ObservableCollection<Models.PlayList>>.ToXml(value);
 
                 //Helpers.SettingsHelper.SaveSettingsValue(nameof(PlayListList), serializeString);
@@ -528,6 +529,15 @@ namespace AudioVideoPlayer.ViewModels
 
                 playListList = value;
             }
+        }
+        public static bool SavePlayListList()
+        {
+
+            string serializeString = ObjectSerializer<ObservableCollection<Models.PlayList>>.ToXml(playListList);
+
+            //Helpers.SettingsHelper.SaveSettingsValue(nameof(PlayListList), serializeString);
+            return Helpers.StorageHelper.SaveStringIntoFile(nameof(PlayListList), serializeString);
+
         }
         public static string CurrentPlayListPath
         {
@@ -607,6 +617,15 @@ namespace AudioVideoPlayer.ViewModels
                 {
                     Helpers.SettingsHelper.SaveSettingsValue(nameof(CurrentMediaIndex), value.ToString());
                     currentMediaIndex = value;
+                    if (StaticSettingsViewModel.PlayListList != null)
+                    {
+
+                        if ((StaticSettingsViewModel.CurrentPlayListIndex >= 0) && (StaticSettingsViewModel.CurrentPlayListIndex < StaticSettingsViewModel.PlayListList.Count))
+                        {
+                            StaticSettingsViewModel.PlayListList[StaticSettingsViewModel.CurrentPlayListIndex].Index = value;
+                            SavePlayListList();
+                        }
+                    }
                 }
             }
         }

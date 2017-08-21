@@ -130,6 +130,20 @@
                                   Foreground="{StaticResource ApplicationForegroundThemeBrush}"
                                   IsActive="True" />
                 </Grid>
+                <Grid x:Name="networkWarning"
+                      Grid.RowSpan="2"
+                      Grid.ColumnSpan="2"
+                      Visibility="Collapsed">
+                    <Rectangle x:Name="networkWarningRectangle" Fill="{Binding Settings.BackgroundColor,Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                               Opacity="1" />
+                    <StackPanel Orientation="Vertical" Margin="0,40,0,0">
+                        <TextBlock Margin="0,10,0,10" Style="{StaticResource TitleTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  HorizontalAlignment="Center" Text="Network Warning"></TextBlock>
+                        <TextBlock Margin="0,10,0,10" Style="{StaticResource LabelTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  HorizontalAlignment="Center"  Text="The current playlist requires an Internet connection which is currently not functionning"></TextBlock>
+                        <TextBlock Margin="0,10,0,10" x:Name="networkMessage" Style="{StaticResource LabelTextLightBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  HorizontalAlignment="Center"  Text=""></TextBlock>
+                        <Button Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Check network configuration"  IsTabStop="True" Content="Check Network Configuration" HorizontalAlignment="Center"  Click="CheckNetwork_Click" ></Button>
+                        <Button Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Try to load the playlist"  IsTabStop="True"  Content="Refresh" HorizontalAlignment="Center" Click="RefreshNetwork_Click"   ></Button>
+                    </StackPanel>
+                </Grid>  
             </Grid>
 
 

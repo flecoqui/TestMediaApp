@@ -116,7 +116,24 @@
             <Setter Property="Foreground"   
                 Value="{StaticResource ButtonForegroundThemeBrush}" />
         </Style>
-        <Style x:Key="LabelTextBoldBlockStyle"
+        <Style x:Key="LabelTextLightBlockStyle"
+           TargetType="TextBlock"
+           BasedOn="{StaticResource BaseTextBlockStyle}">
+            <Setter Property="FontSize"
+                Value="12" />
+            <Setter Property="FontWeight"
+                Value="Normal" />
+            <Setter Property="LineHeight"
+                Value="12" />
+            <Setter Property="TextWrapping"
+                Value="Wrap" />
+            <Setter Property="VerticalAlignment"
+                Value="Center" />
+            <Setter Property="HorizontalAlignment"
+                Value="Left" />
+            <Setter Property="Foreground"   
+                Value="{StaticResource ButtonForegroundThemeBrush}" />
+        </Style>        <Style x:Key="LabelTextBoldBlockStyle"
            TargetType="TextBlock"
            BasedOn="{StaticResource BaseTextBlockStyle}">
             <Setter Property="FontSize"

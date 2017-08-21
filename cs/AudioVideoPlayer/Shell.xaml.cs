@@ -43,6 +43,28 @@ namespace AudioVideoPlayer
         {
             set { waitRing.Visibility = value ? Visibility.Visible : Visibility.Collapsed; }
         }
+        public async System.Threading.Tasks.Task<bool> DisplayNetworkWarning(bool bDisplay, string Message)
+        {
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+            () =>
+            {
+
+                if (string.IsNullOrEmpty(Message))
+                    networkMessage.Text = string.Empty;
+                else
+                    networkMessage.Text = Message;
+                networkWarning.Visibility = bDisplay ? Visibility.Visible : Visibility.Collapsed;
+            });
+            return true;
+        }
+        private async void CheckNetwork_Click(object sender, RoutedEventArgs e)
+        {
+            var success = await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:network-status"));
+        }
+        private async void RefreshNetwork_Click(object sender, RoutedEventArgs e)
+        {
+            await DisplayNetworkWarning(false, string.Empty);
+        }
 
         public Shell()
         {
@@ -408,6 +430,11 @@ namespace AudioVideoPlayer
         {
             TitleBar.Height = sender.Height;
            // RightMask.Width = sender.SystemOverlayRightInset;
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

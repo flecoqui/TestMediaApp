@@ -104,9 +104,22 @@ namespace AudioVideoPlayer.Pages.Playlist
             // this event is handled for you.
             ClearErrorMessage();
 
+            // Register Network
+            RegisterNetworkHelper();
+
         }
 
+        /// <summary>
+        /// Method OnNavigatedFrom
+        /// </summary>
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
 
+            // Unregister Network
+            UnregisterNetworkHelper();
+
+
+        }
         bool IsThePlaylistNameUsed(string name)
         {
             ViewModels.ViewModel vm = this.DataContext as ViewModels.ViewModel;
@@ -308,20 +321,92 @@ namespace AudioVideoPlayer.Pages.Playlist
                         ViewModelLocator.Settings.CurrentPlayListPath = p.ImportedPath;
                         ViewModelLocator.Settings.CurrentPlayListIndex = comboPlayList.SelectedIndex;
                         ViewModelLocator.Settings.CurrentMediaPath = string.Empty;
-                        ViewModelLocator.Settings.CurrentMediaIndex = 0;
+                        ViewModelLocator.Settings.CurrentMediaIndex = p.Index;
                     }
                     else if (!string.IsNullOrEmpty(p.Path))
                     {
                         ViewModelLocator.Settings.CurrentPlayListPath = p.Path;
                         ViewModelLocator.Settings.CurrentPlayListIndex = comboPlayList.SelectedIndex;
                         ViewModelLocator.Settings.CurrentMediaPath = string.Empty;
-                        ViewModelLocator.Settings.CurrentMediaIndex = 0;
+                        ViewModelLocator.Settings.CurrentMediaIndex = p.Index;
                     }
                     ImportButton.IsEnabled = (((p.bImported == false) && (!p.Path.StartsWith("ms-appx://"))) ? true : false);
                     RemoveButton.IsEnabled = true;
                 }
             }
         }
+
+
+
+
+
+        #region Network
+
+        Helpers.NetworkHelper networkHelper;
+
+        bool RegisterNetworkHelper()
+        {
+            UnregisterNetworkHelper();
+            if (networkHelper == null)
+            {
+                networkHelper = new Helpers.NetworkHelper();
+                networkHelper.InternetConnectionChanged += NetworkHelper_InternetConnectionChanged;
+                NetworkHelper_InternetConnectionChanged(this, Helpers.NetworkHelper.IsInternetAvailable());
+            }
+            return true;
+        }
+        bool IsNetworkRequired()
+        {
+            bool bNetworkRequired = false;
+            string s = ViewModels.StaticSettingsViewModel.CurrentPlayListPath;
+            if (!string.IsNullOrEmpty(s))
+            {
+                if (s.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                    bNetworkRequired = true;
+                else if (s.StartsWith("redirect://", StringComparison.OrdinalIgnoreCase))
+                    bNetworkRequired = true;
+                else if (s.StartsWith("redirects://", StringComparison.OrdinalIgnoreCase))
+                    bNetworkRequired = true;
+
+                var p = ViewModelLocator.Settings.PlayListList.FirstOrDefault(x => string.Equals(x.Path, s, StringComparison.OrdinalIgnoreCase) || string.Equals(x.ImportedPath, s, StringComparison.OrdinalIgnoreCase));
+                if (p != null)
+                {
+                    if (p.bRemoteItem == true)
+                        bNetworkRequired = true;
+                }
+            }
+            return bNetworkRequired;
+        }
+        private async void NetworkHelper_InternetConnectionChanged(object sender, bool e)
+        {
+            if (e == true)
+            {
+                await Shell.Current.DisplayNetworkWarning(false, "");
+            }
+            else
+            {
+                if (IsNetworkRequired())
+                {
+                    await Shell.Current.DisplayNetworkWarning(true, "The current playlist: " + ViewModels.StaticSettingsViewModel.CurrentPlayListPath + " requires an internet connection");
+                }
+            }
+
+        }
+
+        bool UnregisterNetworkHelper()
+        {
+            if (networkHelper != null)
+            {
+                networkHelper.InternetConnectionChanged -= NetworkHelper_InternetConnectionChanged;
+                networkHelper = null;
+            }
+            return true;
+        }
+        #endregion Network
+
+
+
+
     }
 
 

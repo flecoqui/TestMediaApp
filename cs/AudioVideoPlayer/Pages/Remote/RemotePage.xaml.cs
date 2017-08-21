@@ -83,6 +83,9 @@ namespace AudioVideoPlayer.Pages.Remote
             LogMessage("RemotePage OnNavigatedTo");
             // Initialize the Companion mode (Remote or Player)
             await InitializeCompanion();
+            // Register Network
+            RegisterNetworkHelper();
+
 
             // Select first item in the combo box to select multicast option
             comboDevice.DataContext = ViewModels.StaticSettingsViewModel.DeviceList;
@@ -122,6 +125,9 @@ namespace AudioVideoPlayer.Pages.Remote
 
             // Stop Companion reception
             UninitializeCompanion();
+            // Unregister Network
+            UnregisterNetworkHelper();
+
 
         }
 
@@ -1226,6 +1232,58 @@ namespace AudioVideoPlayer.Pages.Remote
             return null;
         }
         #endregion
+
+
+        #region Network
+
+        Helpers.NetworkHelper networkHelper;
+
+        bool RegisterNetworkHelper()
+        {
+            UnregisterNetworkHelper();
+            if (networkHelper == null)
+            {
+                networkHelper = new Helpers.NetworkHelper();
+                networkHelper.InternetConnectionChanged += NetworkHelper_InternetConnectionChanged;
+                NetworkHelper_InternetConnectionChanged(this, Helpers.NetworkHelper.IsInternetAvailable());
+            }
+            return true;
+        }
+        bool IsNetworkRequired()
+        {
+            bool bNetworkRequired = true;
+            return bNetworkRequired;
+        }
+        private async void NetworkHelper_InternetConnectionChanged(object sender, bool e)
+        {
+            if (e == true)
+            {
+                await Shell.Current.DisplayNetworkWarning(false, "");
+                LogMessage("Internet Network Connection is on");
+            }
+            else
+            {
+                if (IsNetworkRequired())
+                {
+                    await Shell.Current.DisplayNetworkWarning(true, "The Remote Page requires an Internet connection");
+                }
+                LogMessage("Internet Network Connection is off");
+            }
+
+        }
+
+        bool UnregisterNetworkHelper()
+        {
+            if (networkHelper != null)
+            {
+                networkHelper.InternetConnectionChanged -= NetworkHelper_InternetConnectionChanged;
+                networkHelper = null;
+            }
+            return true;
+        }
+        #endregion Network
+
+
 
 
     }
