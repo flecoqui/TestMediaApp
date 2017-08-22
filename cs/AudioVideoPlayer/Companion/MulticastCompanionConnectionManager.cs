@@ -343,6 +343,11 @@ namespace AudioVideoPlayer.Companion
             }
             return d;
         }
+        void UDPUnicastMessageReceived(DatagramSocket socket, DatagramSocketMessageReceivedEventArgs eventArguments)
+        {
+            System.Diagnostics.Debug.WriteLine("Unicast message received from " + eventArguments.RemoteAddress);
+            UDPMulticastMessageReceived(socket, eventArguments);
+        }
         async void UDPMulticastMessageReceived(DatagramSocket socket, DatagramSocketMessageReceivedEventArgs eventArguments)
         {
             try
@@ -443,16 +448,13 @@ namespace AudioVideoPlayer.Companion
             }
             catch (Exception exception)
             {
+                System.Diagnostics.Debug.WriteLine("Exception on receiving UDP packets: " + exception.Message);
                 SocketErrorStatus socketError = SocketError.GetStatus(exception.HResult);
                 if (socketError == SocketErrorStatus.ConnectionResetByPeer)
                 {
                 }
                 else if (socketError != SocketErrorStatus.Unknown)
                 {
-                }
-                else
-                {
-                    throw;
                 }
             }
         }
@@ -524,12 +526,12 @@ namespace AudioVideoPlayer.Companion
 
                 if (usocketRecv != null)
                 {
-                    usocketRecv.MessageReceived -= UDPMulticastMessageReceived;
+                    usocketRecv.MessageReceived -= UDPUnicastMessageReceived;
                     usocketRecv.Dispose();
                     usocketRecv = null;
                 }
                 usocketRecv = new DatagramSocket();
-                usocketRecv.MessageReceived += UDPMulticastMessageReceived;
+                usocketRecv.MessageReceived += UDPUnicastMessageReceived;
               //  NetworkAdapter adapter = GetDefaultNetworkAdapter();
               //  if (adapter != null)
               //      await msocketRecv.BindServiceNameAsync(UnicastUDPPort.ToString(), adapter);
@@ -560,7 +562,7 @@ namespace AudioVideoPlayer.Companion
                 }
                 if (usocketRecv != null)
                 {
-                    usocketRecv.MessageReceived -= UDPMulticastMessageReceived;
+                    usocketRecv.MessageReceived -= UDPUnicastMessageReceived;
                     usocketRecv.Dispose();
                     usocketRecv = null;
                 }

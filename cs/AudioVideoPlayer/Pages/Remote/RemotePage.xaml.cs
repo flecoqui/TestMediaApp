@@ -515,6 +515,8 @@ namespace AudioVideoPlayer.Pages.Remote
         }
         private async void CompanionConnectionManager_CompanionDeviceUpdated(CompanionConnectionManager sender, CompanionDevice args)
         {
+            LogMessage("Device: " + args.Name + " ID: " + args.Id + " IP address: " + args.IPAddress + " CompanionDeviceUpdated");
+
             await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
                 ObservableCollection<Companion.CompanionDevice> deviceList = ViewModelLocator.Settings.DeviceList;
@@ -555,6 +557,7 @@ namespace AudioVideoPlayer.Pages.Remote
         }
         private async void CompanionConnectionManager_CompanionDeviceRemoved(CompanionConnectionManager sender, CompanionDevice args)
         {
+            LogMessage("Device: " + args.Name + " ID: " + args.Id + " IP address: " + args.IPAddress + " CompanionDeviceRemoved");
             await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
                 ObservableCollection<Companion.CompanionDevice> deviceList = ViewModelLocator.Settings.DeviceList;
@@ -579,7 +582,7 @@ namespace AudioVideoPlayer.Pages.Remote
 
         private async void CompanionConnectionManager_CompanionDeviceAdded(CompanionConnectionManager sender, CompanionDevice args)
         {
-
+            LogMessage("Device: " + args.Name + " ID: " + args.Id + " IP address: " + args.IPAddress + " CompanionDeviceAdded");
             await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
                 ObservableCollection<Companion.CompanionDevice> deviceList = ViewModelLocator.Settings.DeviceList;
