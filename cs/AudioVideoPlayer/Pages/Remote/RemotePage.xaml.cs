@@ -87,6 +87,9 @@ namespace AudioVideoPlayer.Pages.Remote
             RegisterNetworkHelper();
 
 
+            // Clear Device list before starting disovery
+            if (ViewModels.StaticSettingsViewModel.DeviceList.Count > 0)
+                ViewModels.StaticSettingsViewModel.DeviceList.Clear();
             // Select first item in the combo box to select multicast option
             comboDevice.DataContext = ViewModels.StaticSettingsViewModel.DeviceList;
             if (comboDevice.Items.Count > 0)

@@ -1851,6 +1851,9 @@ namespace AudioVideoPlayer.Pages.Player
                     if (!view.IsFullScreenMode)
                         view.TryEnterFullScreenMode();
                     DisplayPicturePopup(true);
+                    // Hack for XBOX One
+                    if(string.Equals(Information.SystemInformation.SystemFamily ,"Windows.Xbox",StringComparison.OrdinalIgnoreCase))
+                        ResizePicturePopup(Window.Current.Bounds.Width, Window.Current.Bounds.Height);
                 }
                 else
                 {
