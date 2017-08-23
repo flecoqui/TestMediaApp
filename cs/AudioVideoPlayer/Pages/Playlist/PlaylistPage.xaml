@@ -69,7 +69,10 @@
                         </Grid.ColumnDefinitions>
                             <TextBlock  Grid.Row="0" Grid.Column="0" Text="Add a playlist:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
                         <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
-                            <Button IsEnabled="true" Content="&#xE710;"  Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Add a plylist in the list from an existing JSON file" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="AddPlaylist_Click" />
+                            <Button IsEnabled="true" Content="&#xE710;"  Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Add a playlist in the list from an existing JSON file" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="AddPlaylist_Click" />
+                            <Button IsEnabled="true" Content="&#xE8D6;"  Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Create and add a playlist from an existing local folder" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="AddMusicFolder_Click" />
+                            <Button IsEnabled="true" Content="&#xE714;"  Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Create and add a playlist from an existing local folder" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="AddVideoFolder_Click" />
+                            <Button IsEnabled="true" Content="&#xE722;"  Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Create and add a playlist from an existing local folder" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="AddPictureFolder_Click" />
                             <TextBlock x:Name="ErrorMessage"   Foreground="{ThemeResource ButtonForegroundThemeBrush}" VerticalAlignment="Center" TextWrapping="Wrap"  ></TextBlock>
                         </StackPanel>
 

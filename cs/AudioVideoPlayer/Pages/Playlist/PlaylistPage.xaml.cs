@@ -222,6 +222,94 @@ namespace AudioVideoPlayer.Pages.Playlist
                 }
             }
         }
+
+        private void AddMusicFolder_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            AddFolder(Helpers.MediaHelper.MediaType.Music, Helpers.MediaHelper.audioExts);
+
+        }
+        private void AddVideoFolder_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            AddFolder(Helpers.MediaHelper.MediaType.Video, Helpers.MediaHelper.videoExts);
+        }
+        private void AddPictureFolder_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            AddFolder(Helpers.MediaHelper.MediaType.Picture, Helpers.MediaHelper.pictureExts);
+        }
+
+        private async void AddFolder(Helpers.MediaHelper.MediaType mediaType, string Extensions)
+        {
+            string typeMedia = string.Empty;
+            Windows.Storage.Pickers.PickerLocationId id = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
+            if (mediaType == Helpers.MediaHelper.MediaType.Music)
+            {
+                typeMedia = "music";
+                id = Windows.Storage.Pickers.PickerLocationId.MusicLibrary;
+            }
+            else if (mediaType == Helpers.MediaHelper.MediaType.Video)
+            {
+                typeMedia = "video";
+                id = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
+            }
+            else if (mediaType == Helpers.MediaHelper.MediaType.Picture)
+            {
+                typeMedia = "picture";
+                id = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
+            }
+
+            var folderPicker = new Windows.Storage.Pickers.FolderPicker();
+            folderPicker.FileTypeFilter.Add("*");
+            folderPicker.SuggestedStartLocation = id;
+            folderPicker.SettingsIdentifier = "PlaylistPicker";
+            folderPicker.CommitButtonText = "Select the folder to create a " + typeMedia + " Playlist";
+            ClearErrorMessage();
+
+            var folder = await folderPicker.PickSingleFolderAsync();
+            if (folder != null)
+            {
+                string fileToken = Windows.Storage.AccessCache.StorageApplicationPermissions.FutureAccessList.Add(folder);
+                try
+                {
+                    Shell.Current.DisplayWaitRing = true;
+
+                    //Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Wait, 1);
+                    /*
+                    Models.PlayList playlist = await Models.PlayList.GetNewPlaylist(file.Path);
+                    if (playlist != null)
+                    {
+                        if (!IsThePlaylistNameUsed(playlist.Name))
+                        {
+                            ViewModels.ViewModel vm = this.DataContext as ViewModels.ViewModel;
+                            if (vm != null)
+                            {
+                                ObservableCollection<Models.PlayList> PlayListList = vm.Settings.PlayListList;
+                                PlayListList.Add(playlist);
+                                vm.Settings.PlayListList = PlayListList;
+                                if (!SelectPlaylistWithName(playlist.Name))
+                                {
+                                    ImportButton.IsEnabled = false;
+                                    RemoveButton.IsEnabled = false;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            SetErrorMessage("Playlist name already used");
+                        }
+                    }
+                    */
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Exception: " + ex.Message);
+                }
+                finally
+                {
+                    Shell.Current.DisplayWaitRing = false;
+                    //Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+                }
+            }
+        }
         private async  void ImportPlaylist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             ClearErrorMessage();
