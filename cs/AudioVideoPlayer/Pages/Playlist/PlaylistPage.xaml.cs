@@ -33,6 +33,8 @@ using Windows.Security.Cryptography.Core;
 using Windows.Security.Cryptography;
 using Windows.Storage.Streams;
 using System.Text.RegularExpressions;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
 namespace AudioVideoPlayer.Pages.Playlist
@@ -42,8 +44,72 @@ namespace AudioVideoPlayer.Pages.Playlist
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class PlaylistPage : Page
+    public sealed partial class PlaylistPage : Page, INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+        // This method is called by the Set accessor of each property.
+        // The CallerMemberName attribute that is applied to the optional propertyName
+        // parameter causes the property name of the caller to be substituted as an argument.
+        private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+        private string playlistFolder;
+        public string PlaylistFolder
+        {
+            get
+            {
+                return playlistFolder;
+            }
+            set
+            {
+                playlistFolder = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        private string playlistName;
+        public string PlaylistName
+        {
+            get
+            {
+                return playlistName;
+            }
+            set
+            {
+                playlistName = value;
+                NotifyPropertyChanged();
+            }
+        }
+        private string playlistFilters;
+        public string PlaylistFilters
+        {
+            get
+            {
+                return playlistFilters;
+            }
+            set
+            {
+                playlistFilters = value;
+                NotifyPropertyChanged();
+            }
+        }
+        private string playlistPath;
+        public string PlaylistPath
+        {
+            get
+            {
+                return playlistPath;
+            }
+            set
+            {
+                playlistPath = value;
+                NotifyPropertyChanged();
+            }
+        }
 
         /// <summary>
         /// PlaylistPage constructor 
@@ -168,15 +234,35 @@ namespace AudioVideoPlayer.Pages.Playlist
             if(!string.IsNullOrEmpty(text))
                 ErrorMessage.Text = text;
         }
+        private async void CreatePlaylist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            try
+            {
+                Shell.Current.DisplayWaitRing = true;
+                await Helpers.MediaHelper.CreateLocalPlaylist(ViewModelLocator.Settings.PlaylistName, ViewModelLocator.Settings.PlaylistFolder, ViewModelLocator.Settings.PlaylistFilters, ViewModelLocator.Settings.PlaylistPath);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception: " + ex.Message);
+            }
+            finally
+            {
+                Shell.Current.DisplayWaitRing = false;
+            }
+
+        }
+
         private async void AddPlaylist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             var filePicker = new Windows.Storage.Pickers.FileOpenPicker();
             filePicker.FileTypeFilter.Add(".json");
             filePicker.FileTypeFilter.Add(".tma");
             filePicker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
-            filePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
+            //filePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
+            filePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
             filePicker.SettingsIdentifier = "PlaylistPicker";
             filePicker.CommitButtonText = "Add JSON or TMA (TestMEdiaApp)  Playlist File to your list";
+            
             ClearErrorMessage();
 
             var file = await filePicker.PickSingleFileAsync();
@@ -240,21 +326,25 @@ namespace AudioVideoPlayer.Pages.Playlist
         private async void AddFolder(Helpers.MediaHelper.MediaType mediaType, string Extensions)
         {
             string typeMedia = string.Empty;
+            string filters = string.Empty;
             Windows.Storage.Pickers.PickerLocationId id = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
             if (mediaType == Helpers.MediaHelper.MediaType.Music)
             {
                 typeMedia = "music";
                 id = Windows.Storage.Pickers.PickerLocationId.MusicLibrary;
+                filters = Helpers.MediaHelper.audioExts;
             }
             else if (mediaType == Helpers.MediaHelper.MediaType.Video)
             {
                 typeMedia = "video";
                 id = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
+                filters = Helpers.MediaHelper.videoExts;
             }
             else if (mediaType == Helpers.MediaHelper.MediaType.Picture)
             {
                 typeMedia = "picture";
                 id = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
+                filters = Helpers.MediaHelper.pictureExts;
             }
 
             var folderPicker = new Windows.Storage.Pickers.FolderPicker();
@@ -271,33 +361,11 @@ namespace AudioVideoPlayer.Pages.Playlist
                 try
                 {
                     Shell.Current.DisplayWaitRing = true;
+                    ViewModelLocator.Settings.PlaylistFolder = folder.Path;
+                    ViewModelLocator.Settings.PlaylistName = await Helpers.MediaHelper.GetUniquePlaylistName(folder.Path);
+                    ViewModelLocator.Settings.PlaylistFilters = filters;
+                    ViewModelLocator.Settings.PlaylistPath = await Helpers.MediaHelper.GetUniquePlaylistPath(folder.Path);
 
-                    //Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Wait, 1);
-                    /*
-                    Models.PlayList playlist = await Models.PlayList.GetNewPlaylist(file.Path);
-                    if (playlist != null)
-                    {
-                        if (!IsThePlaylistNameUsed(playlist.Name))
-                        {
-                            ViewModels.ViewModel vm = this.DataContext as ViewModels.ViewModel;
-                            if (vm != null)
-                            {
-                                ObservableCollection<Models.PlayList> PlayListList = vm.Settings.PlayListList;
-                                PlayListList.Add(playlist);
-                                vm.Settings.PlayListList = PlayListList;
-                                if (!SelectPlaylistWithName(playlist.Name))
-                                {
-                                    ImportButton.IsEnabled = false;
-                                    RemoveButton.IsEnabled = false;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            SetErrorMessage("Playlist name already used");
-                        }
-                    }
-                    */
                 }
                 catch (Exception ex)
                 {
@@ -306,7 +374,6 @@ namespace AudioVideoPlayer.Pages.Playlist
                 finally
                 {
                     Shell.Current.DisplayWaitRing = false;
-                    //Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
                 }
             }
         }

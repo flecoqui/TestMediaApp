@@ -115,8 +115,45 @@ namespace AudioVideoPlayer.Helpers
             return null;
         }
         /// <summary>
-        /// Remove File
+        /// Get File
         /// </summary>
+        public static async System.Threading.Tasks.Task<Windows.Storage.StorageFile> GetFile(Windows.Storage.StorageFolder folder, string fileName)
+        {
+            try
+            {
+                if (folder != null)
+                {
+                    var file = await folder.GetFileAsync(fileName);
+                    return file;
+                }
+            }
+            catch (Exception Ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while getting file: " + Ex.Message);
+            }
+            return null;
+        }
+        /// <summary>
+        /// Get Folder
+        /// </summary>
+        public static async System.Threading.Tasks.Task<Windows.Storage.StorageFolder> GetFolder(Windows.Storage.StorageFolder folder, string folderName)
+        {
+            try
+            {
+                if (folder != null)
+                {
+                    var f = await folder.GetFolderAsync(folderName);
+                    return f;
+                }
+            }
+            catch (Exception Ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while getting file: " + Ex.Message);
+            }
+            return null;
+        }        /// <summary>
+                 /// Remove File
+                 /// </summary>
         public static async System.Threading.Tasks.Task<bool> RemoveFile(string folderName, string fileName)
         {
             try

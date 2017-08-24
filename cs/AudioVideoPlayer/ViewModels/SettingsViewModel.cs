@@ -404,6 +404,64 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
+
+
+        // Playlist
+
+        private string playlistFolder;
+        public string PlaylistFolder
+        {
+            get
+            {
+                return playlistFolder;
+            }
+            set
+            {
+                playlistFolder = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        private string playlistName;
+        public string PlaylistName
+        {
+            get
+            {
+                return playlistName;
+            }
+            set
+            {
+                playlistName = value;
+                NotifyPropertyChanged();
+            }
+        }
+        private string playlistFilters;
+        public string PlaylistFilters
+        {
+            get
+            {
+                return playlistFilters;
+            }
+            set
+            {
+                playlistFilters = value;
+                NotifyPropertyChanged();
+            }
+        }
+        private string playlistPath;
+        public string PlaylistPath
+        {
+            get
+            {
+                return playlistPath;
+            }
+            set
+            {
+                playlistPath = value;
+                NotifyPropertyChanged();
+            }
+        }
+
     }
 
 
