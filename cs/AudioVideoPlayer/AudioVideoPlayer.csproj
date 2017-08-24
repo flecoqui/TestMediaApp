@@ -181,6 +181,7 @@
     </AppxManifest>
     <None Include="AudioVideoPlayer_StoreKey.pfx" />
     <None Include="AudioVideoPlayer_TemporaryKey.pfx" />
+    <Content Include="Assets\VIDEO.png" />
     <Content Include="DataModel\MediaData.json" />
   </ItemGroup>
   <ItemGroup>
@@ -190,7 +191,7 @@
     <Content Include="Assets\MP3.png" />
     <Content Include="Assets\MP4.png" />
     <Content Include="Assets\MPEGTS.png" />
-    <Content Include="Assets\Music.png" />
+    <Content Include="Assets\MUSIC.png" />
     <Content Include="Assets\PHOTO.png" />
     <Content Include="Assets\Screen169.png" />
     <Content Include="Assets\SMOOTH.png" />

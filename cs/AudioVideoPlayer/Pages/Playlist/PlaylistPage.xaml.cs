@@ -44,72 +44,8 @@ namespace AudioVideoPlayer.Pages.Playlist
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class PlaylistPage : Page, INotifyPropertyChanged
+    public sealed partial class PlaylistPage : Page
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-        // This method is called by the Set accessor of each property.
-        // The CallerMemberName attribute that is applied to the optional propertyName
-        // parameter causes the property name of the caller to be substituted as an argument.
-        private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-            }
-        }
-        private string playlistFolder;
-        public string PlaylistFolder
-        {
-            get
-            {
-                return playlistFolder;
-            }
-            set
-            {
-                playlistFolder = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        private string playlistName;
-        public string PlaylistName
-        {
-            get
-            {
-                return playlistName;
-            }
-            set
-            {
-                playlistName = value;
-                NotifyPropertyChanged();
-            }
-        }
-        private string playlistFilters;
-        public string PlaylistFilters
-        {
-            get
-            {
-                return playlistFilters;
-            }
-            set
-            {
-                playlistFilters = value;
-                NotifyPropertyChanged();
-            }
-        }
-        private string playlistPath;
-        public string PlaylistPath
-        {
-            get
-            {
-                return playlistPath;
-            }
-            set
-            {
-                playlistPath = value;
-                NotifyPropertyChanged();
-            }
-        }
 
         /// <summary>
         /// PlaylistPage constructor 
