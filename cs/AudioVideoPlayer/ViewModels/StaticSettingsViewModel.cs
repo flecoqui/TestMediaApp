@@ -685,5 +685,43 @@ namespace AudioVideoPlayer.ViewModels
                 multicastIPAddress = value;
             }
         }
+        // Playlist Settings
+        private static int slideShowPeriod;
+
+        public static int SlideShowPeriod
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(SlideShowPeriod));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    slideShowPeriod = 10000;
+                else
+                    slideShowPeriod = int.Parse(auto);
+                return slideShowPeriod;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(SlideShowPeriod), value.ToString());
+                slideShowPeriod = value;
+            }
+        }
+        static bool createThumbnails;
+        public static bool CreateThumbnails
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(CreateThumbnails));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    createThumbnails = false;
+                else
+                    createThumbnails = bool.Parse(auto);
+                return createThumbnails;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(CreateThumbnails), value.ToString());
+                createThumbnails = value;
+            }
+        }
     }
 }

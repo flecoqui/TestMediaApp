@@ -175,7 +175,7 @@ namespace AudioVideoPlayer.Pages.Playlist
             try
             {
                 Shell.Current.DisplayWaitRing = true;
-                await Helpers.MediaHelper.CreateLocalPlaylist(ViewModelLocator.Settings.PlaylistName, ViewModelLocator.Settings.PlaylistFolder, ViewModelLocator.Settings.PlaylistFilters, ViewModelLocator.Settings.PlaylistPath);
+                await Helpers.MediaHelper.CreateLocalPlaylist(ViewModelLocator.Settings.PlaylistName, ViewModelLocator.Settings.PlaylistFolder, ViewModelLocator.Settings.PlaylistFilters, ViewModelLocator.Settings.CreateThumbnails, ViewModelLocator.Settings.SlideShowPeriod, ViewModelLocator.Settings.PlaylistPath);
             }
             catch (Exception ex)
             {

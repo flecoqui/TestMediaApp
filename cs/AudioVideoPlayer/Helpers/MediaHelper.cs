@@ -18,7 +18,7 @@ namespace AudioVideoPlayer.Helpers
         const string headerEnd = "\",\"Category\": \"Windows 10 Audio Video Tests\",\"ImagePath\": \"ms-appx:///Assets/AudioVideo.png\",\"Description\": \"Windows 10 Audio Video Tests\",\"Items\": [\r\n";
         const string videoItem = " \"UniqueId\": \"{0}\", \"Comment\": \"\", \"Title\": \"{1}\", \"ImagePath\": \"ms-appx:///Assets/VIDEO.png\",\"Description\": \"\", \"Content\": \"{2}\", \"PosterContent\": \"{3}\",\"Start\": \"0\",\"Duration\": \"0\",\"PlayReadyUrl\": \"null\",\"PlayReadyCustomData\": \"null\",\"BackgroundAudio\": true";
         const string musicItem = " \"UniqueId\": \"{0}\", \"Comment\": \"\", \"Title\": \"{1}\", \"ImagePath\": \"ms-appx:///Assets/MUSIC.png\",\"Description\": \"\", \"Content\": \"{2}\", \"PosterContent\": \"{3}\",\"Start\": \"0\",\"Duration\": \"0\",\"PlayReadyUrl\": \"null\",\"PlayReadyCustomData\": \"null\",\"BackgroundAudio\": true";
-        const string pictureItem = " \"UniqueId\": \"{0}\", \"Comment\": \"\", \"Title\": \"{1}\", \"ImagePath\": \"ms-appx:///Assets/PHOTO.png\",\"Description\": \"\", \"Content\": \"{2}\", \"PosterContent\": \"{3}\",\"Start\": \"0\",\"Duration\": \"10000\",\"PlayReadyUrl\": \"null\",\"PlayReadyCustomData\": \"null\",\"BackgroundAudio\": true";
+        const string pictureItem = " \"UniqueId\": \"{0}\", \"Comment\": \"\", \"Title\": \"{1}\", \"ImagePath\": \"ms-appx:///Assets/PHOTO.png\",\"Description\": \"\", \"Content\": \"{2}\", \"PosterContent\": \"{3}\",\"Start\": \"0\",\"Duration\": \"{4}\",\"PlayReadyUrl\": \"null\",\"PlayReadyCustomData\": \"null\",\"BackgroundAudio\": true";
         const string footer = "\r\n]}]}";
         public const string videoExts = ".asf;.avi;.ismv;.ts;.m4a;.mkv;.mov;.mp4;.wmv;";
         public const string audioExts = ".mp3;.aac;.wma;wav;.flac;";
@@ -151,18 +151,18 @@ namespace AudioVideoPlayer.Helpers
         }
         // Process all files in the directory passed in, recurse on any directories 
         // that are found, and process the files they contain.
-        public static async System.Threading.Tasks.Task<ulong> ProcessDirectory(ulong counter, string PlaylistName, string extensions, Windows.Storage.StorageFile writer, string targetDirectory)
+        public static async System.Threading.Tasks.Task<ulong> ProcessDirectory(ulong counter, string PlaylistName, string extensions, bool bCreateThumbnails, int SlideShowPeriod, Windows.Storage.StorageFile writer, string targetDirectory)
         {
 
             // Process the list of files found in the directory.
             string[] fileEntries = System.IO.Directory.GetFiles(targetDirectory);
             foreach (string fileName in fileEntries)
-                counter = await ProcessFile(counter, PlaylistName, extensions, writer, fileName);
+                counter = await ProcessFile(counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, writer, fileName);
 
             // Recurse into subdirectories of this directory.
             string[] subdirectoryEntries = System.IO.Directory.GetDirectories(targetDirectory);
             foreach (string subdirectory in subdirectoryEntries)
-                counter = await ProcessDirectory(counter, PlaylistName, extensions, writer, subdirectory);
+                counter = await ProcessDirectory(counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, writer, subdirectory);
             return counter;
         }
         static bool IsMusicFile(string ext)
@@ -285,7 +285,7 @@ namespace AudioVideoPlayer.Helpers
             s = s.Replace('.', '_');
             return s.Replace(';', '_');
         }
-        public static async System.Threading.Tasks.Task<ulong> ProcessFile(ulong counter, string PlaylistName, string extensions, Windows.Storage.StorageFile writer, string path)
+        public static async System.Threading.Tasks.Task<ulong> ProcessFile(ulong counter, string PlaylistName, string extensions, bool bCreateThumbnails, int SlideShowPeriod, Windows.Storage.StorageFile writer, string path)
         {
             try
             {
@@ -312,28 +312,31 @@ namespace AudioVideoPlayer.Helpers
                             }
                             if (string.IsNullOrEmpty(title))
                                 title = System.IO.Path.GetFileNameWithoutExtension(path);
-                            using (var thumbnail = await File.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.MusicView, 300))
+                            if (bCreateThumbnails)
                             {
-                                if (thumbnail != null && thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Image)
+                                using (var thumbnail = await File.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.MusicView, 300))
                                 {
-                                    StorageFolder f = await GetThumbnailFolder(PlaylistName);
-                                    string name = string.Empty;  
-                                    if(!string.IsNullOrEmpty(artist) && !string.IsNullOrEmpty(album))
-                                        name = GetTextForFileName(artist + "_" + album);
-                                    if(string.IsNullOrEmpty(name))
-                                        name = System.IO.Path.GetFileNameWithoutExtension(path);
-                                    if ((f != null) && (!string.IsNullOrEmpty(name)))
+                                    if (thumbnail != null && thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Image)
                                     {
-                                        string s = await SaveThumbnailToFileAsync(f, "tb_" + name, thumbnail);
-                                        if (!string.IsNullOrEmpty(s))
+                                        StorageFolder f = await GetThumbnailFolder(PlaylistName);
+                                        string name = string.Empty;
+                                        if (!string.IsNullOrEmpty(artist) && !string.IsNullOrEmpty(album))
+                                            name = GetTextForFileName(artist + "_" + album);
+                                        if (string.IsNullOrEmpty(name))
+                                            name = System.IO.Path.GetFileNameWithoutExtension(path);
+                                        if ((f != null) && (!string.IsNullOrEmpty(name)))
                                         {
-                                            posteruri = s;
+                                            string s = await SaveThumbnailToFileAsync(f, "tb_" + name, thumbnail);
+                                            if (!string.IsNullOrEmpty(s))
+                                            {
+                                                posteruri = s;
+                                            }
                                         }
                                     }
-                                }
-                                else
-                                {
-                                    //Error Message here
+                                    else
+                                    {
+                                        //Error Message here
+                                    }
                                 }
                             }
                         }
@@ -355,24 +358,27 @@ namespace AudioVideoPlayer.Helpers
                             posteruri = path;
                             if (string.IsNullOrEmpty(title))
                                 title = System.IO.Path.GetFileNameWithoutExtension(path);
-                            using (var thumbnail = await File.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.VideosView, 300))
+                            if (bCreateThumbnails)
                             {
-                                if (thumbnail != null && thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Image)
+                                using (var thumbnail = await File.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.VideosView, 300))
                                 {
-                                    StorageFolder f = await GetThumbnailFolder(PlaylistName);
-                                    string name = System.IO.Path.GetFileNameWithoutExtension(path);
-                                    if ((f != null) && (!string.IsNullOrEmpty(name)))
+                                    if (thumbnail != null && thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Image)
                                     {
-                                        string s = await SaveThumbnailToFileAsync(f, "tb_" + name, thumbnail);
-                                        if (!string.IsNullOrEmpty(s))
+                                        StorageFolder f = await GetThumbnailFolder(PlaylistName);
+                                        string name = System.IO.Path.GetFileNameWithoutExtension(path);
+                                        if ((f != null) && (!string.IsNullOrEmpty(name)))
                                         {
-                                            posteruri = s;
+                                            string s = await SaveThumbnailToFileAsync(f, "tb_" + name, thumbnail);
+                                            if (!string.IsNullOrEmpty(s))
+                                            {
+                                                posteruri = s;
+                                            }
                                         }
                                     }
-                                }
-                                else
-                                {
-                                    //Error Message here
+                                    else
+                                    {
+                                        //Error Message here
+                                    }
                                 }
                             }
 
@@ -392,7 +398,7 @@ namespace AudioVideoPlayer.Helpers
                                     uri = "file://" + uri.Replace("\\", "\\\\");
                                     posteruri = "file://" + posteruri.Replace("\\", "\\\\");
                                     if (IsPictureFile(ext))
-                                        s += string.Format(pictureItem, counter.ToString(), title, uri, posteruri);
+                                        s += string.Format(pictureItem, counter.ToString(), title, uri, posteruri, SlideShowPeriod.ToString());
                                     else if (IsMusicFile(ext))
                                         s += string.Format(musicItem, counter.ToString(), title, uri, posteruri);
                                     else 
@@ -416,7 +422,7 @@ namespace AudioVideoPlayer.Helpers
                                     uri = "file://" + uri.Replace("\\", "\\\\");
                                     posteruri = "file://" + posteruri.Replace("\\", "\\\\");
                                     if (IsPictureFile(ext))
-                                        s += string.Format(pictureItem, counter.ToString(), title, uri, posteruri);
+                                        s += string.Format(pictureItem, counter.ToString(), title, uri, posteruri, SlideShowPeriod.ToString());
                                     else if (IsMusicFile(ext))
                                         s += string.Format(musicItem, counter.ToString(), title, uri, posteruri);
                                     else 
@@ -438,7 +444,7 @@ namespace AudioVideoPlayer.Helpers
             return counter;
         }
 
-        public static async System.Threading.Tasks.Task<bool> CreateLocalPlaylist(string PlaylistName, string folderName, string extensions, string outputFile )
+        public static async System.Threading.Tasks.Task<bool> CreateLocalPlaylist(string PlaylistName, string folderName, string extensions, bool bCreateThumbnails , int SlideShowPeriod , string outputFile )
         {
             try
             {
@@ -448,12 +454,12 @@ namespace AudioVideoPlayer.Helpers
                 {
                         if (await IsFile(folderName) == true)
                         {
-                        counter = await ProcessFile(counter, PlaylistName, extensions, File, folderName);
+                        counter = await ProcessFile(counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod,  File, folderName);
                         }
                         else if (await IsFolder(folderName))
                         {
                             // This path is a directory
-                            counter = await ProcessDirectory( counter, PlaylistName, extensions, File, folderName);
+                            counter = await ProcessDirectory( counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, File, folderName);
                         }
                         else
                         {

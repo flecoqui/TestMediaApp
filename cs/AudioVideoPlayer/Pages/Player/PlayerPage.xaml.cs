@@ -2541,6 +2541,12 @@ namespace AudioVideoPlayer.Pages.Player
                 // Audio or video
                 if (!IsPicture(content))
                 {
+                    if (!IsMusic(content))
+                    {
+                        // fix for video 
+                        pictureElement.Visibility = Visibility.Collapsed;
+                        mediaPlayerElement.Visibility = Visibility.Visible;
+                    }
                     result = await SetAudioVideoUrl(content);
                     if (result == true)
                         mediaPlayer.Play();

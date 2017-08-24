@@ -461,7 +461,31 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
+        public int SlideShowPeriod
+        {
+            get
+            {
+                return StaticSettingsViewModel.SlideShowPeriod;
+            }
+            set
+            {
+                StaticSettingsViewModel.SlideShowPeriod = value;
+                NotifyPropertyChanged();
+            }
+        }
 
+        public bool CreateThumbnails
+        {
+            get
+            {
+                return StaticSettingsViewModel.CreateThumbnails;
+            }
+            set
+            {
+                StaticSettingsViewModel.CreateThumbnails = value;
+                NotifyPropertyChanged();
+            }
+        }
     }
 
 
