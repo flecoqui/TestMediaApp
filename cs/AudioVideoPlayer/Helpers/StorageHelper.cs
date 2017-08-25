@@ -88,9 +88,9 @@ namespace AudioVideoPlayer.Helpers
                 var f = await Windows.Storage.ApplicationData.Current.LocalFolder.GetFolderAsync(folderName);
                 return f;
             }
-            catch(Exception Ex)
+            catch(Exception)
             {
-                System.Diagnostics.Debug.WriteLine("Exception while getting folder: " + Ex.Message);
+                //System.Diagnostics.Debug.WriteLine("Exception while getting folder: " + Ex.Message);
             }
             return null;
         }
@@ -108,9 +108,9 @@ namespace AudioVideoPlayer.Helpers
                     return file;
                 }
             }
-            catch (Exception Ex)
+            catch (Exception)
             {
-                System.Diagnostics.Debug.WriteLine("Exception while getting folder: " + Ex.Message);
+               // System.Diagnostics.Debug.WriteLine("Exception while getting folder: " + Ex.Message);
             }
             return null;
         }
@@ -127,9 +127,9 @@ namespace AudioVideoPlayer.Helpers
                     return file;
                 }
             }
-            catch (Exception Ex)
+            catch (Exception)
             {
-                System.Diagnostics.Debug.WriteLine("Exception while getting file: " + Ex.Message);
+               // System.Diagnostics.Debug.WriteLine("Exception while getting file: " + Ex.Message);
             }
             return null;
         }
@@ -146,9 +146,9 @@ namespace AudioVideoPlayer.Helpers
                     return f;
                 }
             }
-            catch (Exception Ex)
+            catch (Exception)
             {
-                System.Diagnostics.Debug.WriteLine("Exception while getting file: " + Ex.Message);
+               // System.Diagnostics.Debug.WriteLine("Exception while getting file: " + Ex.Message);
             }
             return null;
         }        /// <summary>

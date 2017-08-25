@@ -723,5 +723,98 @@ namespace AudioVideoPlayer.ViewModels
                 createThumbnails = value;
             }
         }
+
+
+        private static int cloudSlideShowPeriod;
+
+        public static int CloudSlideShowPeriod
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(CloudSlideShowPeriod));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    cloudSlideShowPeriod = 10000;
+                else
+                    cloudSlideShowPeriod = int.Parse(auto);
+                return cloudSlideShowPeriod;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(CloudSlideShowPeriod), value.ToString());
+                cloudSlideShowPeriod = value;
+            }
+        }
+        static bool cloudCreateThumbnails;
+        public static bool CloudCreateThumbnails
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(CloudCreateThumbnails));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    cloudCreateThumbnails = false;
+                else
+                    cloudCreateThumbnails = bool.Parse(auto);
+                return cloudCreateThumbnails;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(CloudCreateThumbnails), value.ToString());
+                cloudCreateThumbnails = value;
+            }
+        }
+        private static string azureAccountName;
+        public static string AzureAccountName
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(AzureAccountName));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    azureAccountName = "AzureAccountName";
+                else
+                    azureAccountName = auto;
+                return azureAccountName;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(AzureAccountName), value.ToString());
+                azureAccountName = value;
+            }
+        }
+        private static string azureAccountKey;
+        public static string AzureAccountKey
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(AzureAccountKey));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    azureAccountKey = "AzureAccountKey";
+                else
+                    azureAccountKey = auto;
+                return azureAccountKey;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(AzureAccountKey), value.ToString());
+                azureAccountKey = value;
+            }
+        }
+        private static string azureContainer;
+        public static string AzureContainer
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(AzureContainer));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    azureContainer = "AzureContainer";
+                else
+                    azureContainer = auto;
+                return azureContainer;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(AzureContainer), value.ToString());
+                azureContainer = value;
+            }
+        }
     }
 }

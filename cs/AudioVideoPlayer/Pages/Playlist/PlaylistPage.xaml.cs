@@ -55,6 +55,222 @@ namespace AudioVideoPlayer.Pages.Playlist
             this.InitializeComponent();
             ClearErrorMessage();
         }
+        bool IsMusic(string filters)
+        {
+            if (!string.IsNullOrEmpty(filters))
+            {
+
+                string[] array = filters.Split();
+                foreach (var v in array)
+                {
+                    if (Helpers.MediaHelper.audioExts.IndexOf(v) >= 0)
+                        return true;
+                }
+
+            }
+            return false;
+
+        }
+        bool IsPicture(string filters)
+        {
+            if (!string.IsNullOrEmpty(filters))
+            {
+
+                string[] array = filters.Split();
+                foreach (var v in array)
+                {
+                    if (Helpers.MediaHelper.pictureExts.IndexOf(v) >= 0)
+                        return true;
+                }
+
+            }
+            return false;
+
+        }
+        bool IsVideo(string filters)
+        {
+            if (!string.IsNullOrEmpty(filters))
+            {
+
+                string[] array = filters.Split();
+                foreach (var v in array)
+                {
+                    if (Helpers.MediaHelper.videoExts.IndexOf(v) >= 0)
+                        return true;
+                }
+
+            }
+            return false;
+
+        }
+
+        /// <summary>
+        /// UpdateControls Method which update the controls on the page  
+        /// </summary>
+        async void UpdateControls(bool bDisable = false)
+        {
+
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+                 () =>
+                 {
+                     if (   (!string.IsNullOrEmpty(localPlaylistName.Text)) &&
+                            (!string.IsNullOrEmpty(localPlaylistFilters.Text)) &&
+                            (!string.IsNullOrEmpty(localPlaylistFolder.Text)) &&
+                            (!string.IsNullOrEmpty(localPlaylistPath.Text)))
+
+                     {
+                         localPlaylistNameLabel.Visibility = Visibility.Visible;
+                         localPlaylistName.Visibility = Visibility.Visible;
+                         localPlaylistFiltersLabel.Visibility = Visibility.Visible;
+                         localPlaylistFilters.Visibility = Visibility.Visible;
+                         localPlaylistFolderLabel.Visibility = Visibility.Visible;
+                         localPlaylistFolder.Visibility = Visibility.Visible;
+                         localPlaylistPathLabel.Visibility = Visibility.Visible;
+                         localPlaylistPath.Visibility = Visibility.Visible;
+
+                         if (IsPicture(localPlaylistFilters.Text))
+                         {
+                             localPlaylistPeriodLabel.Visibility = Visibility.Visible;
+                             localPlaylistPeriod.Visibility = Visibility.Visible;
+                         }
+                         else
+                         {
+                             localPlaylistPeriodLabel.Visibility = Visibility.Collapsed;
+                             localPlaylistPeriod.Visibility = Visibility.Collapsed;
+                         }
+
+
+                         if ((IsMusic(localPlaylistFilters.Text))||
+                             (IsVideo(localPlaylistFilters.Text)))
+                         {
+                             localPlaylistThumbnailLabel.Visibility = Visibility.Visible;
+                             localPlaylistThumbnail.Visibility = Visibility.Visible;
+                         }
+                         else
+                         {
+                             localPlaylistThumbnailLabel.Visibility = Visibility.Collapsed;
+                             localPlaylistThumbnail.Visibility = Visibility.Collapsed;
+
+                         }
+
+                         if (string.Equals(localPlaylistItemsCount.Text, "-1"))
+                         {
+                             localPlaylistItemsCountLabel.Visibility = Visibility.Collapsed;
+                             localPlaylistItemsCount.Visibility = Visibility.Collapsed;
+                         }
+                         else
+                         {
+                             localPlaylistItemsCountLabel.Visibility = Visibility.Visible;
+                             localPlaylistItemsCount.Visibility = Visibility.Visible;
+                         }
+                         localPlaylistCreation.IsEnabled = true;
+
+                     }
+                     else
+                     {
+                         localPlaylistNameLabel.Visibility = Visibility.Collapsed;
+                         localPlaylistName.Visibility = Visibility.Collapsed;
+                         localPlaylistFiltersLabel.Visibility = Visibility.Collapsed;
+                         localPlaylistFilters.Visibility = Visibility.Collapsed;
+                         localPlaylistFolderLabel.Visibility = Visibility.Collapsed;
+                         localPlaylistFolder.Visibility = Visibility.Collapsed;
+                         localPlaylistPathLabel.Visibility = Visibility.Collapsed;
+                         localPlaylistPath.Visibility = Visibility.Collapsed;
+                         localPlaylistPeriodLabel.Visibility = Visibility.Collapsed;
+                         localPlaylistPeriod.Visibility = Visibility.Collapsed;
+                         localPlaylistThumbnailLabel.Visibility = Visibility.Collapsed;
+                         localPlaylistThumbnail.Visibility = Visibility.Collapsed;
+                         localPlaylistItemsCountLabel.Visibility = Visibility.Collapsed;
+                         localPlaylistItemsCount.Visibility = Visibility.Collapsed;
+
+                         localPlaylistCreation.IsEnabled = false;
+                     }
+
+
+                     if ((!string.IsNullOrEmpty(cloudPlaylistName.Text)) &&
+                            (!string.IsNullOrEmpty(cloudPlaylistFilters.Text)) &&
+                            (!string.IsNullOrEmpty(cloudPlaylistPath.Text)))
+
+                     {
+                         cloudPlaylistNameLabel.Visibility = Visibility.Visible;
+                         cloudPlaylistName.Visibility = Visibility.Visible;
+                         cloudPlaylistFiltersLabel.Visibility = Visibility.Visible;
+                         cloudPlaylistFilters.Visibility = Visibility.Visible;
+                         cloudPlaylistPathLabel.Visibility = Visibility.Visible;
+                         cloudPlaylistPath.Visibility = Visibility.Visible;
+
+                         cloudPlaylistAccountNameLabel.Visibility = Visibility.Visible;
+                         cloudPlaylistAccountName.Visibility = Visibility.Visible;
+                         cloudPlaylistAccountKeyLabel.Visibility = Visibility.Visible;
+                         cloudPlaylistAccountKey.Visibility = Visibility.Visible;
+                         cloudPlaylistContainerLabel.Visibility = Visibility.Visible;
+                         cloudPlaylistContainer.Visibility = Visibility.Visible;
+
+                         if (IsPicture(cloudPlaylistFilters.Text))
+                         {
+                             cloudPlaylistPeriodLabel.Visibility = Visibility.Visible;
+                             cloudPlaylistPeriod.Visibility = Visibility.Visible;
+                         }
+                         else
+                         {
+                             cloudPlaylistPeriodLabel.Visibility = Visibility.Collapsed;
+                             cloudPlaylistPeriod.Visibility = Visibility.Collapsed;
+                         }
+
+
+                         if ((IsMusic(cloudPlaylistFilters.Text)) ||
+                             (IsVideo(cloudPlaylistFilters.Text)))
+                         {
+                             cloudPlaylistThumbnailLabel.Visibility = Visibility.Visible;
+                             cloudPlaylistThumbnail.Visibility = Visibility.Visible;
+                         }
+                         else
+                         {
+                             cloudPlaylistThumbnailLabel.Visibility = Visibility.Collapsed;
+                             cloudPlaylistThumbnail.Visibility = Visibility.Collapsed;
+
+                         }
+
+                         if (string.Equals(cloudPlaylistItemsCount.Text, "-1"))
+                         {
+                             cloudPlaylistItemsCountLabel.Visibility = Visibility.Collapsed;
+                             cloudPlaylistItemsCount.Visibility = Visibility.Collapsed;
+                         }
+                         else
+                         {
+                             cloudPlaylistItemsCountLabel.Visibility = Visibility.Visible;
+                             cloudPlaylistItemsCount.Visibility = Visibility.Visible;
+                         }
+                         cloudPlaylistCreation.IsEnabled = true;
+
+                     }
+                     else
+                     {
+                         cloudPlaylistNameLabel.Visibility = Visibility.Collapsed;
+                         cloudPlaylistName.Visibility = Visibility.Collapsed;
+                         cloudPlaylistFiltersLabel.Visibility = Visibility.Collapsed;
+                         cloudPlaylistFilters.Visibility = Visibility.Collapsed;
+                         cloudPlaylistAccountNameLabel.Visibility = Visibility.Collapsed;
+                         cloudPlaylistAccountName.Visibility = Visibility.Collapsed;
+                         cloudPlaylistAccountKeyLabel.Visibility = Visibility.Collapsed;
+                         cloudPlaylistAccountKey.Visibility = Visibility.Collapsed;
+                         cloudPlaylistContainerLabel.Visibility = Visibility.Collapsed;
+                         cloudPlaylistContainer.Visibility = Visibility.Collapsed;
+                         cloudPlaylistPathLabel.Visibility = Visibility.Collapsed;
+                         cloudPlaylistPath.Visibility = Visibility.Collapsed;
+                         cloudPlaylistPeriodLabel.Visibility = Visibility.Collapsed;
+                         cloudPlaylistPeriod.Visibility = Visibility.Collapsed;
+                         cloudPlaylistThumbnailLabel.Visibility = Visibility.Collapsed;
+                         cloudPlaylistThumbnail.Visibility = Visibility.Collapsed;
+                         cloudPlaylistItemsCountLabel.Visibility = Visibility.Collapsed;
+                         cloudPlaylistItemsCount.Visibility = Visibility.Collapsed;
+
+                         cloudPlaylistCreation.IsEnabled = false;
+                     }
+
+
+                 });
+        }
         private void comboPlayList_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             RemoveButton.IsEnabled = false;
@@ -108,6 +324,11 @@ namespace AudioVideoPlayer.Pages.Playlist
 
             // Register Network
             RegisterNetworkHelper();
+
+            // Update playlist controls
+            localPlaylistItemsCount.Text = "-1";
+            UpdateControls();
+
 
         }
 
@@ -175,7 +396,16 @@ namespace AudioVideoPlayer.Pages.Playlist
             try
             {
                 Shell.Current.DisplayWaitRing = true;
-                await Helpers.MediaHelper.CreateLocalPlaylist(ViewModelLocator.Settings.PlaylistName, ViewModelLocator.Settings.PlaylistFolder, ViewModelLocator.Settings.PlaylistFilters, ViewModelLocator.Settings.CreateThumbnails, ViewModelLocator.Settings.SlideShowPeriod, ViewModelLocator.Settings.PlaylistPath);
+                localPlaylistItemsCount.Text = "-1";
+                if (!string.IsNullOrEmpty(ViewModelLocator.Settings.PlaylistName) &&
+                    !string.IsNullOrEmpty(ViewModelLocator.Settings.PlaylistFolder) &&
+                    !string.IsNullOrEmpty(ViewModelLocator.Settings.PlaylistFilters) &&
+                    !string.IsNullOrEmpty(ViewModelLocator.Settings.PlaylistPath) 
+                    )
+                { 
+                    int counter = await Helpers.MediaHelper.CreateLocalPlaylist(ViewModelLocator.Settings.PlaylistName, ViewModelLocator.Settings.PlaylistFolder, ViewModelLocator.Settings.PlaylistFilters, ViewModelLocator.Settings.CreateThumbnails, ViewModelLocator.Settings.SlideShowPeriod, ViewModelLocator.Settings.PlaylistPath);
+                    localPlaylistItemsCount.Text = counter.ToString();
+                }
             }
             catch (Exception ex)
             {
@@ -184,10 +414,39 @@ namespace AudioVideoPlayer.Pages.Playlist
             finally
             {
                 Shell.Current.DisplayWaitRing = false;
+                UpdateControls();
             }
 
         }
+        private async void CreateCloudPlaylist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            try
+            {
+                Shell.Current.DisplayWaitRing = true;
+                cloudPlaylistItemsCount.Text = "-1";
+                if (!string.IsNullOrEmpty(ViewModelLocator.Settings.CloudPlaylistName) &&
+                    !string.IsNullOrEmpty(ViewModelLocator.Settings.AzureAccountKey) &&
+                    !string.IsNullOrEmpty(ViewModelLocator.Settings.AzureAccountName) &&
+                    !string.IsNullOrEmpty(ViewModelLocator.Settings.AzureContainer) &&
+                    !string.IsNullOrEmpty(ViewModelLocator.Settings.CloudPlaylistFilters) &&
+                    !string.IsNullOrEmpty(ViewModelLocator.Settings.CloudPlaylistPath)
+                    )
+                {
+                    int counter = await Helpers.MediaHelper.CreateCloudPlaylist(ViewModelLocator.Settings.CloudPlaylistName, ViewModelLocator.Settings.AzureAccountName, ViewModelLocator.Settings.AzureAccountKey, ViewModelLocator.Settings.AzureContainer, ViewModelLocator.Settings.CloudPlaylistFilters, ViewModelLocator.Settings.CloudCreateThumbnails, ViewModelLocator.Settings.CloudSlideShowPeriod, ViewModelLocator.Settings.CloudPlaylistPath);
+                    cloudPlaylistItemsCount.Text = counter.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception: " + ex.Message);
+            }
+            finally
+            {
+                Shell.Current.DisplayWaitRing = false;
+                UpdateControls();
+            }
 
+        }
         private async void AddPlaylist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             var filePicker = new Windows.Storage.Pickers.FileOpenPicker();
@@ -244,6 +503,63 @@ namespace AudioVideoPlayer.Pages.Playlist
                 }
             }
         }
+        private void AddMusicContainer_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            AddContainer(Helpers.MediaHelper.MediaType.Music, Helpers.MediaHelper.audioExts);
+
+        }
+        private void AddVideoContainer_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            AddContainer(Helpers.MediaHelper.MediaType.Video, Helpers.MediaHelper.videoExts);
+        }
+        private void AddPictureContainer_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            AddContainer(Helpers.MediaHelper.MediaType.Picture, Helpers.MediaHelper.pictureExts);
+        }
+
+        private async void AddContainer(Helpers.MediaHelper.MediaType mediaType, string Extensions)
+        {
+            string typeMedia = string.Empty;
+            string filters = string.Empty;
+            cloudPlaylistItemsCount.Text = "-1";
+
+            if (mediaType == Helpers.MediaHelper.MediaType.Music)
+            {
+                typeMedia = "Music";
+                filters = Helpers.MediaHelper.audioExts;
+            }
+            else if (mediaType == Helpers.MediaHelper.MediaType.Video)
+            {
+                typeMedia = "Video";
+                filters = Helpers.MediaHelper.videoExts;
+            }
+            else if (mediaType == Helpers.MediaHelper.MediaType.Picture)
+            {
+                typeMedia = "Picture";
+                filters = Helpers.MediaHelper.pictureExts;
+            }
+
+            ClearErrorMessage();
+
+            try
+            {
+                Shell.Current.DisplayWaitRing = true;
+                string pName = "Cloud" + typeMedia + "Playlist";
+                ViewModelLocator.Settings.CloudPlaylistName = await Helpers.MediaHelper.GetUniquePlaylistName(pName);
+                ViewModelLocator.Settings.CloudPlaylistFilters = filters;
+                ViewModelLocator.Settings.CloudPlaylistPath = await Helpers.MediaHelper.GetUniquePlaylistPath(pName);
+
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception: " + ex.Message);
+            }
+            finally
+            {
+                Shell.Current.DisplayWaitRing = false;
+                UpdateControls();
+            }
+        }
 
         private void AddMusicFolder_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
@@ -263,6 +579,8 @@ namespace AudioVideoPlayer.Pages.Playlist
         {
             string typeMedia = string.Empty;
             string filters = string.Empty;
+            localPlaylistItemsCount.Text = "-1";
+
             Windows.Storage.Pickers.PickerLocationId id = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
             if (mediaType == Helpers.MediaHelper.MediaType.Music)
             {
@@ -310,6 +628,7 @@ namespace AudioVideoPlayer.Pages.Playlist
                 finally
                 {
                     Shell.Current.DisplayWaitRing = false;
+                    UpdateControls();
                 }
             }
         }
@@ -493,11 +812,19 @@ namespace AudioVideoPlayer.Pages.Playlist
             }
             return true;
         }
+
+
+
         #endregion Network
 
-
-
-
+        private async void cloudPlaylistName_LostFocus(object sender, RoutedEventArgs e)
+        {
+                ViewModelLocator.Settings.CloudPlaylistPath = await Helpers.MediaHelper.GetUniquePlaylistPath(cloudPlaylistName.Text);
+        }
+        private async void localPlaylistName_LostFocus(object sender, RoutedEventArgs e)
+        {
+            ViewModelLocator.Settings.PlaylistPath = await Helpers.MediaHelper.GetUniquePlaylistPath(localPlaylistName.Text);
+        }
     }
 
 

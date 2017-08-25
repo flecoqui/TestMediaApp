@@ -486,6 +486,108 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
+
+        public int CloudSlideShowPeriod
+        {
+            get
+            {
+                return StaticSettingsViewModel.CloudSlideShowPeriod;
+            }
+            set
+            {
+                StaticSettingsViewModel.CloudSlideShowPeriod = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        public bool CloudCreateThumbnails
+        {
+            get
+            {
+                return StaticSettingsViewModel.CloudCreateThumbnails;
+            }
+            set
+            {
+                StaticSettingsViewModel.CloudCreateThumbnails = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public string AzureAccountName
+        {
+            get
+            {
+                return StaticSettingsViewModel.AzureAccountName;
+            }
+            set
+            {
+                StaticSettingsViewModel.AzureAccountName = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public string AzureAccountKey
+        {
+            get
+            {
+                return StaticSettingsViewModel.AzureAccountKey;
+            }
+            set
+            {
+                StaticSettingsViewModel.AzureAccountKey = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public string AzureContainer
+        {
+            get
+            {
+                return StaticSettingsViewModel.AzureContainer;
+            }
+            set
+            {
+                StaticSettingsViewModel.AzureContainer = value;
+                NotifyPropertyChanged();
+            }
+        }
+        private string cloudPlaylistName;
+        public string CloudPlaylistName
+        {
+            get
+            {
+                return cloudPlaylistName;
+            }
+            set
+            {
+                cloudPlaylistName = value;
+               
+                NotifyPropertyChanged();
+            }
+        }
+        private string cloudPlaylistFilters;
+        public string CloudPlaylistFilters
+        {
+            get
+            {
+                return cloudPlaylistFilters;
+            }
+            set
+            {
+                cloudPlaylistFilters = value;
+                NotifyPropertyChanged();
+            }
+        }
+        private string cloudPlaylistPath;
+        public string CloudPlaylistPath
+        {
+            get
+            {
+                return cloudPlaylistPath;
+            }
+            set
+            {
+                cloudPlaylistPath = value;
+                NotifyPropertyChanged();
+            }
+        }
     }
 
 

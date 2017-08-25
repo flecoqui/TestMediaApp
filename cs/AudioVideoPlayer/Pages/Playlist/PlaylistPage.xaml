@@ -29,7 +29,7 @@
             <VisualStateGroup>
                 <VisualState x:Name="wideState">
                     <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="530" />
+                        <AdaptiveTrigger MinWindowWidth="640" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="FirstPanel.(Grid.Row)" Value="1"/>
@@ -97,6 +97,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="170"/>
@@ -105,11 +106,11 @@
                     <TextBlock  Grid.Row="0" Grid.Column="0" Text="Import a playlist:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Margin="0" Style="{StaticResource HeaderTextBlockStyle}" />
                     <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
                         <Button IsEnabled="true" Content="&#xE710;"  Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Add a playlist in the list from an existing JSON file" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="AddPlaylist_Click" />
-                        <TextBlock x:Name="ErrorMessage"   Foreground="{ThemeResource ButtonForegroundThemeBrush}" VerticalAlignment="Center" TextWrapping="Wrap"  ></TextBlock>
                     </StackPanel>
+                    <TextBlock x:Name="ErrorMessage" Grid.Row="1" Grid.Column="0"  Grid.ColumnSpan="2"  Foreground="{ThemeResource ButtonForegroundThemeBrush}" VerticalAlignment="Center" TextWrapping="Wrap"  ></TextBlock>
 
-                    <TextBlock  Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"  Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Select the current playlist:" Style="{StaticResource LabelTextBoldBlockStyle}" HorizontalAlignment="Left" />
-                    <ComboBox  Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Name="comboPlayList"                            
+                    <TextBlock  Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"  Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Select the current playlist:" Style="{StaticResource LabelTextBoldBlockStyle}" HorizontalAlignment="Left" />
+                    <ComboBox  Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Name="comboPlayList"                            
                            DisplayMemberPath="Name"
                            ToolTipService.ToolTip="Name of the current selected  playlist"    
                            HorizontalAlignment="Left" 
@@ -121,20 +122,20 @@
                            MinWidth="270"
                               >
                     </ComboBox>
-                    <TextBlock Grid.Row="3" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Original Path: "  VerticalAlignment="Top"/>
-                    <TextBox IsReadOnly="True" BorderThickness="0" Grid.Row="3" Grid.Column="1"   ToolTipService.ToolTip="Original path of the Playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Path',Mode=OneWay}"   TextWrapping="Wrap" VerticalAlignment="Center"  MinHeight="30" />
-                    <TextBlock Grid.Row="4" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Number of items: "/>
-                    <TextBox IsReadOnly="True" BorderThickness="0"  Grid.Row="4" Grid.Column="1" ToolTipService.ToolTip="Number of items in the playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Count',Mode=OneWay}"   VerticalAlignment="Center"  MinHeight="30" />
-                    <TextBlock Grid.Row="5" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Current Index: "/>
-                    <TextBox IsReadOnly="True" BorderThickness="0"   Grid.Row="5" Grid.Column="1" ToolTipService.ToolTip="Index of the latest item played in the current playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Index',Mode=OneWay}"   VerticalAlignment="Center"   MinHeight="30" />
-                    <TextBlock Grid.Row="6" Grid.Column="0"   Text="Remove playlist:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
-                    <Button Grid.Row="6" Grid.Column="1"  IsEnabled="true"  x:Name="RemoveButton"  Content="&#xE74D;"  Style="{StaticResource CustomButtonStyle}"  Height="40" Width="40" ToolTipService.ToolTip="Remove the current playlist" FontFamily="Segoe MDL2 Assets" IsTabStop="True"  Margin="1,1,1,1" Click="RemovePlaylist_Click" />
-                    <TextBlock Grid.Row="7" Grid.Column="0"  Text="Import playlist:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
-                    <Button Grid.Row="7" Grid.Column="1" IsEnabled="false" x:Name="ImportButton" Content="&#xE8B6;"  Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Import the playlist in the local machine" FontFamily="Segoe MDL2 Assets" IsTabStop="True"  Height="40" Width="40" Margin="1,1,1,1"  Click="ImportPlaylist_Click" />
-                    <TextBlock Grid.Row="8" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Imported Path: " VerticalAlignment="Top"/>
-                    <TextBox IsReadOnly="True" BorderThickness="0" Grid.Row="8" Grid.Column="1" ToolTipService.ToolTip="Path of the imported Playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='ImportedPath',Mode=OneWay}"  TextWrapping="Wrap" VerticalAlignment="Center" MinHeight="30"/>
-                    <TextBlock Grid.Row="9" Grid.Column="0" Text="Current playlist Path:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
-                    <TextBox IsReadOnly="True" BorderThickness="0" Grid.Row="9" Grid.Column="1" ToolTipService.ToolTip="Path/Uri of current selected Playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{Binding Settings.CurrentPlayListPath}" TextWrapping="Wrap" />
+                    <TextBlock Grid.Row="4" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Original Path: "  VerticalAlignment="Top"/>
+                    <TextBox IsReadOnly="True" BorderThickness="0" Grid.Row="4" Grid.Column="1"   ToolTipService.ToolTip="Original path of the Playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Path',Mode=OneWay}"   TextWrapping="Wrap" VerticalAlignment="Center"  MinHeight="30" />
+                    <TextBlock Grid.Row="5" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Number of items: "/>
+                    <TextBox IsReadOnly="True" BorderThickness="0"  Grid.Row="5" Grid.Column="1" ToolTipService.ToolTip="Number of items in the playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Count',Mode=OneWay}"   VerticalAlignment="Center"  MinHeight="30" />
+                    <TextBlock Grid.Row="6" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Current Index: "/>
+                    <TextBox IsReadOnly="True" BorderThickness="0"   Grid.Row="6" Grid.Column="1" ToolTipService.ToolTip="Index of the latest item played in the current playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Index',Mode=OneWay}"   VerticalAlignment="Center"   MinHeight="30" />
+                    <TextBlock Grid.Row="7" Grid.Column="0"   Text="Remove playlist:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
+                    <Button Grid.Row="7" Grid.Column="1"  IsEnabled="true"  x:Name="RemoveButton"  Content="&#xE74D;"  Style="{StaticResource CustomButtonStyle}"  Height="40" Width="40" ToolTipService.ToolTip="Remove the current playlist" FontFamily="Segoe MDL2 Assets" IsTabStop="True"  Margin="1,1,1,1" Click="RemovePlaylist_Click" />
+                    <TextBlock Grid.Row="8" Grid.Column="0"  Text="Import playlist:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
+                    <Button Grid.Row="8" Grid.Column="1" IsEnabled="false" x:Name="ImportButton" Content="&#xE8B6;"  Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Import the playlist in the local machine" FontFamily="Segoe MDL2 Assets" IsTabStop="True"  Height="40" Width="40" Margin="1,1,1,1"  Click="ImportPlaylist_Click" />
+                    <TextBlock Grid.Row="9" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Imported Path: " VerticalAlignment="Top"/>
+                    <TextBox IsReadOnly="True" BorderThickness="0" Grid.Row="9" Grid.Column="1" ToolTipService.ToolTip="Path of the imported Playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind comboPlayList.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='ImportedPath',Mode=OneWay}"  TextWrapping="Wrap" VerticalAlignment="Center" MinHeight="30"/>
+                    <TextBlock Grid.Row="10" Grid.Column="0" Text="Current playlist Path:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
+                    <TextBox IsReadOnly="True" BorderThickness="0" Grid.Row="10" Grid.Column="1" ToolTipService.ToolTip="Path/Uri of current selected Playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{Binding Settings.CurrentPlayListPath}" TextWrapping="Wrap" />
                 </Grid>
             </StackPanel>
 
@@ -152,41 +153,105 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="70"/>
-                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition Width="84"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock  Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Prepare playlist:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Margin="0" Style="{StaticResource HeaderTextBlockStyle}" />
-                    <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="2">
+                    <TextBlock  Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"  Text="Create playlist with local content:" Height="40" VerticalAlignment="Center" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Margin="0,10,0,0" Style="{StaticResource HeaderTextBlockStyle}" />
+                    <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
                         <Button IsEnabled="true" Content="&#xE8D6;"  Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Prepare a music playlist from an existing local folder" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="AddMusicFolder_Click" />
                         <Button IsEnabled="true" Content="&#xE714;"  Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Prepare a video playlist from an existing local folder" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="AddVideoFolder_Click" />
                         <Button IsEnabled="true" Content="&#xE722;"  Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Prepare a picture playlist from an existing local folder" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="AddPictureFolder_Click" />
                     </StackPanel>
 
-                    <TextBlock Grid.Row="2" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Name: "  VerticalAlignment="Top"/>
-                    <TextBox IsReadOnly="false"  Grid.Row="2" MinWidth="200"     MaxWidth="200" Grid.Column="1" Grid.ColumnSpan="2"   ToolTipService.ToolTip="Name of the new playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.PlaylistName,Mode=TwoWay}"   TextWrapping="Wrap" VerticalAlignment="Center" HorizontalAlignment="Left"   MinHeight="30" />
-                    <TextBlock Grid.Row="3" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Filters: "/>
-                    <TextBox IsReadOnly="false" MinWidth="200"    MaxWidth="200"   Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2"  ToolTipService.ToolTip="Extensions of media files to be includedin the playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.PlaylistFilters,Mode=TwoWay}"   VerticalAlignment="Center"  HorizontalAlignment="Left" MinHeight="30" />
-                    <TextBlock Grid.Row="4" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Folder: "/>
-                    <TextBox IsReadOnly="True" BorderThickness="0"  Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2"  ToolTipService.ToolTip="Folder which contains media content to create a playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.PlaylistFolder,Mode=TwoWay}"   VerticalAlignment="Center"  MinHeight="30" />
-                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Path:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
-                    <TextBox IsReadOnly="True" BorderThickness="0" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2"  ToolTipService.ToolTip="Path/Uri of the created Playlist in the Documents folder" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.PlaylistPath,Mode=TwoWay}" TextWrapping="Wrap" />
-                    <TextBlock Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"  Text="Period (ms):" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
-                    <TextBox IsReadOnly="false"  MinWidth="100"    MaxWidth="100"   Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="1" HorizontalAlignment="Left"  ToolTipService.ToolTip="Path/Uri of the created Playlist in the Documents folder" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.SlideShowPeriod,Mode=TwoWay}" TextWrapping="Wrap" />
+                    <TextBlock x:Name="localPlaylistNameLabel" Grid.Row="2" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Name: "  VerticalAlignment="Top"/>
+                    <TextBox x:Name="localPlaylistName"  IsReadOnly="false"  Grid.Row="2" MinWidth="200"     MaxWidth="200" Grid.Column="1" Grid.ColumnSpan="2"   ToolTipService.ToolTip="Name of the new playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.PlaylistName,Mode=TwoWay}"   TextWrapping="Wrap" VerticalAlignment="Center" HorizontalAlignment="Left"   MinHeight="30" LostFocus="localPlaylistName_LostFocus" />
+                    <TextBlock x:Name="localPlaylistFiltersLabel"  Grid.Row="3" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Filters: "/>
+                    <TextBox x:Name="localPlaylistFilters"  IsReadOnly="false" MinWidth="200"    MaxWidth="200"   Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2"  ToolTipService.ToolTip="Extensions of media files to be includedin the playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.PlaylistFilters,Mode=TwoWay}"   VerticalAlignment="Center"  HorizontalAlignment="Left" MinHeight="30" />
+                    <TextBlock x:Name="localPlaylistFolderLabel"  Grid.Row="4" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Folder: "/>
+                    <TextBox x:Name="localPlaylistFolder"  IsReadOnly="True" BorderThickness="0"  Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2"  ToolTipService.ToolTip="Folder which contains media content to create a playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.PlaylistFolder,Mode=TwoWay}"   VerticalAlignment="Center"  MinHeight="30" />
+                    <TextBlock x:Name="localPlaylistPathLabel"  Grid.Row="5" Grid.Column="0" Text="Path:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
+                    <TextBox x:Name="localPlaylistPath"  IsReadOnly="True" BorderThickness="0" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2"  ToolTipService.ToolTip="Path/Uri of the created Playlist in the Documents folder" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.PlaylistPath,Mode=TwoWay}" TextWrapping="Wrap" />
+                    <TextBlock x:Name="localPlaylistPeriodLabel"  Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"  Text="Period (ms):" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
+                    <TextBox x:Name="localPlaylistPeriod"  IsReadOnly="false"  MinWidth="100"    MaxWidth="100"   Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="1" HorizontalAlignment="Left"  ToolTipService.ToolTip="Path/Uri of the created Playlist in the Documents folder" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.SlideShowPeriod,Mode=TwoWay}" TextWrapping="Wrap" />
 
-                    <TextBlock Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"  Text="Thumbnail:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
-                    <ToggleSwitch Grid.Row="7" Grid.Column="2" Grid.ColumnSpan="1"   Margin="2,2,2,2" x:Name="ToggleThumbnail" MinWidth="100"
+                    <TextBlock x:Name="localPlaylistThumbnailLabel"  Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"  Text="Thumbnail:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
+                    <ToggleSwitch x:Name="localPlaylistThumbnail"  Grid.Row="7" Grid.Column="2" Grid.ColumnSpan="1"   Margin="2,2,2,2"  MinWidth="100"
                                           OffContent="Off"
                                           OnContent="On"
                                           VerticalAlignment="Center"
                                           Style="{ThemeResource CustomToggleSwitchStyle}"                                  
-                                          IsOn="{Binding ViewModelLocator.Settings.CreateThumbnails, Mode=TwoWay}"
+                                          IsOn="{x:Bind ViewModelLocator.Settings.CreateThumbnails, Mode=TwoWay}"
                               ToolTipService.ToolTip="Enable/Disable thumbnails creation while building music or video playlist"    >
                     </ToggleSwitch>
-                    <TextBlock Grid.Row="8" VerticalAlignment="Center" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Create playlist: " />
-                    <Button IsEnabled="true" Content="&#xE78C;" Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="2"  Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Create a musi playlist from an existing local folder" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="CreatePlaylist_Click" />
+                    <TextBlock x:Name="localPlaylistItemsCountLabel"  Grid.Row="8" Grid.Column="0" Text="Items:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
+                    <TextBox x:Name="localPlaylistItemsCount"  IsReadOnly="True" BorderThickness="0" Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="2"  ToolTipService.ToolTip="Path/Uri of the created Playlist in the Documents folder" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="-1" TextWrapping="Wrap" />
+                    <TextBlock Grid.Row="9" VerticalAlignment="Center" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Validate Creation: " />
+                    <Button x:Name="localPlaylistCreation"   IsEnabled="true" Content="&#xE78C;" Grid.Row="9" Grid.Column="2" Grid.ColumnSpan="2"  Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Create a musi playlist from an existing local folder" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="CreatePlaylist_Click" />
+
+                    
+                    <TextBlock  Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="3"  Text="Create playlist with cloud content:" Height="40" VerticalAlignment="Center"  Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Margin="0,10,0,0" Style="{StaticResource HeaderTextBlockStyle}" />
+                    <StackPanel Orientation="Horizontal" Grid.Row="11" Grid.Column="1" Grid.ColumnSpan="2">
+                        <Button IsEnabled="true" Content="&#xE8D6;"  Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Prepare a music playlist from an existing cloud container" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="AddMusicContainer_Click" />
+                        <Button IsEnabled="true" Content="&#xE714;"  Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Prepare a video playlist from an existing cloud container" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="AddVideoContainer_Click" />
+                        <Button IsEnabled="true" Content="&#xE722;"  Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Prepare a picture playlist from an existing cloud container" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="AddPictureContainer_Click" />
+                    </StackPanel>
+                    <TextBlock x:Name="cloudPlaylistNameLabel" Grid.Row="12" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Name: "  VerticalAlignment="Top"/>
+                    <TextBox x:Name="cloudPlaylistName"  IsReadOnly="false"  Grid.Row="12" MinWidth="200"     MaxWidth="200" Grid.Column="1" Grid.ColumnSpan="2"   ToolTipService.ToolTip="Name of the new playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.CloudPlaylistName,Mode=TwoWay}"   TextWrapping="Wrap" VerticalAlignment="Center" HorizontalAlignment="Left"   MinHeight="30" LostFocus="cloudPlaylistName_LostFocus" />
+                    <TextBlock x:Name="cloudPlaylistFiltersLabel"  Grid.Row="13" Grid.Column="0"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Filters: "/>
+                    <TextBox x:Name="cloudPlaylistFilters"  IsReadOnly="false" MinWidth="200"    MaxWidth="200"   Grid.Row="13" Grid.Column="1" Grid.ColumnSpan="2"  ToolTipService.ToolTip="Extensions of media files to be included in the playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.CloudPlaylistFilters,Mode=TwoWay}"   VerticalAlignment="Center"  HorizontalAlignment="Left" MinHeight="30" />
+                    <TextBlock x:Name="cloudPlaylistPathLabel"  Grid.Row="14" Grid.Column="0" Text="Path:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
+                    <TextBox x:Name="cloudPlaylistPath"  IsReadOnly="True" BorderThickness="0" Grid.Row="14" Grid.Column="1" Grid.ColumnSpan="2"  ToolTipService.ToolTip="Path/Uri of the created Playlist in the Documents folder" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.CloudPlaylistPath,Mode=TwoWay}" TextWrapping="Wrap" />
+
+
+
+                    <TextBlock x:Name="cloudPlaylistAccountNameLabel" Grid.Row="15" Grid.Column="0" Grid.ColumnSpan="1"  Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Account: "  VerticalAlignment="Top"/>
+                    <TextBox x:Name="cloudPlaylistAccountName"  IsReadOnly="false"  Grid.Row="15" MinWidth="200"     MaxWidth="200" Grid.Column="1" Grid.ColumnSpan="2"   ToolTipService.ToolTip="Account Name of Azure Storage " Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.AzureAccountName,Mode=TwoWay}"   TextWrapping="Wrap" VerticalAlignment="Center" HorizontalAlignment="Left"   MinHeight="30" />
+                    <TextBlock x:Name="cloudPlaylistAccountKeyLabel"  Grid.Row="16" Grid.Column="0" Grid.ColumnSpan="1"   Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Key: "/>
+                    <TextBox x:Name="cloudPlaylistAccountKey"  IsReadOnly="false" MinWidth="200"    MaxWidth="200"   Grid.Row="16" Grid.Column="1" Grid.ColumnSpan="2"  ToolTipService.ToolTip="Account Key of Azure Storage " Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.AzureAccountKey,Mode=TwoWay}"   VerticalAlignment="Center"  HorizontalAlignment="Left" MinHeight="30" />
+                    <TextBlock x:Name="cloudPlaylistContainerLabel"  Grid.Row="17" Grid.Column="0" Grid.ColumnSpan="1"    Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Folder: "/>
+                    <TextBox x:Name="cloudPlaylistContainer"  IsReadOnly="False"  Grid.Row="17" Grid.Column="1" Grid.ColumnSpan="2"  MinWidth="200"     MaxWidth="200"  ToolTipService.ToolTip="Azure Container which contains media content to create a cloud playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.AzureContainer,Mode=TwoWay}"   VerticalAlignment="Center" HorizontalAlignment="Left" MinHeight="30" />
+
+
+
+                    <TextBlock x:Name="cloudPlaylistPeriodLabel"  Grid.Row="18" Grid.Column="0" Grid.ColumnSpan="2"  Text="Period (ms):" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
+                    <TextBox x:Name="cloudPlaylistPeriod"  IsReadOnly="false"  MinWidth="100"    MaxWidth="100"   Grid.Row="18" Grid.Column="2" Grid.ColumnSpan="1" HorizontalAlignment="Left"  ToolTipService.ToolTip="Path/Uri of the created Playlist in the Documents folder" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.CloudSlideShowPeriod,Mode=TwoWay}" TextWrapping="Wrap" />
+
+                    <TextBlock x:Name="cloudPlaylistThumbnailLabel"  Grid.Row="19" Grid.Column="0" Grid.ColumnSpan="2"  Text="Thumbnail:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
+                    <ToggleSwitch x:Name="cloudPlaylistThumbnail"  Grid.Row="19" Grid.Column="2" Grid.ColumnSpan="1"   Margin="2,2,2,2"  MinWidth="100"
+                                          OffContent="Off"
+                                          OnContent="On"
+                                          VerticalAlignment="Center"
+                                          Style="{ThemeResource CustomToggleSwitchStyle}"                                  
+                                          IsOn="{x:Bind ViewModelLocator.Settings.CloudCreateThumbnails, Mode=TwoWay}"
+                              ToolTipService.ToolTip="Enable/Disable thumbnails creation while building music or video playlist"    >
+                    </ToggleSwitch>
+                    <TextBlock x:Name="cloudPlaylistItemsCountLabel"  Grid.Row="20" Grid.Column="0" Text="Items:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
+                    <TextBox x:Name="cloudPlaylistItemsCount"  IsReadOnly="True" BorderThickness="0" Grid.Row="20" Grid.Column="1" Grid.ColumnSpan="2"  ToolTipService.ToolTip="Path/Uri of the created Playlist in the Documents folder" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="-1" TextWrapping="Wrap" />
+                    <TextBlock Grid.Row="21" VerticalAlignment="Center" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Validate Creation: " />
+                    <Button x:Name="cloudPlaylistCreation"   IsEnabled="true" Content="&#xE78C;" Grid.Row="21" Grid.Column="2"   Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Create a cloud playlist from an existing Cloud Storage container" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="CreateCloudPlaylist_Click" />
                 </Grid>
             </StackPanel>
 

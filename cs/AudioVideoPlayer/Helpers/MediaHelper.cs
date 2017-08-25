@@ -9,6 +9,8 @@ using Windows.Storage.FileProperties;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Storage.Streams;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace AudioVideoPlayer.Helpers
 {
@@ -21,7 +23,7 @@ namespace AudioVideoPlayer.Helpers
         const string pictureItem = " \"UniqueId\": \"{0}\", \"Comment\": \"\", \"Title\": \"{1}\", \"ImagePath\": \"ms-appx:///Assets/PHOTO.png\",\"Description\": \"\", \"Content\": \"{2}\", \"PosterContent\": \"{3}\",\"Start\": \"0\",\"Duration\": \"{4}\",\"PlayReadyUrl\": \"null\",\"PlayReadyCustomData\": \"null\",\"BackgroundAudio\": true";
         const string footer = "\r\n]}]}";
         public const string videoExts = ".asf;.avi;.ismv;.ts;.m4a;.mkv;.mov;.mp4;.wmv;";
-        public const string audioExts = ".mp3;.aac;.wma;wav;.flac;";
+        public const string audioExts = ".mp3;.aac;.wma;wav;.flac;.m4a;";
         public const string pictureExts = ".png;.jpg";
         public enum MediaType
         {
@@ -37,9 +39,9 @@ namespace AudioVideoPlayer.Helpers
                 if (file != null)
                     return true;
             }
-            catch (Exception Ex)
+            catch (Exception)
             {
-                System.Diagnostics.Debug.WriteLine("Exception while reading file " + filePath + " : " + Ex.Message);
+                //System.Diagnostics.Debug.WriteLine("Exception while reading file " + filePath + " : " + Ex.Message);
             }
             return false;
 
@@ -59,6 +61,10 @@ namespace AudioVideoPlayer.Helpers
                             folder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(folderPath);
                         if (folder != null)
                         {
+                            var f = await Helpers.StorageHelper.GetFile(folder, fileName);
+                            if (f != null)
+                                await f.DeleteAsync();
+                            
                             return await folder.CreateFileAsync(fileName, Windows.Storage.CreationCollisionOption.ReplaceExisting);
                         }
                     }
@@ -142,16 +148,16 @@ namespace AudioVideoPlayer.Helpers
                 if (folder != null)
                     return true;
             }
-            catch (Exception Ex)
+            catch (Exception)
             {
-                System.Diagnostics.Debug.WriteLine("Exception while reading folder " + folderPath + " : " + Ex.Message);
+                //System.Diagnostics.Debug.WriteLine("Exception while reading folder " + folderPath + " : " + Ex.Message);
             }
             return false;
 
         }
         // Process all files in the directory passed in, recurse on any directories 
         // that are found, and process the files they contain.
-        public static async System.Threading.Tasks.Task<ulong> ProcessDirectory(ulong counter, string PlaylistName, string extensions, bool bCreateThumbnails, int SlideShowPeriod, Windows.Storage.StorageFile writer, string targetDirectory)
+        public static async System.Threading.Tasks.Task<int> ProcessDirectory(int counter, string PlaylistName, string extensions, bool bCreateThumbnails, int SlideShowPeriod, Stream writer, string targetDirectory)
         {
 
             // Process the list of files found in the directory.
@@ -273,19 +279,14 @@ namespace AudioVideoPlayer.Helpers
         }
         static string GetText(string Text)
         {
-            return Text.Replace('"', ' ');
+            return  Text.Replace('"', ' ').Replace('\\', ' ').Replace('/', ' ').Replace('*', ' ').Replace("'", " ");
+
         }
         static string GetTextForFileName(string Text)
         {
-            string s = Text.Replace('"', '_');
-            s = s.Replace("'", "_");
-            s = s.Replace(',', '_');
-            s = s.Replace(' ', '_');
-            s = s.Replace(':', '_');
-            s = s.Replace('.', '_');
-            return s.Replace(';', '_');
+            return Text.Replace('"', '_').Replace("'", "_").Replace(',', '_').Replace('\\', '_').Replace('/', '_').Replace(' ', '_').Replace(':', '_').Replace('.', '_').Replace(';', '_').Replace('*', '_').Replace('<', '_').Replace('>', '_').Replace('|', '_').Replace('?', '_');
         }
-        public static async System.Threading.Tasks.Task<ulong> ProcessFile(ulong counter, string PlaylistName, string extensions, bool bCreateThumbnails, int SlideShowPeriod, Windows.Storage.StorageFile writer, string path)
+        public static async System.Threading.Tasks.Task<int> ProcessFile(int counter, string PlaylistName, string extensions, bool bCreateThumbnails, int SlideShowPeriod, Stream writer, string path)
         {
             try
             {
@@ -407,7 +408,8 @@ namespace AudioVideoPlayer.Helpers
                                     //  await Windows.Storage.FileIO.AppendTextAsync(writer, string.Format(audioItem, counter.ToString(), title, uri, posteruri));
                                     // await Windows.Storage.FileIO.AppendTextAsync(writer, "}");
                                     s += "}";
-                                    await Windows.Storage.FileIO.AppendTextAsync(writer, s);
+                                    AppendText(writer, s);
+                                    //await Windows.Storage.FileIO.AppendTextAsync(writer, s);
                                 }
                             }
                             else
@@ -429,7 +431,8 @@ namespace AudioVideoPlayer.Helpers
                                         s += string.Format(videoItem, counter.ToString(), title, uri, posteruri);
                                     //await Windows.Storage.FileIO.AppendTextAsync(writer, "}");
                                     s += "}";
-                                    await Windows.Storage.FileIO.AppendTextAsync(writer, s);
+                                    AppendText(writer, s);
+//                                    await Windows.Storage.FileIO.AppendTextAsync(writer, s);
                                 }
                             }
                             counter++;
@@ -444,38 +447,279 @@ namespace AudioVideoPlayer.Helpers
             return counter;
         }
 
-        public static async System.Threading.Tasks.Task<bool> CreateLocalPlaylist(string PlaylistName, string folderName, string extensions, bool bCreateThumbnails , int SlideShowPeriod , string outputFile )
+        public static async System.Threading.Tasks.Task<int> CreateLocalPlaylist(string PlaylistName, string folderName, string extensions, bool bCreateThumbnails , int SlideShowPeriod , string outputFile )
         {
             try
             {
-                ulong counter = 0;
+                int counter = 0;
                 Windows.Storage.StorageFile File = await CreateFile(outputFile);
                 if (File != null)
                 {
+                    Stream stream = await File.OpenStreamForWriteAsync();
+                    if (stream != null)
+                    {
                         if (await IsFile(folderName) == true)
                         {
-                        counter = await ProcessFile(counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod,  File, folderName);
+                            counter = await ProcessFile(counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, stream, folderName);
                         }
                         else if (await IsFolder(folderName))
                         {
                             // This path is a directory
-                            counter = await ProcessDirectory( counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, File, folderName);
+                            counter = await ProcessDirectory(counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, stream, folderName);
                         }
                         else
                         {
                             System.Diagnostics.Debug.WriteLine("{0} is not a valid file or directory.", folderName);
-                        return false;
+                            return -1;
                         }
-                        await Windows.Storage.FileIO.AppendTextAsync(File, footer);
+                        //await Windows.Storage.FileIO.AppendTextAsync(File, footer);
+                        AppendText(stream, footer);
+                        stream.Flush();
                         System.Diagnostics.Debug.WriteLine(counter.ToString() + " files discovered on local storage\n");
-                        return true;
+                        return counter;
+                    }
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine("Exception while discovering media file on local hard drive:" + ex.Message);
             }
-            return false;
+            return -1;
+        }
+        static string GetExtension(string uri)
+        {
+            string result = string.Empty;
+            int pos = 0;
+            if ((pos = uri.LastIndexOf(".")) > 0)
+            {
+                if (pos + 1 < uri.Length)
+                    result = uri.Substring(pos + 1);
+            }
+            return result;
+        }
+        static string GetUriFileName(string uri)
+        {
+            string result = string.Empty;
+            int pos = 0;
+            if ((pos = uri.LastIndexOf("/")) > 0)
+            {
+                if (pos + 1 < uri.Length)
+                    result = uri.Substring(pos + 1);
+            }
+            return result;
+        }
+        static string GetFileName(string uri)
+        {
+            string result = string.Empty;
+            int pos = 0;
+            if ((pos = uri.LastIndexOf("\\")) > 0)
+            {
+                if (pos + 1 < uri.Length)
+                    result = uri.Substring(pos + 1);
+            }
+            return result;
+        }
+        static string GetPosterUri(string unescapeuri, string extensions, IEnumerable<IListBlobItem> list)
+        {
+            string result = "ms-appx:///Assets/MUSIC.png";
+            string ext = GetExtension(unescapeuri);
+            if (string.IsNullOrEmpty(ext))
+            {
+                if (IsMusicFile(ext))
+                {
+                    result = "ms-appx:///Assets/MUSIC.png";
+                }
+                else if (IsPictureFile(ext))
+                {
+                    result = "ms-appx:///Assets/PHOTO.png";
+                }
+                else if (IsVideoFile(ext))
+                {
+                    result = "ms-appx:///Assets/VIDEO.png";
+                }
+            }
+            if ((!string.IsNullOrEmpty(ext)) && (extensions.IndexOf(ext, StringComparison.OrdinalIgnoreCase) >= 0))
+            {
+                string uri = unescapeuri;                        
+                int pos = uri.LastIndexOf('/');
+                if (pos > 0)
+                {
+                    string prefix = uri.Substring(0, pos + 1);
+                    foreach (var i in list)
+                    {
+                        if (i.GetType() == typeof(CloudBlockBlob))
+                        {
+                            CloudBlockBlob blob = (CloudBlockBlob)i;
+
+                            string url = blob.Uri.ToString();
+                            if(url.EndsWith(".jpg",StringComparison.OrdinalIgnoreCase) ||
+                                url.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                            {
+                                if(url.StartsWith(prefix))
+                                {
+                                    string s = url.Substring(pos + 1);
+                                    if (s.IndexOf('/') < 0)
+                                    {
+                                        string excapeString = Uri.EscapeUriString(url);
+                                        if (!string.IsNullOrEmpty(excapeString))
+                                        {
+                                            excapeString = excapeString.Replace("\'", "%27");
+
+                                            return excapeString;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+        static int AppendText(Stream stream, string Text)
+        {
+            try
+            {
+                if ((stream != null) && (!string.IsNullOrEmpty(Text)))
+                {
+                    stream.Seek(0, SeekOrigin.End);
+                    byte[] b = System.Text.UTF8Encoding.UTF8.GetBytes(Text);
+                    stream.Write(b, 0, b.Length);
+                    return b.Length;
+                }
+            }
+            catch(Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while writing in stream:  " + ex.Message);
+            }
+            return 0;
+        }
+        public static async System.Threading.Tasks.Task<int> CreateCloudPlaylist(string PlaylistName, string AccountName, string AccountKey, string Container, string extensions, bool bCreateThumbnails, int SlideShowPeriod, string outputFile)
+        {
+            List<string> blobs = new List<string>();
+            int counter = 0;
+            try
+            {
+                Windows.Storage.StorageFile writer = await CreateFile(outputFile);
+                if (writer != null)
+                {
+                    Stream stream = await writer.OpenStreamForWriteAsync();
+                    if (stream != null)
+                    {
+                        // Retrieve storage account from connection string.
+                        CloudStorageAccount storageAccount = CloudStorageAccount.Parse(
+                        "DefaultEndpointsProtocol=https;AccountName=" + AccountName + ";AccountKey=" + AccountKey);
+
+                        // Create the blob client.
+                        CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+
+                        // Retrieve reference to a previously created container.
+                        CloudBlobContainer container = blobClient.GetContainerReference(Container);
+
+
+                        // Loop over items within the container and output the length and URI.
+                        //var result = await container.ListBlobsSegmentedAsync(null);
+                        BlobResultSegment result;
+                        BlobContinuationToken token = null;
+                        do
+                        {
+                            
+                            result = await container.ListBlobsSegmentedAsync(null, true, BlobListingDetails.None, 500, token, null, null);
+                            if (result != null)
+                            {
+                                token = result.ContinuationToken;
+                                foreach (IListBlobItem item in result.Results)
+                                {
+                                    if (item.GetType() == typeof(CloudBlockBlob))
+                                    {
+                                        CloudBlockBlob blob = (CloudBlockBlob)item;
+
+                                        string unescapeuri = blob.Uri.ToString();
+                                        string ext = GetExtension(unescapeuri);
+                                        if ((!string.IsNullOrEmpty(ext)) && (extensions.IndexOf(ext, StringComparison.OrdinalIgnoreCase) >= 0))
+                                        {
+                                            string artist = string.Empty;
+                                            string album = string.Empty;
+                                            string posteruri = string.Empty;
+                                            if (bCreateThumbnails)
+                                                posteruri = GetPosterUri(unescapeuri, extensions, result.Results);
+                                            string title = GetUriFileName(unescapeuri);
+                                            if (!string.IsNullOrEmpty(title))
+                                            {
+                                                string uri = Uri.EscapeUriString(unescapeuri);
+                                                uri = uri.Replace("\'", "%27");
+
+                                                if (counter == 0)
+                                                {
+                                                    if (writer != null)
+                                                    {
+                                                        string header = headerStart + PlaylistName + headerEnd;
+                                                        string s = header;
+                                                        s += "{";
+                                                        if (IsPictureFile(ext))
+                                                            s += string.Format(pictureItem, counter.ToString(), title, uri, posteruri, SlideShowPeriod.ToString());
+                                                        else if (IsMusicFile(ext))
+                                                            s += string.Format(musicItem, counter.ToString(), title, uri, posteruri);
+                                                        else
+                                                            s += string.Format(videoItem, counter.ToString(), title, uri, posteruri);
+                                                        s += "}";
+
+//                                                        await Windows.Storage.FileIO.AppendTextAsync(writer, s);
+                                                        AppendText(stream, s);
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (writer != null)
+                                                    {
+
+                                                        string s = ",\r\n";
+                                                        s += "{";
+                                                        if (IsPictureFile(ext))
+                                                            s += string.Format(pictureItem, counter.ToString(), title, uri, posteruri, SlideShowPeriod.ToString());
+                                                        else if (IsMusicFile(ext))
+                                                            s += string.Format(musicItem, counter.ToString(), title, uri, posteruri);
+                                                        else
+                                                            s += string.Format(videoItem, counter.ToString(), title, uri, posteruri);
+                                                        s += "}";
+//                                                        await Windows.Storage.FileIO.AppendTextAsync(writer, s);
+                                                        AppendText(stream, s);
+
+                                                    }
+                                                }
+                                                counter++;
+                                            }
+                                        }
+                                    }
+                                    else if (item.GetType() == typeof(CloudPageBlob))
+                                    {
+                                        CloudPageBlob pageBlob = (CloudPageBlob)item;
+                                    }
+                                    else if (item.GetType() == typeof(CloudBlobDirectory))
+                                    {
+                                        CloudBlobDirectory directory = (CloudBlobDirectory)item;
+
+                                    }
+                                }
+                            }
+                        }
+                        while (result.ContinuationToken != null);
+
+                        //await Windows.Storage.FileIO.AppendTextAsync(writer, footer);
+                        AppendText(stream, footer);
+                        stream.Flush();
+
+                        System.Diagnostics.Debug.WriteLine(counter.ToString() + " files discovered on cloud storage\n");
+                        return counter;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while discovering media file on cloud storage:" + ex.Message);
+            }
+            return -1;
         }
     }
 }

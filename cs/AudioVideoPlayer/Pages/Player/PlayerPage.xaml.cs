@@ -2159,6 +2159,7 @@ namespace AudioVideoPlayer.Pages.Player
             if (!string.IsNullOrEmpty(url))
             {
                 if ((url.ToLower().StartsWith("file://")) ||
+                    (url.ToLower().StartsWith("ms-appx://")) ||
                     (url.ToLower().StartsWith("picture://")) ||
                     (url.ToLower().StartsWith("video://")) ||
                     (url.ToLower().StartsWith("music://")))
@@ -2465,6 +2466,59 @@ namespace AudioVideoPlayer.Pages.Player
                     }
                 }
             }
+            if (IsMusic(PosterUrl))
+            {
+                if (IsLocalFile(PosterUrl))
+                {
+                    try
+                    {
+                        Windows.Storage.StorageFile file = await GetFileFromLocalPathUrl(PosterUrl);
+                        if (file != null)
+                        {
+
+                            // Thumbnail
+                            using (var thumbnail = await file.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.MusicView, 300))
+                            {
+                                if (thumbnail != null && 
+                                    (thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Image))
+                                    //||
+                                    //thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Icon))
+                                {
+                                    var fileStream = thumbnail.AsStream().AsRandomAccessStream();
+                                    if (fileStream != null)
+                                    {
+                                        Windows.UI.Xaml.Media.Imaging.BitmapImage b = new Windows.UI.Xaml.Media.Imaging.BitmapImage();
+                                        if (b != null)
+                                        {
+                                            b.SetSource(fileStream);
+                                            SetPictureSource(b);
+                                            SetPictureElementSize();
+                                            return true;
+                                        }
+                                    }
+
+                                }
+                                else
+                                {
+                                    //Error Message here
+                                }
+                            }
+
+                        }
+                        else
+                        {
+                            await SetDefaultPoster();
+                            LogMessage("Failed to load poster: " + PosterUrl);
+                            return true;
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        LogMessage("Exception while loading poster: " + PosterUrl + " - " + e.Message);
+                    }
+                }
+            }
 
             return false;
         }
@@ -2518,11 +2572,10 @@ namespace AudioVideoPlayer.Pages.Player
                 CurrentDuration = new TimeSpan(0);
                 StartPictureTime = DateTime.MinValue;
                 if (IsPicture(content))
-                {
                     result = await SetPosterUrl(content);
-
-                }
                 else if (IsPicture(poster))
+                    result = await SetPosterUrl(poster);
+                else if (IsMusic(poster))
                     result = await SetPosterUrl(poster);
                 // if a picture will be displayed
                 // display or not popup
@@ -2619,6 +2672,10 @@ namespace AudioVideoPlayer.Pages.Player
                     }
                 }*/
             }
+            else if (PosterUrl.ToLower().StartsWith("ms-appx://"))
+            {
+                path = PosterUrl;
+            }
             Windows.Storage.StorageFile file = null;
             try
             {
@@ -2648,8 +2705,10 @@ namespace AudioVideoPlayer.Pages.Player
                 }
                 else
                 {
-                  
-                    file = await Windows.Storage.StorageFile.GetFileFromPathAsync(path);
+                    if(path.StartsWith("ms-appx://"))
+                        file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri(path));
+                    else
+                        file = await Windows.Storage.StorageFile.GetFileFromPathAsync(path);
                 }
             }
             catch(Exception e)
