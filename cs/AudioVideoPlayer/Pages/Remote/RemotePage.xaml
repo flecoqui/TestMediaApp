@@ -150,6 +150,8 @@
                     <StackPanel Orientation="Horizontal" Height="40" >
                         <TextBlock Text="Open remote playlist:" VerticalAlignment="Center" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}"/>
                         <Button IsEnabled="False" Content="&#xE71D;" x:Name="playPlaylistButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Send a remote command to open the playlist below"  FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="7,1,1,1" Click="openPlaylist_remote_Click" Canvas.ZIndex="0" />
+                        <Button IsEnabled="False" Content="&#xE892;" x:Name="minusPlaylistButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Send a remote command to select the previous playlist in the playlist list" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="MinusPlaylist_remote_Click"/>
+                        <Button IsEnabled="False" Content="&#xE893;" x:Name="plusPlaylistButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Send a remote command to select the next playlist in the playlist list" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="PlusPlaylist_remote_Click"/>
                     </StackPanel>
                     <StackPanel Height="40" >
                         <TextBox x:Name="playlistUri"  VerticalAlignment="Center"  Text="{Binding Settings.UriRemotePlaylist, Mode=TwoWay}" ToolTipService.ToolTip="Uri of the playlist to be played remotely(edit)" IsTabStop="True"  />

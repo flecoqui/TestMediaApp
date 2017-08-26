@@ -3891,6 +3891,90 @@ namespace AudioVideoPlayer.Pages.Player
                 //https://testcertstorage.blob.core.windows.net/images/Video.json
                 //https://testcertstorage.blob.core.windows.net/images/AudioVideoData.json
 
+                case CompanionProtocol.commandPlusPlaylist:
+                    await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
+                    {
+                        try
+                        {
+                            int count = ViewModels.StaticSettingsViewModel.PlayListList.Count;
+                            int index = ViewModels.StaticSettingsViewModel.CurrentPlayListIndex;
+                            if (index < count-1)
+                                ++index;
+                            else
+                                index = 0;
+                            if (index >= 0)
+                            {
+                                string path = ViewModels.StaticSettingsViewModel.PlayListList[index].ImportedPath;
+                                if (string.IsNullOrEmpty(path))
+                                    path = ViewModels.StaticSettingsViewModel.PlayListList[index].Path;
+                                if (!string.IsNullOrEmpty(path))
+                                {
+                                    int i = ViewModels.StaticSettingsViewModel.PlayListList[index].Index;
+                                    await LoadingData(path);
+                                    comboStream.SelectedIndex = i;
+                                    MediaItem ms = comboStream.SelectedItem as MediaItem;
+                                    mediaUri.Text = ms.Content;
+                                    if (ViewModels.StaticSettingsViewModel.AutoStart)
+                                    {
+                                      //  SetAutoStartWindowState();
+                                        PlayCurrentUrl();
+                                    }
+                                    ViewModels.StaticSettingsViewModel.CurrentPlayListIndex = index;
+                                    ViewModels.StaticSettingsViewModel.CurrentPlayListPath = path;
+                                    ViewModels.StaticSettingsViewModel.CurrentMediaIndex = i;
+                                    UpdateControls();
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            LogMessage("Failed to to play: " + mediaUri.Text + " Exception: " + ex.Message);
+                        }
+                    });
+
+                    break;
+                case CompanionProtocol.commandMinusPlaylist:
+                    await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async  () =>
+                    {
+                        try
+                        { 
+                            int count = ViewModels.StaticSettingsViewModel.PlayListList.Count;
+                            int index = ViewModels.StaticSettingsViewModel.CurrentPlayListIndex;
+                            if (index > 0)
+                                --index;
+                            else
+                                index = count - 1;
+                            if(index>=0)
+                            {
+                                string path = ViewModels.StaticSettingsViewModel.PlayListList[index].ImportedPath;
+                                if (string.IsNullOrEmpty(path))
+                                    path = ViewModels.StaticSettingsViewModel.PlayListList[index].Path;
+                                if (!string.IsNullOrEmpty(path))
+                                {
+                                    int i = ViewModels.StaticSettingsViewModel.PlayListList[index].Index;
+                                    await LoadingData(path);
+                                    comboStream.SelectedIndex = i;
+                                    MediaItem ms = comboStream.SelectedItem as MediaItem;
+                                    mediaUri.Text = ms.Content;
+                                    if (ViewModels.StaticSettingsViewModel.AutoStart)
+                                    {
+                                        //SetAutoStartWindowState();
+                                        PlayCurrentUrl();
+                                    }
+                                    ViewModels.StaticSettingsViewModel.CurrentPlayListIndex = index;
+                                    ViewModels.StaticSettingsViewModel.CurrentPlayListPath = path;
+                                    ViewModels.StaticSettingsViewModel.CurrentMediaIndex = i;
+                                    UpdateControls();
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            LogMessage("Failed to to play: " + mediaUri.Text + " Exception: " + ex.Message);
+                        }
+                    });
+
+                    break;
                 case CompanionProtocol.commandOpenPlaylist:
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
                     {

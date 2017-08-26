@@ -161,6 +161,9 @@ namespace AudioVideoPlayer.Pages.Remote
                              minusButton.IsEnabled = true;
                              plusButton.IsEnabled = true;
 
+                             minusPlaylistButton.IsEnabled = true;
+                             plusPlaylistButton.IsEnabled = true;
+
                              muteButton.IsEnabled = true;
                              volumeDownButton.IsEnabled = true;
                              volumeUpButton.IsEnabled = true;
@@ -192,6 +195,9 @@ namespace AudioVideoPlayer.Pages.Remote
 
                              minusButton.IsEnabled = false;
                              plusButton.IsEnabled = false;
+
+                             minusPlaylistButton.IsEnabled = false;
+                             plusPlaylistButton.IsEnabled = false;
 
                              muteButton.IsEnabled = false;
                              volumeDownButton.IsEnabled = false;
@@ -240,6 +246,9 @@ namespace AudioVideoPlayer.Pages.Remote
                          minusButton.IsEnabled = false;
                          plusButton.IsEnabled = false;
 
+                         minusPlaylistButton.IsEnabled = false;
+                         plusPlaylistButton.IsEnabled = false;
+
                          muteButton.IsEnabled = false;
                          volumeDownButton.IsEnabled = false;
                          volumeUpButton.IsEnabled = false;
@@ -284,6 +293,9 @@ namespace AudioVideoPlayer.Pages.Remote
 
                          minusButton.IsEnabled = false;
                          plusButton.IsEnabled = false;
+
+                         minusPlaylistButton.IsEnabled = false;
+                         plusPlaylistButton.IsEnabled = false;
 
                          muteButton.IsEnabled = false;
                          volumeDownButton.IsEnabled = false;
@@ -782,6 +794,29 @@ namespace AudioVideoPlayer.Pages.Remote
                 if (companionConnectionManager != null)
                 {
                     await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandMinus, null));
+                }
+            UpdateControls();
+        }
+        private async void PlusPlaylist_remote_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Sending Plus event to " + GetName());
+            CompanionDevice cd = GetCurrentDevice();
+            if (cd != null)
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandPlusPlaylist, null));
+                }
+            UpdateControls();
+
+        }
+        private async void MinusPlaylist_remote_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Sending Minus event to " + GetName());
+            CompanionDevice cd = GetCurrentDevice();
+            if (cd != null)
+                if (companionConnectionManager != null)
+                {
+                    await companionConnectionManager.Send(cd, CompanionProtocol.CreateCommand(CompanionProtocol.commandMinusPlaylist, null));
                 }
             UpdateControls();
         }

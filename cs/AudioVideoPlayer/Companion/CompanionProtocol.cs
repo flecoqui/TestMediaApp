@@ -38,7 +38,7 @@ namespace AudioVideoPlayer.Companion
         public const string commandPlus = "PLUS";
         public const string commandMinus = "MINUS";
         public const string commandPlusPlaylist = "PLUSPLAYLIST";
-        public const string commandMinusPlayist = "MINUSPLAYLIST";
+        public const string commandMinusPlaylist = "MINUSPLAYLIST";
         public const string commandFullWindow = "FULLWINDOW";
         public const string commandFullScreen = "FULLSCREEN";
         public const string commandWindow = "WINDOW";
