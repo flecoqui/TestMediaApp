@@ -31,6 +31,7 @@ namespace AudioVideoPlayer.ViewModels
         private static PlayerWindowState windowState;
         private static int maxBitrate;
         private static int minBitrate;
+        private static int liveOffset;
 
 
         public static bool AutoStart
@@ -142,7 +143,23 @@ namespace AudioVideoPlayer.ViewModels
                 minBitrate = value;
             }
         }
-
+        public static int LiveOffset
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(LiveOffset));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    liveOffset = 30;
+                else
+                    liveOffset = int.Parse(auto);
+                return liveOffset;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(LiveOffset), value.ToString());
+                liveOffset = value;
+            }
+        }
         // Remote Settings
         private static ObservableCollection<Companion.CompanionDevice> deviceList;
         private static int indexRemoteContent;

@@ -400,6 +400,17 @@ namespace AudioVideoPlayer.Pages.Player
             SaveState();
             //Save Settings
             SaveSettings();
+
+            // Stop Media Player
+            try
+            {
+                mediaPlayer.Source = null;
+            }
+            catch(Exception ex)
+            {
+                LogMessage("Exception while stopping MediaPlayer:" + ex.Message);
+            }
+        
         }
         /// <summary>
         /// This method Register the UI components .
@@ -845,6 +856,14 @@ namespace AudioVideoPlayer.Pages.Player
             if ((smoothStreamingManager != null) &&
                 (extension != null))
             {
+
+                if (smoothStreamingManager.AdaptiveSources != null)
+                {
+                    if(smoothStreamingManager.AdaptiveSources.Count >0)
+                    {
+                        LogMessage("Bug ");
+                    }
+                }
                 PropertySet ssps = new PropertySet();
                 ssps["{A5CE1DE8-1D00-427B-ACEF-FB9A3C93DE2D}"] = smoothStreamingManager;
 
@@ -1225,6 +1244,25 @@ namespace AudioVideoPlayer.Pages.Player
             return false;
         }
         /// <summary>
+        /// This method is called when the content of the LiveOffset changed  
+        /// </summary>
+        void LiveOffsetTextChanged(object sender, TextChangedEventArgs e)
+        {
+                TextBox tb = sender as TextBox;
+            if ((tb != null)&& (tb == liveOffset))
+            {
+                uint n;
+                if (!uint.TryParse(tb.Text, out n))
+                {
+                    tb.Text = ViewModels.StaticSettingsViewModel.LiveOffset.ToString();
+                }
+                else
+                {
+                    ViewModels.StaticSettingsViewModel.LiveOffset = (int) n;
+                }
+            }
+        }
+        /// <summary>
         /// This method is called when the content of the minBitrate and maxBitrate TextBox changed  
         /// </summary>
         void BitrateTextChanged(object sender, TextChangedEventArgs e)
@@ -1293,6 +1331,7 @@ namespace AudioVideoPlayer.Pages.Player
                          mediaUri.IsEnabled = false;
                          minBitrate.IsEnabled = false;
                          maxBitrate.IsEnabled = false;
+                         liveOffset.IsEnabled = false;
                      }
                      else
                      {
@@ -1301,6 +1340,7 @@ namespace AudioVideoPlayer.Pages.Player
                              mediaUri.IsEnabled = true;
                              minBitrate.IsEnabled = true;
                              maxBitrate.IsEnabled = true;
+                             liveOffset.IsEnabled = true;
 
                              if ((comboStream.Items.Count > 0) || (!string.IsNullOrEmpty(mediaUri.Text)))
                              {
@@ -1403,7 +1443,7 @@ namespace AudioVideoPlayer.Pages.Player
                     (string.Equals(mediaUri.Text, CurrentMediaUrl)))
                 {
                     LogMessage("Stop " + CurrentMediaUrl.ToString());
-          //          mediaPlayer.Stop();
+                    //mediaPlayer.Stop();
                     mediaPlayer.Source = null;
                 }
             }
@@ -2882,6 +2922,7 @@ namespace AudioVideoPlayer.Pages.Player
 
             return result;
         }
+
         /// <summary>
         /// SetAudioVideoUrl
         /// Prepare the MediaElement to play audio or video content 
@@ -2982,7 +3023,6 @@ namespace AudioVideoPlayer.Pages.Player
                      //   string modifier = Content.Contains("?") ? "&" : "?";
                      //   string newUriString = string.Concat(Content, modifier, "ignore=", Guid.NewGuid());
                         mediaPlayer.Source = Windows.Media.Core.MediaSource.CreateFromUri(new Uri(Content));
-                        
                         return true;
                     }
                     else
@@ -3039,6 +3079,11 @@ namespace AudioVideoPlayer.Pages.Player
                                 adaptiveMediaSource.InitialBitrate = startupBitrate;
                             adaptiveMediaSource.DesiredMaxBitrate = MaxBitRate;
                             adaptiveMediaSource.DesiredMinBitrate = MinBitRate;
+
+                            // Set Live Offset for Live Stream
+                            uint lo = (uint)ViewModels.StaticSettingsViewModel.LiveOffset;
+                            adaptiveMediaSource.DesiredLiveOffset = TimeSpan.FromSeconds(lo);
+                            LogMessage("Desired Live Offset:: " + lo.ToString());
 
                             mediaPlayer.Source = Windows.Media.Core.MediaSource.CreateFromAdaptiveMediaSource(adaptiveMediaSource);
                             return true;
@@ -3117,6 +3162,13 @@ namespace AudioVideoPlayer.Pages.Player
                     }
                 }
             }
+            if((args.AdaptiveSource !=null)&&(args.AdaptiveSource.Manifest != null))
+            {
+                if(args.AdaptiveSource.Manifest.IsLive)
+                {
+                    LogMessage("  Live Stream detected, DVR buffer length: " + args.AdaptiveSource.Manifest.DVRWindowLength.ToString());
+                }
+            }
             // if the platform does support Hardware DRM and VC1 codec is used by this content
             // the application will force the Software DRM  as current Hardware DRM implementation doesn't support VC1 codec 
             if((bVC1CodecDetected == true)&&(IsHardwareDRMEnabled()))
@@ -3170,10 +3222,22 @@ namespace AudioVideoPlayer.Pages.Player
                 }
                 else if (args.UpdateType == Microsoft.Media.AdaptiveStreaming.AdaptiveSourceStatusUpdateType.StartEndTime)
                 {
-                  //  LogMessage("Smooth Streaming Time changed - Start " + (new TimeSpan(args.StartTime)).ToString() + " End: " + (new TimeSpan(Math.Max(args.EndTime, args.StartTime + args.AdaptiveSource.Manifest.Duration))).ToString() + " Live: " + (new TimeSpan(args.EndTime)).ToString() + " Position: " + mediaPlayer.PlaybackSession.Position.ToString());
+                    // LogMessage("Smooth Streaming Time changed - Start " + (new TimeSpan(args.StartTime)).ToString() + " End: " + (new TimeSpan(Math.Max(args.EndTime, args.StartTime + args.AdaptiveSource.Manifest.Duration))).ToString() + " Live: " + (new TimeSpan(args.EndTime)).ToString() + " Position: " + mediaPlayer.PlaybackSession.Position.ToString());
+                    // Set Live Offset for Live Smooth Stream                        
+                    if (ViewModels.StaticSettingsViewModel.LiveOffset >= 0)
+                    {
+                        if (mediaPlayer.PlaybackSession.Position == TimeSpan.FromSeconds(0))
+                        {
+                            LogMessage("Smooth Streaming Time changed - Start " + (new TimeSpan(args.StartTime)).ToString() + " End: " + (new TimeSpan(Math.Max(args.EndTime, args.StartTime + args.AdaptiveSource.Manifest.Duration))).ToString() + " Live: " + (new TimeSpan(args.EndTime)).ToString() + " Position: " + mediaPlayer.PlaybackSession.Position.ToString());
+                            CurrentStartPosition = TimeSpan.FromTicks(args.EndTime) - TimeSpan.FromSeconds(ViewModels.StaticSettingsViewModel.LiveOffset);
+                            LogMessage("Changing Live Smooth Streaming Start position to: " + CurrentStartPosition.ToString());
+                        }
+                      //  else
+                      //      LogMessage("Smooth Streaming Time changed - Start " + (new TimeSpan(args.StartTime)).ToString() + " End: " + (new TimeSpan(Math.Max(args.EndTime, args.StartTime + args.AdaptiveSource.Manifest.Duration))).ToString() + " Live: " + (new TimeSpan(args.EndTime)).ToString() + " Position: " + mediaPlayer.PlaybackSession.Position.ToString());
+
+                    }
 
                 }
-
             }
         }
         public IAsyncOperation<Microsoft.Media.AdaptiveStreaming.DownloaderResponse> RequestAsync(Microsoft.Media.AdaptiveStreaming.DownloaderRequest request)

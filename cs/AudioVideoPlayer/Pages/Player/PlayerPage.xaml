@@ -124,7 +124,11 @@
                     <TextBlock VerticalAlignment="Center" Margin="5,0,5,0" Foreground="{ThemeResource ButtonForegroundThemeBrush}" FontSize="12" Style="{StaticResource LabelTextBoldBlockStyle}" >Max:</TextBlock>
                     <TextBox x:Name="maxBitrate" VerticalAlignment="Center" ToolTipService.ToolTip="Maximum bitrate in bit/s, (if value = 0, no maximum)" MinWidth="65" IsTabStop="True"  InputScope="Number" TextChanged="BitrateTextChanged"  FontSize="12" Text="{Binding Settings.MaxBitrate,Mode=OneWay}" />
                 </StackPanel>
-            </StackPanel>
+                <StackPanel Orientation="Horizontal"  VerticalAlignment="Center" Margin="0,1,0,0">
+                        <TextBlock VerticalAlignment="Center" Margin="5,0,5,0" Foreground="{ThemeResource ButtonForegroundThemeBrush}" FontSize="12" Style="{StaticResource LabelTextBoldBlockStyle}" >Live Offset in seconds:</TextBlock>
+                        <TextBox x:Name="liveOffset" Margin="44,0,0,0" VerticalAlignment="Center" ToolTipService.ToolTip="Live Offset in seconds"   MinWidth="65" IsTabStop="True" InputScope="Number" TextChanged="LiveOffsetTextChanged" FontSize="12" Text="{Binding Settings.LiveOffset,Mode=OneWay}" />
+                </StackPanel>
+                </StackPanel>
         </StackPanel>
         <Grid x:Name="GridMedia"  Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" >
             <Image x:Name="backgroundVideo" Source="ms-appx:///Assets/Screen169.png" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="UniformToFill"></Image>

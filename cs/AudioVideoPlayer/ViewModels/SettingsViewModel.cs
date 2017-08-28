@@ -234,6 +234,18 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
+        public int LiveOffset
+        {
+            get
+            {
+                return StaticSettingsViewModel.LiveOffset;
+            }
+            set
+            {
+                StaticSettingsViewModel.LiveOffset = value;
+                NotifyPropertyChanged();
+            }
+        }
         // Remote Settings
         public ObservableCollection<Companion.CompanionDevice> DeviceList
         {
