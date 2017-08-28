@@ -1,4 +1,14 @@
-﻿using System;
+﻿//*********************************************************
+//
+// Copyright (c) Microsoft. All rights reserved.
+// This code is licensed under the MIT License (MIT).
+// THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
+// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
+// IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
+// PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
+//
+//*********************************************************
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -56,7 +66,8 @@ namespace AudioVideoPlayer.Helpers
                     string fileName = System.IO.Path.GetFileName(filePath);
                     if (!string.IsNullOrEmpty(fileName))
                     {
-                        Windows.Storage.StorageFolder folder = Windows.Storage.KnownFolders.DocumentsLibrary;
+//                        Windows.Storage.StorageFolder folder = Windows.Storage.KnownFolders.DocumentsLibrary;
+                        Windows.Storage.StorageFolder folder = Windows.Storage.KnownFolders.Playlists;
                         if (!string.IsNullOrEmpty(folderPath))
                             folder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(folderPath);
                         if (folder != null)
@@ -90,9 +101,10 @@ namespace AudioVideoPlayer.Helpers
                         string ext = ".tma";
                         Windows.Storage.StorageFile f = null;
                         string name = fileName + ext;
-                        while ((f = await StorageHelper.GetFile(Windows.Storage.KnownFolders.DocumentsLibrary, name)) != null)
+//                        while ((f = await StorageHelper.GetFile(Windows.Storage.KnownFolders.DocumentsLibrary, name)) != null)
+                        while ((f = await StorageHelper.GetFile(Windows.Storage.KnownFolders.Playlists, name)) != null)
                         {
-                            name = fileName + "_" + index.ToString() + (string.IsNullOrEmpty(ext) ? "" : ext);
+                                name = fileName + "_" + index.ToString() + (string.IsNullOrEmpty(ext) ? "" : ext);
                             index++;
                         }
                         return System.IO.Path.GetFileNameWithoutExtension(name);
@@ -230,7 +242,8 @@ namespace AudioVideoPlayer.Helpers
             {
                 if (!string.IsNullOrEmpty(PlaylistName))
                 {
-                    Windows.Storage.StorageFolder dfolder = Windows.Storage.KnownFolders.DocumentsLibrary;
+                    //Windows.Storage.StorageFolder dfolder = Windows.Storage.KnownFolders.DocumentsLibrary;
+                    Windows.Storage.StorageFolder dfolder = Windows.Storage.KnownFolders.Playlists;
                     if (dfolder != null)
                     {
                         Windows.Storage.StorageFolder afolder = await StorageHelper.GetFolder(dfolder, Information.SystemInformation.ApplicationName);
@@ -260,7 +273,8 @@ namespace AudioVideoPlayer.Helpers
         {
             try
             {
-                Windows.Storage.StorageFolder dfolder = Windows.Storage.KnownFolders.DocumentsLibrary;
+//                Windows.Storage.StorageFolder dfolder = Windows.Storage.KnownFolders.DocumentsLibrary;
+                Windows.Storage.StorageFolder dfolder = Windows.Storage.KnownFolders.Playlists;
                 if (dfolder != null)
                 {
                     Windows.Storage.StorageFolder afolder = await StorageHelper.GetFolder(dfolder, Information.SystemInformation.ApplicationName);
@@ -286,6 +300,22 @@ namespace AudioVideoPlayer.Helpers
         {
             return Text.Replace('"', '_').Replace("'", "_").Replace(',', '_').Replace('\\', '_').Replace('/', '_').Replace(' ', '_').Replace(':', '_').Replace('.', '_').Replace(';', '_').Replace('*', '_').Replace('<', '_').Replace('>', '_').Replace('|', '_').Replace('?', '_');
         }
+        static async System.Threading.Tasks.Task<string> GetMusicPosterFile(string path)
+        {
+            string result = "ms-appx:///Assets/MUSIC.png";
+            if (!string.IsNullOrEmpty(path)) 
+            {
+                int pos = path.LastIndexOf('\\');
+                if (pos > 0)
+                {
+                    string s = path.Substring(0, pos + 1) + "artwork.jpg";
+                    var file = await StorageFile.GetFileFromPathAsync(path);
+                    if (file!=null)
+                        result = s;
+                }
+            }            
+            return result;
+        }
         public static async System.Threading.Tasks.Task<int> ProcessFile(int counter, string PlaylistName, string extensions, bool bCreateThumbnails, int SlideShowPeriod, Stream writer, string path)
         {
             try
@@ -303,21 +333,22 @@ namespace AudioVideoPlayer.Helpers
 
                         if (IsMusicFile(ext))
                         {
-                            posteruri = path;
+                            posteruri = "ms-appx:///Assets/MUSIC.png";
                             Windows.Storage.FileProperties.MusicProperties m = await File.Properties.GetMusicPropertiesAsync();
                             if (m != null)
                             {
                                 artist = GetText(m.Artist);
                                 album = GetText(m.Album);
-                                title = GetText(m.Title);
+                                //title = GetText(m.Title);
                             }
                             if (string.IsNullOrEmpty(title))
                                 title = System.IO.Path.GetFileNameWithoutExtension(path);
-                            if (bCreateThumbnails)
+                            using (var thumbnail = await File.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.MusicView, 300))
                             {
-                                using (var thumbnail = await File.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.MusicView, 300))
+                                if (thumbnail != null && thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Image)
                                 {
-                                    if (thumbnail != null && thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Image)
+
+                                    if (bCreateThumbnails)
                                     {
                                         StorageFolder f = await GetThumbnailFolder(PlaylistName);
                                         string name = string.Empty;
@@ -335,9 +366,11 @@ namespace AudioVideoPlayer.Helpers
                                         }
                                     }
                                     else
-                                    {
-                                        //Error Message here
-                                    }
+                                        posteruri = path;
+                                }
+                                else
+                                {
+                                    posteruri = await GetMusicPosterFile(path);
                                 }
                             }
                         }
@@ -356,14 +389,14 @@ namespace AudioVideoPlayer.Helpers
                             Windows.Storage.FileProperties.VideoProperties v = await File.Properties.GetVideoPropertiesAsync();
                             if(v!=null)
                                 title = GetText(v.Title);
-                            posteruri = path;
+                            posteruri = "ms-appx:///Assets/VIDEO.png";
                             if (string.IsNullOrEmpty(title))
                                 title = System.IO.Path.GetFileNameWithoutExtension(path);
-                            if (bCreateThumbnails)
+                            using (var thumbnail = await File.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.VideosView, 300))
                             {
-                                using (var thumbnail = await File.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.VideosView, 300))
+                                if (thumbnail != null && thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Image)
                                 {
-                                    if (thumbnail != null && thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Image)
+                                    if (bCreateThumbnails)
                                     {
                                         StorageFolder f = await GetThumbnailFolder(PlaylistName);
                                         string name = System.IO.Path.GetFileNameWithoutExtension(path);
@@ -378,11 +411,14 @@ namespace AudioVideoPlayer.Helpers
                                     }
                                     else
                                     {
-                                        //Error Message here
+                                        posteruri = path;
                                     }
                                 }
+                                else
+                                {
+                                    //Error Message here
+                                }
                             }
-
                         }
                         if (!string.IsNullOrEmpty(title))
                         {

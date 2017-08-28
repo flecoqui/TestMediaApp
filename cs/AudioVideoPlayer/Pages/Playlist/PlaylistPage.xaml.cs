@@ -454,7 +454,7 @@ namespace AudioVideoPlayer.Pages.Playlist
             filePicker.FileTypeFilter.Add(".tma");
             filePicker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
             //filePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
-            filePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
+            filePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.MusicLibrary;
             filePicker.SettingsIdentifier = "PlaylistPicker";
             filePicker.CommitButtonText = "Add JSON or TMA (TestMEdiaApp)  Playlist File to your list";
             
@@ -487,10 +487,10 @@ namespace AudioVideoPlayer.Pages.Playlist
                             }
                         }
                         else
-                        {
                             SetErrorMessage("Playlist name already used");
-                        }
                     }
+                    else
+                        SetErrorMessage("Error while parsing the playlist file");
                 }
                 catch (Exception ex)
                 {

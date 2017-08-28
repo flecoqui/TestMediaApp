@@ -197,14 +197,14 @@
                     <TextBlock x:Name="localPlaylistPeriodLabel"  Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"  Text="Period (ms):" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
                     <TextBox x:Name="localPlaylistPeriod"  IsReadOnly="false"  MinWidth="100"    MaxWidth="100"   Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="1" HorizontalAlignment="Left"  ToolTipService.ToolTip="Path/Uri of the created Playlist in the Documents folder" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.SlideShowPeriod,Mode=TwoWay}" TextWrapping="Wrap" />
 
-                    <TextBlock x:Name="localPlaylistThumbnailLabel"  Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"  Text="Thumbnail:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
+                    <TextBlock x:Name="localPlaylistThumbnailLabel"  Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"  Text="Thumbnails:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
                     <ToggleSwitch x:Name="localPlaylistThumbnail"  Grid.Row="7" Grid.Column="2" Grid.ColumnSpan="1"   Margin="2,2,2,2"  MinWidth="100"
                                           OffContent="Off"
                                           OnContent="On"
                                           VerticalAlignment="Center"
                                           Style="{ThemeResource CustomToggleSwitchStyle}"                                  
                                           IsOn="{x:Bind ViewModelLocator.Settings.CreateThumbnails, Mode=TwoWay}"
-                              ToolTipService.ToolTip="Enable/Disable thumbnails creation while building music or video playlist"    >
+                              ToolTipService.ToolTip="Enable/Disable local thumbnails extraction while building music or video playlist (by default the embedded thumbnails are used)"    >
                     </ToggleSwitch>
                     <TextBlock x:Name="localPlaylistItemsCountLabel"  Grid.Row="8" Grid.Column="0" Text="Items:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
                     <TextBox x:Name="localPlaylistItemsCount"  IsReadOnly="True" BorderThickness="0" Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="2"  ToolTipService.ToolTip="Path/Uri of the created Playlist in the Documents folder" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="-1" TextWrapping="Wrap" />
@@ -246,7 +246,7 @@
                                           VerticalAlignment="Center"
                                           Style="{ThemeResource CustomToggleSwitchStyle}"                                  
                                           IsOn="{x:Bind ViewModelLocator.Settings.CloudCreateThumbnails, Mode=TwoWay}"
-                              ToolTipService.ToolTip="Enable/Disable thumbnails creation while building music or video playlist"    >
+                              ToolTipService.ToolTip="Enable/Disable thumbnails search while building cloud music or video playlist. It will take a jpg file in the same folder."    >
                     </ToggleSwitch>
                     <TextBlock x:Name="cloudPlaylistItemsCountLabel"  Grid.Row="20" Grid.Column="0" Text="Items:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
                     <TextBox x:Name="cloudPlaylistItemsCount"  IsReadOnly="True" BorderThickness="0" Grid.Row="20" Grid.Column="1" Grid.ColumnSpan="2"  ToolTipService.ToolTip="Path/Uri of the created Playlist in the Documents folder" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="-1" TextWrapping="Wrap" />
