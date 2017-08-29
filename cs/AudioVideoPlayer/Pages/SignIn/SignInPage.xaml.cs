@@ -14,6 +14,8 @@ using Windows.ApplicationModel;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using System;
+
 namespace AudioVideoPlayer.Pages.SignIn
 {
     public sealed partial class SignInPage : Page
@@ -21,8 +23,14 @@ namespace AudioVideoPlayer.Pages.SignIn
         public SignInPage()
         {
             InitializeComponent();
+            ShowPointer();
         }
-
+        // Display pointer as a mouse (XBOX Only)
+        public void ShowPointer()
+        {
+            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
+                RequiresPointer = RequiresPointer.WhenFocused;
+        }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);

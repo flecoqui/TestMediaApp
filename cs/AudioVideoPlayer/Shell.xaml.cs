@@ -72,9 +72,15 @@ namespace AudioVideoPlayer
 
             Current = this;
             Window.Current.Activated += Current_Activated;
+            ShowPointer();
             UpdateTitleBarAndColor(true);
         }
-
+        // Display pointer as a mouse (XBOX Only)
+        public void ShowPointer()
+        {
+            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
+                RequiresPointer = RequiresPointer.WhenFocused;
+        }
         private void Current_Activated(object sender, WindowActivatedEventArgs e)
         {
             

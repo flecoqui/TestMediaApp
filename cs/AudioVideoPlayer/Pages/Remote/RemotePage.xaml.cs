@@ -61,8 +61,15 @@ namespace AudioVideoPlayer.Pages.Remote
         {
             this.InitializeComponent();
             PageStatus = Status.NoDeviceSelected;
+            ShowPointer();
             UpdateControls();
 
+        }
+        // Display pointer as a mouse (XBOX Only)
+        public void ShowPointer()
+        {
+            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
+                RequiresPointer = RequiresPointer.WhenFocused;
         }
         /// <summary>
         /// Invoked when this page is about to be displayed in a Frame.
@@ -89,7 +96,10 @@ namespace AudioVideoPlayer.Pages.Remote
 
             // Clear Device list before starting disovery
             if (ViewModels.StaticSettingsViewModel.DeviceList.Count > 0)
-                ViewModels.StaticSettingsViewModel.DeviceList.Clear();
+            {
+                // Clear Device List
+                ViewModels.StaticSettingsViewModel.DeviceList = new ObservableCollection<CompanionDevice>();
+            }
             // Select first item in the combo box to select multicast option
             comboDevice.DataContext = ViewModels.StaticSettingsViewModel.DeviceList;
             if (comboDevice.Items.Count > 0)

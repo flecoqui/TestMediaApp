@@ -53,7 +53,14 @@ namespace AudioVideoPlayer.Pages.Playlist
         public PlaylistPage()
         {
             this.InitializeComponent();
+            ShowPointer();
             ClearErrorMessage();
+        }
+        // Display pointer as a mouse (XBOX Only)
+        public void ShowPointer()
+        {
+            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
+                RequiresPointer = RequiresPointer.WhenFocused;
         }
         bool IsMusic(string filters)
         {

@@ -281,9 +281,9 @@ namespace AudioVideoPlayer.Pages.Player
                         return;
                     }
                 }
-                //FLECQUI
                 return;
             }
+
             await ReadSettings();
                        
             if (e.NavigationMode != NavigationMode.New)
@@ -453,6 +453,8 @@ namespace AudioVideoPlayer.Pages.Player
             backgroundVideo.SizeChanged += BackgroundVideo_SizeChanged;
             this.KeyDown += OnKeyDown;
             this.DoubleTapped += doubleTapped;
+            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
+                Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
 
             // Create the popup used to display the pictures in fullscreen
             if (picturePopup == null)
@@ -493,7 +495,10 @@ namespace AudioVideoPlayer.Pages.Player
             return bResult;
         }
 
-  
+
+
+
+
 
         /// <summary>
         /// This method Unregister the UI components .
@@ -522,6 +527,9 @@ namespace AudioVideoPlayer.Pages.Player
             backgroundVideo.SizeChanged -= BackgroundVideo_SizeChanged;
             this.KeyDown -= OnKeyDown;
             this.DoubleTapped -= doubleTapped;
+            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
+                Window.Current.CoreWindow.KeyDown -= CoreWindow_KeyDown;
+
 
             // Remove the popup used to display the pictures in fullscreen
             RemovePicturePopup();
@@ -1854,7 +1862,18 @@ namespace AudioVideoPlayer.Pages.Player
             }
             return false;
         }
-
+        // Display pointer as a mouse (XBOX Only)
+        public void ShowPointer()
+        {
+            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
+                RequiresPointer = RequiresPointer.WhenFocused;
+        }
+        // Hide pointer as a mouse (XBOX Only)
+        public void HidePointer()
+        {
+            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
+                RequiresPointer = RequiresPointer.Never;
+        }
         /// <summary>
         /// SetFullWindow for MediaElement, PictureElement and picturePopup
         /// </summary>
@@ -1863,6 +1882,7 @@ namespace AudioVideoPlayer.Pages.Player
             if (state == WindowMediaState.FullWindow)
             {
                 ShowTitleBar(false);
+                HidePointer();
                 // if playing a picture or a video or audio with poster                
                 if (pictureElement.Visibility == Visibility.Visible)
                 {
@@ -1884,6 +1904,7 @@ namespace AudioVideoPlayer.Pages.Player
             {
 
                 ShowTitleBar(true);
+                HidePointer();
                 // if playing a picture or a video or audio with poster                
                 if (pictureElement.Visibility == Visibility.Visible)
                 {
@@ -1909,6 +1930,7 @@ namespace AudioVideoPlayer.Pages.Player
             {
 
                 ShowTitleBar(true);
+                ShowPointer();
                 var view = ApplicationView.GetForCurrentView();
                 if ((view.IsFullScreenMode) || (view.AdjacentToLeftDisplayEdge && view.AdjacentToRightDisplayEdge))
                     view.ExitFullScreenMode();
@@ -2025,6 +2047,18 @@ namespace AudioVideoPlayer.Pages.Player
             UpdateControls();
             // Display Log Message
             await DisplayLogMessage();
+        }
+
+        /// <summary>
+        /// KeyDown event XBOX One only
+        /// </summary>
+        private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs args)
+        {
+            if (args.VirtualKey == Windows.System.VirtualKey.GamepadA)
+            {
+                if (IsFullScreen() || IsFullWindow())
+                    SetWindowMode(WindowMediaState.WindowMode);
+            }
         }
         /// <summary>
         /// KeyDown event to exit full screen mode

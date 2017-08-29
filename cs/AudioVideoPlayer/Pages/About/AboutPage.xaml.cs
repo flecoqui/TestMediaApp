@@ -12,10 +12,12 @@
 
 using Windows.ApplicationModel;
 using Windows.UI.Xaml.Navigation;
+using Windows.UI.Xaml.Controls;
+using System;
 
 namespace AudioVideoPlayer.Pages.About
 {
-    public sealed partial class AboutPage
+    public sealed partial class AboutPage : Page 
     {
         public string NameOfSystemFamily { get { return nameof(Information.SystemInformation.SystemFamily); } }
         public string SystemFamily { get { return Information.SystemInformation.SystemFamily; } }
@@ -31,8 +33,14 @@ namespace AudioVideoPlayer.Pages.About
         public AboutPage()
         {
             InitializeComponent();
+            ShowPointer();
         }
-
+        // Display pointer as a mouse (XBOX Only)
+        public void ShowPointer()
+        {
+            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
+                RequiresPointer = RequiresPointer.WhenFocused;
+        }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);

@@ -41,10 +41,42 @@ namespace AudioVideoPlayer
         {
             this.InitializeComponent();
             this.Construct();
+            this.HidePointer();
             this.Suspending += OnSuspending;
             // Initialize Log Message List
             MessageList = new System.Collections.Concurrent.ConcurrentQueue<string>();
             
+        }
+        // Display pointer as a mouse (XBOX Only)
+        public void ShowPointer()
+        {
+            try
+            {
+                
+                if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
+                {
+                    if(this.RequiresPointerMode != ApplicationRequiresPointerMode.Auto)
+                        this.RequiresPointerMode = ApplicationRequiresPointerMode.Auto;
+                }
+            }
+            catch(Exception ex)
+            {
+                LogMessage("Exception while changing Pointer Mode: " + ex.Message);
+            }
+        }
+        // Hide pointer as a mouse (XBOX Only)
+        public void HidePointer()
+        {
+            try
+            {
+                if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
+                    if (this.RequiresPointerMode != ApplicationRequiresPointerMode.WhenRequested)
+                        this.RequiresPointerMode = ApplicationRequiresPointerMode.WhenRequested;
+            }
+            catch (Exception ex)
+            {
+                LogMessage("Exception while changing Pointer Mode: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -370,7 +402,7 @@ namespace AudioVideoPlayer
             // in background mode and still has a view with content
             // then the view can be released to save memory and 
             // can be recreated again later when leaving the background.
-            if (isInBackgroundMode && Window.Current.Content != null)
+            if (isInBackgroundMode && (Window.Current != null) && (Window.Current.Content != null))
             {
             //    LogMessage("Unloading view");
 
