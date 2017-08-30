@@ -802,13 +802,14 @@ namespace AudioVideoPlayer.Pages.Player
         /// <summary>
         /// This method is called when the Media is opened.
         /// </summary>
-        private void MediaElement_MediaOpened(Windows.Media.Playback.MediaPlayer sender, object e)
+        private async void MediaElement_MediaOpened(Windows.Media.Playback.MediaPlayer sender, object e)
         {
             LogMessage("Media opened");
             if((mediaPlayer.PlaybackSession!=null) && (mediaPlayer.PlaybackSession.CanSeek))
             {
                 mediaPlayer.PlaybackSession.Position = CurrentStartPosition;
             }
+            await UpdateControlsDisplayUpdater(CurrentTitle, CurrentMediaUrl, CurrentPosterUrl);
             UpdateControls();
         }
         /// <summary>
@@ -2206,8 +2207,29 @@ namespace AudioVideoPlayer.Pages.Player
             return result;
         }
         /// <summary>
-        /// This method checks if the url is a music url 
+        /// This method checks if the url is a video url 
         /// </summary>
+        private bool IsVideo(string url)
+        {
+            bool result = false;
+            if (!string.IsNullOrEmpty(url))
+            {
+                if ((url.ToLower().EndsWith(".wmv")) ||
+                    (url.ToLower().EndsWith(".mp4")) ||
+                    (url.ToLower().EndsWith(".mov")) ||
+                    (url.ToLower().EndsWith(".mkv")) ||
+                    (url.ToLower().EndsWith(".ismv")) ||
+                    (url.ToLower().EndsWith(".avi")) ||
+                    (url.ToLower().EndsWith(".asf")) ||
+                    (url.ToLower().EndsWith(".ts")))
+                {
+                    result = true;
+                }
+            }
+            return result;
+        }        /// <summary>
+                 /// This method checks if the url is a music url 
+                 /// </summary>
         private bool IsMusic(string url)
         {
             bool result = false;
@@ -2338,16 +2360,53 @@ namespace AudioVideoPlayer.Pages.Player
             Windows.Storage.Streams.RandomAccessStreamReference s = null;
             if (!string.IsNullOrEmpty(poster))
             {
-                if (poster.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
+                if (IsLocalFile(poster))
                 {
-                    Windows.Storage.StorageFile file = await GetFileFromLocalPathUrl(poster);
-                    if (file == null)
-                        file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new System.Uri("ms-appx:///Assets/Music.png"));
-                    if (file != null)
-                        s = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromFile(file);
+                    if (IsMusic(poster) || IsVideo(poster))
+                    {
+                        try
+                        {
+                            Windows.Storage.StorageFile file = await GetFileFromLocalPathUrl(poster);
+                            if (file != null)
+                            {
+                                // Thumbnail
+                                using (var thumbnail = await file.GetThumbnailAsync((IsMusic(poster) ? Windows.Storage.FileProperties.ThumbnailMode.MusicView: Windows.Storage.FileProperties.ThumbnailMode.VideosView), 300))
+                                {
+                                    if (thumbnail != null &&
+                                        (thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Image))
+                                    {
+                                        Windows.Storage.StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+                                        if (localFolder != null)
+                                        {
+                                            string filepath = await Helpers.MediaHelper.SaveThumbnailToFileAsync(localFolder, "currentthumb", thumbnail, true);
+                                            if (!string.IsNullOrEmpty(filepath))
+                                            {
+                                                poster = "file://" + filepath;
+                                            }
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            LogMessage("Exception while loading poster: " + poster + " - " + e.Message);
+                        }
+                    }
+
+                    if (IsPicture(poster))
+                    {
+                        Windows.Storage.StorageFile file = await GetFileFromLocalPathUrl(poster);
+                        if (file == null)
+                            file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new System.Uri("ms-appx:///Assets/Music.png"));
+                        if (file != null)
+                            s = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromFile(file);
+                    }
                 }
                 else
                 {
+
                     s = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromUri(new Uri(poster));
                     //using (var client = new Windows.Web.Http.HttpClient())
                     //{
@@ -2369,6 +2428,7 @@ namespace AudioVideoPlayer.Pages.Player
                     //    }
                     //}
                 }
+
             }
             return s;
         }
@@ -2687,7 +2747,8 @@ namespace AudioVideoPlayer.Pages.Player
                     CurrentPosterUrl = poster;
                     CurrentTitle = title;
                     SystemControls.IsEnabled = true;
-                    await UpdateControlsDisplayUpdater(title, content, poster);
+                    if(IsPicture(content))
+                        await UpdateControlsDisplayUpdater(CurrentTitle, CurrentMediaUrl, CurrentPosterUrl);
                     // Set Window Mode
                     SetWindowMode(WindowState);
                     return true;

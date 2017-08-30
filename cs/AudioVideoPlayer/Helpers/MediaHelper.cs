@@ -201,15 +201,15 @@ namespace AudioVideoPlayer.Helpers
                 return true;
             return false;
         }
-        public static async System.Threading.Tasks.Task<string> SaveThumbnailToFileAsync(StorageFolder pictureFolder, string imageName, StorageItemThumbnail image)
+        public static async System.Threading.Tasks.Task<string> SaveThumbnailToFileAsync(StorageFolder pictureFolder, string imageName, StorageItemThumbnail image, bool bOverWrite = false)
         {
             try
             {
                 if (pictureFolder != null)
                 {
                     // if file already exists return 
-                    var file = await Helpers.StorageHelper.GetFile(pictureFolder, imageName + ".jpg") ;
-                    if(file != null)
+                    var file = await Helpers.StorageHelper.GetFile(pictureFolder, imageName + ".jpg");
+                    if ((file != null)&&(bOverWrite == false))
                         return file.Path;
 
                     file = await pictureFolder.CreateFileAsync(imageName + ".jpg", CreationCollisionOption.ReplaceExisting);
