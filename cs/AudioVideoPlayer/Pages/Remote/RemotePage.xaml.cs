@@ -131,6 +131,7 @@ namespace AudioVideoPlayer.Pages.Remote
                         LogMessage("Error while starting Discovering Devices ...");
                 }
             }
+            bRemotePlayerPageOpened = false;
             // Update Controls
             UpdateControls();
         }
@@ -161,7 +162,7 @@ namespace AudioVideoPlayer.Pages.Remote
                      {
 
                          if ( (((ViewModelLocator.Settings.UdpTransport==true) || (ViewModelLocator.Settings.MulticastDiscovery == true)) &&(!string.IsNullOrEmpty(GetIPAddress()))) ||
-                               (((ViewModelLocator.Settings.UdpTransport == false) && (ViewModelLocator.Settings.MulticastDiscovery == false)) &&(IsCurrentDeviceConnected())))
+                               (((ViewModelLocator.Settings.UdpTransport == false) && (ViewModelLocator.Settings.MulticastDiscovery == false)) &&(IsCurrentDeviceConnected()) && (IsCurrentDevicePlayerPageOpened())))
                          {
                              playButton.IsEnabled = true;
                              playPauseButton.IsEnabled = true;
@@ -348,6 +349,11 @@ namespace AudioVideoPlayer.Pages.Remote
         {
             CompanionDevice cd = comboDevice.SelectedItem as CompanionDevice;
             return cd;
+        }
+        private bool bRemotePlayerPageOpened;
+        bool IsCurrentDevicePlayerPageOpened()
+        {
+            return bRemotePlayerPageOpened;
         }
         bool IsCurrentDeviceConnected()
         {
@@ -655,9 +661,15 @@ namespace AudioVideoPlayer.Pages.Remote
                 {
                     bool result = await companionConnectionManager.CompanionDeviceOpenUri(cd, "testmediaapp://?page=playerpage");
                     if (result == true)
+                    {
+                        bRemotePlayerPageOpened = true;
                         LogMessage("Player Page sucessfully opened on " + GetName());
+                    }
                     else
+                    {
+                        bRemotePlayerPageOpened = false;
                         LogMessage("Error while opening Player Page on " + GetName() + " Is the application installed? Is the device connected?");
+                    }
                 }
             }
             UpdateControls();
@@ -676,6 +688,7 @@ namespace AudioVideoPlayer.Pages.Remote
                         LogMessage("Playlist Page sucessfully opened on " + GetName());
                     else
                         LogMessage("Error while opening Playlist Page on " + GetName() + " Is the application installed? Is the device connected?");
+                    bRemotePlayerPageOpened = false;
                 }
             }
             UpdateControls();
@@ -693,6 +706,7 @@ namespace AudioVideoPlayer.Pages.Remote
                         LogMessage("Remote Page sucessfully opened on " + GetName());
                     else
                         LogMessage("Error while opening Remote Page on " + GetName() + " Is the application installed? Is the device connected?");
+                    bRemotePlayerPageOpened = false;
                 }
             }
             UpdateControls();
@@ -711,6 +725,7 @@ namespace AudioVideoPlayer.Pages.Remote
                         LogMessage("Settings Page sucessfully opened on " + GetName());
                     else
                         LogMessage("Error while opening Settings Page on " + GetName() + " Is the application installed? Is the device connected?");
+                    bRemotePlayerPageOpened = false;
                 }
             }
             UpdateControls();
@@ -729,6 +744,7 @@ namespace AudioVideoPlayer.Pages.Remote
                         LogMessage("About Page sucessfully opened on " + GetName());
                     else
                         LogMessage("Error while opening About Page on " + GetName() + " Is the application installed? Is the device connected?");
+                    bRemotePlayerPageOpened = false;
                 }
             }
             UpdateControls();
