@@ -3949,6 +3949,7 @@ namespace AudioVideoPlayer.Pages.Player
         #region Companion
         private CompanionConnectionManager companionConnectionManager;
         private CompanionDevice localCompanionDevice;
+        private System.Threading.Mutex companionMutex = new System.Threading.Mutex(false, "CompanionSync");
 
         private async System.Threading.Tasks.Task<bool> InitializeCompanion()
         {
@@ -3962,50 +3963,74 @@ namespace AudioVideoPlayer.Pages.Player
                     (ViewModelLocator.Settings.UdpTransport == false))
                 {
 
-                    companionConnectionManager = new CompanionConnectionManager();
-                    if (companionConnectionManager != null)
+                    try
                     {
-                        localCompanionDevice = new CompanionDevice(string.Empty, false,Information.SystemInformation.DeviceName, companionConnectionManager.GetSourceIP(), Information.SystemInformation.SystemFamily);
-                        companionConnectionManager.MessageReceived += CompanionConnectionManager_MessageReceived;
-                        CompanionConnectionManagerInitializeArgs args = new CompanionConnectionManagerInitializeArgs();
-                        if (args != null)
+                        companionMutex.WaitOne();
+                        companionConnectionManager = new CompanionConnectionManager();
+                        if (companionConnectionManager != null)
                         {
-                            args.ApplicationUri = "testmediaapp://?page=playerpage";
-                            args.AppServiceName = "com.testmediaapp.companionservice";
-                            //args.PackageFamilyName= "52458FLECOQUI.TestMediaApplication_h29hy11807230";
-                            args.PackageFamilyName = Information.SystemInformation.PackageFamilyName;
-                            result = await companionConnectionManager.Initialize(localCompanionDevice, args);
+                            localCompanionDevice = new CompanionDevice(string.Empty, false, Information.SystemInformation.DeviceName, companionConnectionManager.GetSourceIP(), Information.SystemInformation.SystemFamily);
+                            companionConnectionManager.MessageReceived += CompanionConnectionManager_MessageReceived;
+                            CompanionConnectionManagerInitializeArgs args = new CompanionConnectionManagerInitializeArgs();
+                            if (args != null)
+                            {
+                                args.ApplicationUri = "testmediaapp://?page=playerpage";
+                                args.AppServiceName = "com.testmediaapp.companionservice";
+                                //args.PackageFamilyName= "52458FLECOQUI.TestMediaApplication_h29hy11807230";
+                                args.PackageFamilyName = Information.SystemInformation.PackageFamilyName;
+                                result = await companionConnectionManager.Initialize(localCompanionDevice, args);
+                            }
                         }
+                    }
+                    catch(Exception ex)
+                    {
+                        LogMessage("Exception while initializing Companion Maanger: " + ex.Message);
+                    }
+                    finally
+                    {
+                        companionMutex.ReleaseMutex();
                     }
                 }
                 else
                 {
-                    multicast = "Multicast ";
-                    companionConnectionManager = new MulticastCompanionConnectionManager();
-                    if (companionConnectionManager != null)
+                    try
                     {
-                        localCompanionDevice = new CompanionDevice(string.Empty, false,Information.SystemInformation.DeviceName, companionConnectionManager.GetSourceIP(), Information.SystemInformation.SystemFamily);
-                        companionConnectionManager.MessageReceived += CompanionConnectionManager_MessageReceived;
-                        MulticastCompanionConnectionManagerInitializeArgs args = new MulticastCompanionConnectionManagerInitializeArgs();
-                        if (args != null)
+                        companionMutex.WaitOne();
+                        multicast = "Multicast ";
+                        companionConnectionManager = new MulticastCompanionConnectionManager();
+                        if (companionConnectionManager != null)
                         {
-                            args.ApplicationUri = "testmediaapp://?page=playerpage";
-                            args.AppServiceName = "com.testmediaapp.companionservice";
-                            //args.PackageFamilyName= "52458FLECOQUI.TestMediaApplication_h29hy11807230";
-                            args.PackageFamilyName = Information.SystemInformation.PackageFamilyName;
-                            args.MulticastDiscovery = ViewModelLocator.Settings.MulticastDiscovery;
-                            args.UDPTransport = ViewModelLocator.Settings.UdpTransport;
-                            args.MulticastIPAddress = ViewModelLocator.Settings.MulticastIPAddress;
-                            args.MulticastUDPPort = ViewModelLocator.Settings.MulticastUDPPort;
-                            args.UnicastUDPPort = ViewModelLocator.Settings.UnicastUDPPort;
+                            localCompanionDevice = new CompanionDevice(string.Empty, false,Information.SystemInformation.DeviceName, companionConnectionManager.GetSourceIP(), Information.SystemInformation.SystemFamily);
+                            companionConnectionManager.MessageReceived += CompanionConnectionManager_MessageReceived;
+                            MulticastCompanionConnectionManagerInitializeArgs args = new MulticastCompanionConnectionManagerInitializeArgs();
+                            if (args != null)
+                            {
+                                args.ApplicationUri = "testmediaapp://?page=playerpage";
+                                args.AppServiceName = "com.testmediaapp.companionservice";
+                                //args.PackageFamilyName= "52458FLECOQUI.TestMediaApplication_h29hy11807230";
+                                args.PackageFamilyName = Information.SystemInformation.PackageFamilyName;
+                                args.MulticastDiscovery = ViewModelLocator.Settings.MulticastDiscovery;
+                                args.UDPTransport = ViewModelLocator.Settings.UdpTransport;
+                                args.MulticastIPAddress = ViewModelLocator.Settings.MulticastIPAddress;
+                                args.MulticastUDPPort = ViewModelLocator.Settings.MulticastUDPPort;
+                                args.UnicastUDPPort = ViewModelLocator.Settings.UnicastUDPPort;
 
-                            result = await companionConnectionManager.Initialize(localCompanionDevice, args);
+                                result = await companionConnectionManager.Initialize(localCompanionDevice, args);
+                            }
                         }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogMessage("Exception while initializing Companion Maanger: " + ex.Message);
+                    }
+                    finally
+                    {
+                        companionMutex.ReleaseMutex();
                     }
 
                 }
 
-            }
+        }
             if (result == true)
                 LogMessage(multicast + "Companion Initialization ok");
             else
@@ -4014,11 +4039,23 @@ namespace AudioVideoPlayer.Pages.Player
         }
         private bool UninitializeCompanion()
         {
-            if (companionConnectionManager != null)
+            try
             {
-                companionConnectionManager.MessageReceived -= CompanionConnectionManager_MessageReceived;
-                companionConnectionManager.Uninitialize();
-                companionConnectionManager = null;
+                companionMutex.WaitOne();
+                if (companionConnectionManager != null)
+                {
+                    companionConnectionManager.MessageReceived -= CompanionConnectionManager_MessageReceived;
+                    companionConnectionManager.Uninitialize();
+                    companionConnectionManager = null;
+                }
+            }
+            catch(Exception ex)
+            {
+                LogMessage("Exception while uninitializing Companion Maanger: " + ex.Message);
+            }
+            finally
+            {
+                companionMutex.ReleaseMutex();
             }
             return true;
         }
