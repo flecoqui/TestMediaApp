@@ -2352,6 +2352,72 @@ namespace AudioVideoPlayer.Pages.Player
                 }
             }
         }
+        string GetExtension(string url)
+        {
+            string result = null;
+            if(!string.IsNullOrEmpty(url))
+            {
+                int pos = url.LastIndexOf('.');
+                if(pos>0)
+                    result = url.Substring(pos);
+            }
+            return result;
+        }
+        async System.Threading.Tasks.Task<string> DownloadRemoteFile(string sourceUrl)
+        {
+            string result = null;
+            string extension = GetExtension(sourceUrl);
+            string rootname = "poster";
+            string filename = string.Empty;
+            int index = -1;
+            if (!string.IsNullOrEmpty(extension))
+            {
+                
+                while ((result == null)&&(index<2))
+                {
+                    index++;
+                    filename = rootname + "_" + index.ToString();
+                    try
+                    {
+                        Windows.Storage.StorageFolder folder = Windows.Storage.ApplicationData.Current.LocalFolder;
+                        if (folder != null)
+                        {
+                            Windows.Storage.StorageFile file = await folder.CreateFileAsync(filename + extension, Windows.Storage.CreationCollisionOption.ReplaceExisting);
+                            if (file != null)
+                            {
+                                using (var client = new Windows.Web.Http.HttpClient())
+                                {
+                                    var response = await client.GetAsync(new Uri(sourceUrl));
+                                    if (response != null && response.StatusCode == Windows.Web.Http.HttpStatusCode.Ok)
+                                    {
+                                        using (var stream = await response.Content.ReadAsInputStreamAsync())
+                                        {
+                                            Stream writeStream = await file.OpenStreamForWriteAsync();
+                                            if (writeStream != null)
+                                            {
+                                                await stream.AsStreamForRead().CopyToAsync(writeStream);
+                                                await writeStream.FlushAsync();
+                                                result = file.Path;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (UnauthorizedAccessException e)
+                    {
+                         System.Diagnostics.Debug.WriteLine("UnauthorizedAccessException while saving remote file locally : " + e.Message);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Exception while saving remote file locally : " + ex.Message);
+                        break;
+                    }
+                }
+            }
+            return result;
+        }
         /// <summary>
         /// Return poster stream
         /// </summary>
@@ -2360,78 +2426,60 @@ namespace AudioVideoPlayer.Pages.Player
             Windows.Storage.Streams.RandomAccessStreamReference s = null;
             if (!string.IsNullOrEmpty(poster))
             {
-                if (IsLocalFile(poster))
+                if (!IsLocalFile(poster))
                 {
-                    if (IsMusic(poster) || IsVideo(poster))
+                    string localPath = await DownloadRemoteFile(poster);
+                    if (!string.IsNullOrEmpty(localPath))
+                        poster = "file://" + localPath;
+                    else
+                        return null;
+                }
+                if (IsMusic(poster) || IsVideo(poster))
+                {
+                    try
                     {
-                        try
+                        Windows.Storage.StorageFile file = await GetFileFromLocalPathUrl(poster);
+                        if (file != null)
                         {
-                            Windows.Storage.StorageFile file = await GetFileFromLocalPathUrl(poster);
-                            if (file != null)
+                            // Thumbnail
+                            using (var thumbnail = await file.GetThumbnailAsync((IsMusic(poster) ? Windows.Storage.FileProperties.ThumbnailMode.MusicView: Windows.Storage.FileProperties.ThumbnailMode.VideosView), 300))
                             {
-                                // Thumbnail
-                                using (var thumbnail = await file.GetThumbnailAsync((IsMusic(poster) ? Windows.Storage.FileProperties.ThumbnailMode.MusicView: Windows.Storage.FileProperties.ThumbnailMode.VideosView), 300))
+                                if (thumbnail != null &&
+                                    ( (thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Image) || (thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Icon)))
                                 {
-                                    if (thumbnail != null &&
-                                        (thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Image))
+                                    Windows.Storage.StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+                                    if (localFolder != null)
                                     {
-                                        Windows.Storage.StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
-                                        if (localFolder != null)
+                                        string filepath = await Helpers.MediaHelper.SaveThumbnailToFileAsync(localFolder, "currentthumb", thumbnail, true);
+                                        if (!string.IsNullOrEmpty(filepath))
                                         {
-                                            string filepath = await Helpers.MediaHelper.SaveThumbnailToFileAsync(localFolder, "currentthumb", thumbnail, true);
-                                            if (!string.IsNullOrEmpty(filepath))
-                                            {
-                                                poster = "file://" + filepath;
-                                            }
+                                            poster = "file://" + filepath;
                                         }
                                     }
                                 }
-
                             }
-                        }
-                        catch (Exception e)
-                        {
-                            LogMessage("Exception while loading poster: " + poster + " - " + e.Message);
+
                         }
                     }
-
-                    if (IsPicture(poster))
+                    catch (Exception e)
                     {
-                        Windows.Storage.StorageFile file = await GetFileFromLocalPathUrl(poster);
-                        if (file == null)
-                            file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new System.Uri("ms-appx:///Assets/Music.png"));
-                        if (file != null)
-                            s = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromFile(file);
+                        LogMessage("Exception while loading poster: " + poster + " - " + e.Message);
                     }
                 }
-                else
+
+                if (IsPicture(poster))
                 {
-
-                    s = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromUri(new Uri(poster));
-                    //using (var client = new Windows.Web.Http.HttpClient())
-                    //{
-
-                    //    var response = await client.GetAsync(new Uri(poster));
-                    //    var b = new Windows.UI.Xaml.Media.Imaging.BitmapImage();
-                    //    if (response != null && response.StatusCode == Windows.Web.Http.HttpStatusCode.Ok)
-                    //    {
-                    //        using (var stream = await response.Content.ReadAsInputStreamAsync())
-                    //        {
-                    //            var memStream = new MemoryStream();
-                    //            if(memStream!=null)
-                    //            {
-                    //                await stream.AsStreamForRead().CopyToAsync(memStream);
-                    //                memStream.Position = 0;
-                    //                s = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromStream(memStream.AsRandomAccessStream());
-                    //            }
-                    //        }
-                    //    }
-                    //}
+                    Windows.Storage.StorageFile file = await GetFileFromLocalPathUrl(poster);
+                    if (file == null)
+                        file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new System.Uri("ms-appx:///Assets/Music.png"));
+                    if (file != null)
+                        s = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromFile(file);
                 }
 
             }
             return s;
         }
+
         /// <summary>
         /// This method Update the SystemControls Display information
         /// </summary>
