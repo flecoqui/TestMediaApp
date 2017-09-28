@@ -9,7 +9,7 @@
          >
 -->
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" IgnorableNamespaces="uap uap3 mp">
-  <Identity Name="52458FLECOQUI.TestMediaApp" Publisher="CN=0F2C9F5D-19D3-44D5-AC3F-64AB88C40609" Version="1.1.31.0" />
+  <Identity Name="52458FLECOQUI.TestMediaApp" Publisher="CN=0F2C9F5D-19D3-44D5-AC3F-64AB88C40609" Version="1.1.32.0" />
   <mp:PhoneIdentity PhoneProductId="096a95d9-b950-4854-ad77-99a1381e9dd9" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>TestMediaApp</DisplayName>
@@ -34,12 +34,6 @@
         </uap:InitialRotationPreference>
       </uap:VisualElements>
       <Extensions>
-        <uap:Extension Category="windows.protocol">
-          <uap:Protocol Name="testmediaapp">
-            <uap:Logo>Assets\AudioVideo.png</uap:Logo>
-            <uap:DisplayName>TestMediaApp</uap:DisplayName>
-          </uap:Protocol>
-        </uap:Extension>
         <uap:Extension Category="windows.fileTypeAssociation">
           <uap:FileTypeAssociation Name="testmediaapp">
             <uap:DisplayName>TestMediaApp</uap:DisplayName>
@@ -64,8 +58,21 @@
             </uap:SupportedFileTypes>
           </uap:FileTypeAssociation>
         </uap:Extension>
+        <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="testmediaapp">
+            <uap:Logo>Assets\AudioVideo.png</uap:Logo>
+            <uap:DisplayName>TestMediaApp</uap:DisplayName>
+          </uap:Protocol>
+        </uap:Extension>
         <uap:Extension Category="windows.appService" EntryPoint="CompanionService.CompanionServiceTask">
           <uap3:AppService Name="com.testmediaapp.companionservice" SupportsRemoteSystems="true"/>
+        </uap:Extension>
+        <uap:Extension Category="windows.autoPlayContent">
+          <uap:AutoPlayContent>
+            <!--<uap:LaunchAction Verb="PlayDVD" ActionDisplayName="Play DVD" ContentEvent="PlayDVDMovieOnArrival" /> -->
+            <uap:LaunchAction Verb="PlayCD" ActionDisplayName="Play CD" ContentEvent="PlayCDAudioOnArrival" />
+            <!--<uap:LaunchAction Verb="PlayBD" ActionDisplayName="Play BluRay" ContentEvent="PlayBluRayOnArrival" />-->
+          </uap:AutoPlayContent>
         </uap:Extension>
       </Extensions>
     </Application>
@@ -83,5 +90,7 @@
     <rescap:Capability Name="hevcPlayback" />
     -->
     <DeviceCapability Name="6a7e5907-885c-4bcb-b40a-073c067bd3d5" />
+    <DeviceCapability Name="Optical" />
+    <DeviceCapability Name="53f56308-b6bf-11d0-94f2-00a0c91efb8b" />
   </Capabilities>
 </Package>

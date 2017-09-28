@@ -14,6 +14,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AudioVideoPlayer.Pages.Player;
+using AudioVideoPlayer.Pages.CDPlayer;
 using AudioVideoPlayer.Pages.Remote;
 using AudioVideoPlayer.Pages.Playlist;
 using AudioVideoPlayer.Pages.Settings;
@@ -119,15 +120,15 @@ namespace AudioVideoPlayer
                 var statusBar = Windows.UI.ViewManagement.StatusBar.GetForCurrentView();
                 await statusBar.HideAsync();
             }
-            HamburgerMenu.ItemsSource = new[]
-            {
-                new MenuItem { Icon = "\xE768;", Name = "Player", PageType = typeof(AudioVideoPlayer.Pages.Player.PlayerPage) },
-                new MenuItem{ Icon = "\xE8FD;", Name = "Playlist", PageType = typeof(AudioVideoPlayer.Pages.Playlist.PlaylistPage) },
-                new MenuItem{ Icon = "\xE8EF;", Name = "Remote", PageType = typeof(AudioVideoPlayer.Pages.Remote.RemotePage) },
-                new MenuItem{ Icon = "\xE713;", Name = "Settings", PageType = typeof(AudioVideoPlayer.Pages.Settings.SettingsPage) },
+            List<MenuItem> listMenu = new List<MenuItem>();
+            listMenu.Add(new MenuItem { Icon = "\xE768;", Name = "Player", PageType = typeof(AudioVideoPlayer.Pages.Player.PlayerPage) });
+            if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.Devices.Custom.CustomDevice"))
+                listMenu.Add(new MenuItem { Icon = "\xE7AD;", Name = "CD Player", PageType = typeof(AudioVideoPlayer.Pages.CDPlayer.CDPlayerPage) } );
+            listMenu.Add(new MenuItem { Icon = "\xE8FD;", Name = "Playlist", PageType = typeof(AudioVideoPlayer.Pages.Playlist.PlaylistPage) });
+            listMenu.Add(new MenuItem { Icon = "\xE8EF;", Name = "Remote", PageType = typeof(AudioVideoPlayer.Pages.Remote.RemotePage) });
+            listMenu.Add(new MenuItem { Icon = "\xE713;", Name = "Settings", PageType = typeof(AudioVideoPlayer.Pages.Settings.SettingsPage) });
 
-                }.ToList();
-
+            HamburgerMenu.ItemsSource = listMenu;
             // Options
             HamburgerMenu.OptionsItemsSource = new[]
             {
@@ -178,6 +179,8 @@ namespace AudioVideoPlayer
                             t = typeof(AboutPage);
                         else if (string.Equals(pageName, nameof(PlaylistPage), StringComparison.OrdinalIgnoreCase))
                             t = typeof(PlaylistPage);
+                        else if (string.Equals(pageName, nameof(CDPlayerPage), StringComparison.OrdinalIgnoreCase))
+                            t = typeof(CDPlayerPage);
                         else if (string.Equals(pageName, nameof(RemotePage), StringComparison.OrdinalIgnoreCase))
                             t = typeof(RemotePage);
                         else if (string.Equals(pageName, nameof(SettingsPage), StringComparison.OrdinalIgnoreCase))
@@ -221,6 +224,15 @@ namespace AudioVideoPlayer
             p = NavigationFrame.Content as PlayerPage;
             if (p != null)
                 await p.SetPath(path);
+        }
+        public  void AutoPlay(string verb)
+        {
+            var p = NavigationFrame.Content as CDPlayerPage;
+            if (p == null)
+                NavigateToSample(typeof(AudioVideoPlayer.Pages.CDPlayer.CDPlayerPage), null);
+            p = NavigationFrame.Content as CDPlayerPage;
+            if (p != null)
+                p.AutoPlay(verb);
         }
         private void NavigationFrame_Navigating(object sender, NavigatingCancelEventArgs navigationEventArgs)
         {

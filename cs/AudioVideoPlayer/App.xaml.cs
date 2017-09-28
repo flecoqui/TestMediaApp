@@ -181,13 +181,34 @@ namespace AudioVideoPlayer
 
             var p = rootFrame.Content as Shell;
             if (p != null)
-            {                           
-                var f = args.Files.FirstOrDefault() as Windows.Storage.StorageFile;
-                if (f != null)
+            {
+                if (args != null)
                 {
-                    Windows.Storage.AccessCache.StorageApplicationPermissions.FutureAccessList.Add(f);
-                    LogMessage("SetPath:" + f.Path);
-                    p.SetPath(f.Path);
+                    if (args.Files != null)
+                    {
+                        var f = args.Files.FirstOrDefault() as Windows.Storage.StorageFile;
+                        if (f != null)
+                        {
+                            Windows.Storage.AccessCache.StorageApplicationPermissions.FutureAccessList.Add(f);
+                            LogMessage("SetPath:" + f.Path);
+                            p.SetPath(f.Path);
+                        }
+                        else if (string.Equals(args.Verb, "PlayCD", StringComparison.OrdinalIgnoreCase))
+                        {
+                            LogMessage("Event Play CD");
+                            p.AutoPlay(args.Verb);
+                        }
+                        else if (string.Equals(args.Verb, "PlayDVD", StringComparison.OrdinalIgnoreCase))
+                        {
+                            LogMessage("Event Play DVD");
+                            p.AutoPlay(args.Verb);
+                        }
+                        else if (string.Equals(args.Verb, "PlayBD", StringComparison.OrdinalIgnoreCase))
+                        {
+                            LogMessage("Event Play BluRay");
+                            p.AutoPlay(args.Verb);
+                        }
+                    }
                 }
             }
             // Ensure the current window is active 

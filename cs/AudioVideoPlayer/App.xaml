@@ -133,7 +133,8 @@
                 Value="Left" />
             <Setter Property="Foreground"   
                 Value="{StaticResource ButtonForegroundThemeBrush}" />
-        </Style>        <Style x:Key="LabelTextBoldBlockStyle"
+        </Style> 
+      <Style x:Key="LabelTextBoldBlockStyle"
            TargetType="TextBlock"
            BasedOn="{StaticResource BaseTextBlockStyle}">
             <Setter Property="FontSize"

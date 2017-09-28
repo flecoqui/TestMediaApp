@@ -675,6 +675,30 @@ namespace AudioVideoPlayer.Pages.Remote
             UpdateControls();
 
         }
+        private async void CDPlayerPage_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Opening CDPlayer Page remotely on " + GetName());
+            CompanionDevice cd = GetCurrentDevice();
+            if (cd != null)
+            {
+                if (companionConnectionManager != null)
+                {
+                    bool result = await companionConnectionManager.CompanionDeviceOpenUri(cd, "testmediaapp://?page=cdplayerpage");
+                    if (result == true)
+                    {
+                        bRemotePlayerPageOpened = true;
+                        LogMessage("CDPlayer Page sucessfully opened on " + GetName());
+                    }
+                    else
+                    {
+                        bRemotePlayerPageOpened = false;
+                        LogMessage("Error while opening CDPlayer Page on " + GetName() + " Is the application installed? Is the device connected?");
+                    }
+                }
+            }
+            UpdateControls();
+
+        }
         private async void PlaylistPage_Click(object sender, RoutedEventArgs e)
         {
             LogMessage("Opening Playlist Page remotely on " + GetName());
