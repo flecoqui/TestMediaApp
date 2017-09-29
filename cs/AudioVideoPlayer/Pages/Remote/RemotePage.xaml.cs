@@ -241,6 +241,7 @@ namespace AudioVideoPlayer.Pages.Remote
                          DeviceIPAddress.IsReadOnly = true;
 
                          playerpageButton.IsEnabled = true;
+                         cdplayerpageButton.IsEnabled = true;
                          playlistpageButton.IsEnabled = true;
                          remotepageButton.IsEnabled = true;
                          settingspageButton.IsEnabled = true;
@@ -290,6 +291,7 @@ namespace AudioVideoPlayer.Pages.Remote
                          DeviceIPAddress.IsReadOnly = true;
 
                          playerpageButton.IsEnabled = false;
+                         cdplayerpageButton.IsEnabled = false;
                          playlistpageButton.IsEnabled = false;
                          remotepageButton.IsEnabled = false;
                          settingspageButton.IsEnabled = false;
@@ -337,6 +339,7 @@ namespace AudioVideoPlayer.Pages.Remote
                          DeviceIPAddress.IsReadOnly = false;
 
                          playerpageButton.IsEnabled = false;
+                         cdplayerpageButton.IsEnabled = false;
                          playlistpageButton.IsEnabled = false;
                          remotepageButton.IsEnabled = false;
                          settingspageButton.IsEnabled = false;

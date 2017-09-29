@@ -113,7 +113,7 @@ namespace AudioVideoPlayer.CDReader
                         result = new CDMetadata();
                         for (int i = 0; i < (SectorArray.Length - 1); i++)
                         {
-                            CDTrackMetadata t = new CDTrackMetadata() { Number = i + 1, Title = string.Empty, ISrc = string.Empty, FirstSector = SectorArray[i], LastSector = SectorArray[i + 1], Duration = TimeSpan.FromSeconds((SectorArray[i + 1] - SectorArray[i]) * CD_RAW_SECTOR_SIZE / (44100 * 4)) };
+                            CDTrackMetadata t = new CDTrackMetadata() { Number = i + 1, Title = string.Empty, ISrc = string.Empty, FirstSector = SectorArray[i], LastSector = SectorArray[i + 1], Duration = TimeSpan.FromSeconds((SectorArray[i + 1] - SectorArray[i]) * CD_RAW_SECTOR_SIZE / (44100 * 4))};
                             if (i < result.Tracks.Count)
                                 result.Tracks[i] = t;
                             else
@@ -299,7 +299,8 @@ namespace AudioVideoPlayer.CDReader
                             if ((resArray[l] == 0x00) || (k == 11))
                             {
                                 string str;
-                                str = System.Text.Encoding.UTF8.GetString(resArray, 0, (resArray[l] == 0x00) ? l : l + 1);
+//                                str = System.Text.Encoding.UTF8.GetString(resArray, 0, (resArray[l] == 0x00) ? l : l + 1);
+                                str = System.Text.Encoding.UTF7.GetString(resArray, 0, (resArray[l] == 0x00) ? l : l + 1);
                                 if (!string.IsNullOrEmpty(str))
                                 {
                                     switch (i_pack_type - 0x80)
@@ -380,6 +381,13 @@ namespace AudioVideoPlayer.CDReader
                 System.Diagnostics.Debug.WriteLine("Title: " + currentCD.AlbumTitle + " Artist: " + currentCD.Artist + " DiscID: " + currentCD.DiscID + " ISrc: " + currentCD.ISrc);
                 for (int l = 0; l < currentCD.Tracks.Count; l++)
                 {
+                    if (!string.IsNullOrEmpty(currentCD.Artist))
+                        currentCD.Tracks[l].Artist = currentCD.Artist;
+                    if (!string.IsNullOrEmpty(currentCD.AlbumTitle))
+                        currentCD.Tracks[l].Album = currentCD.AlbumTitle;
+                    if (!string.IsNullOrEmpty(currentCD.DiscID))
+                        currentCD.Tracks[l].DiscID = currentCD.DiscID;
+
                     System.Diagnostics.Debug.WriteLine("Track : " + currentCD.Tracks[l].Number.ToString() + " Title: " + currentCD.Tracks[l].Title + "Duration: " + currentCD.Tracks[l].Duration.ToString() + " ISRC: " + currentCD.Tracks[l].ISrc);
                 }
             }

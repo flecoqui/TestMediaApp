@@ -371,6 +371,7 @@ namespace AudioVideoPlayer.Pages.CDPlayer
                  {
                      PlayCurrentTrack();
                  }
+                 UpdateControls();
              });
         }
         public  async void AutoPlay(string verb)
@@ -380,7 +381,7 @@ namespace AudioVideoPlayer.Pages.CDPlayer
                 LogMessage("Auto Play CD event");
                 await LoadMetadata();
                 PlayCurrentTrack();
-
+                UpdateControls();
             }
         }
         private async System.Threading.Tasks.Task<bool> LoadMetadata()
@@ -429,6 +430,7 @@ namespace AudioVideoPlayer.Pages.CDPlayer
         private async void Load_Click(object sender, RoutedEventArgs e)
         {
             await LoadMetadata();
+            UpdateControls();
         }
         /// <summary>
         /// Eject method which eject CD 
@@ -460,6 +462,7 @@ namespace AudioVideoPlayer.Pages.CDPlayer
                                 if (currentCD.Tracks != null)
                                     currentCD.Tracks.Clear();
                                 FillComboTrack();
+                                UpdateControls();
                             }
 
                         }
@@ -483,7 +486,7 @@ namespace AudioVideoPlayer.Pages.CDPlayer
                 var filePicker = new Windows.Storage.Pickers.FileOpenPicker();
                 filePicker.FileTypeFilter.Add(".wav");
                 filePicker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
-                filePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
+                filePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.MusicLibrary;
                 filePicker.SettingsIdentifier = "WavPicker";
                 filePicker.CommitButtonText = "Open WAV File to Play";
 
@@ -545,7 +548,7 @@ namespace AudioVideoPlayer.Pages.CDPlayer
                                         filePicker.DefaultFileExtension = ".wav";
                                         filePicker.SuggestedFileName = fileName;
                                         filePicker.FileTypeChoices.Add("WAV files", new List<string>() { ".wav" });
-                                        filePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
+                                        filePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.MusicLibrary;
                                         filePicker.SettingsIdentifier = "WavPicker";
                                         filePicker.CommitButtonText = "Save Track into a WAV File";
 
@@ -1085,7 +1088,7 @@ namespace AudioVideoPlayer.Pages.CDPlayer
         async void LeavingBackground(object sender, object e)
         {
             LogMessage("LeavingBackground in XAML Page");
-
+            UpdateControls();
             // Hack for the Application running on XBOX One to avoid displaying "Remote" border  
             await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
@@ -1283,11 +1286,12 @@ namespace AudioVideoPlayer.Pages.CDPlayer
                          }
                          else
                          {
+                             
                              {
-                                 ComboTrackNumber.IsEnabled = true;
 
-                                 if ((ComboTrackNumber.Items.Count > 0))
+                                 if ((ComboTrackNumber.Items!=null) && (ComboTrackNumber.Items.Count > 0))
                                  {
+                                     ComboTrackNumber.IsEnabled = true;
                                      playButton.IsEnabled = true;
 
                                      ejectButton.IsEnabled = false;
@@ -1307,27 +1311,25 @@ namespace AudioVideoPlayer.Pages.CDPlayer
                                      stopButton.IsEnabled = false;
 
 
-                                     {
-                                         if (mediaPlayer.PlaybackSession.PlaybackState == Windows.Media.Playback.MediaPlaybackState.Playing)
-                                         {
-                                             playPauseButton.IsEnabled = false;
-                                             pausePlayButton.IsEnabled = true;
-                                             stopButton.IsEnabled = true;
+                                    if (mediaPlayer.PlaybackSession.PlaybackState == Windows.Media.Playback.MediaPlaybackState.Playing)
+                                    {
+                                        playPauseButton.IsEnabled = false;
+                                        pausePlayButton.IsEnabled = true;
+                                        stopButton.IsEnabled = true;
 
-                                         }
-                                         else if (mediaPlayer.PlaybackSession.PlaybackState == Windows.Media.Playback.MediaPlaybackState.Paused)
-                                         {
-                                             playPauseButton.IsEnabled = true;
-                                             stopButton.IsEnabled = true;
-                                         }
-                                         else if (mediaPlayer.PlaybackSession.PlaybackState == Windows.Media.Playback.MediaPlaybackState.None)
-                                         {
-                                             ejectButton.IsEnabled = true;
-                                             loadButton.IsEnabled = true;
-                                             extractTrackButton.IsEnabled = true;
-                                             extractTracksButton.IsEnabled = true;
-                                         }
-                                     }
+                                    }
+                                    else if (mediaPlayer.PlaybackSession.PlaybackState == Windows.Media.Playback.MediaPlaybackState.Paused)
+                                    {
+                                        playPauseButton.IsEnabled = true;
+                                        stopButton.IsEnabled = true;
+                                    }
+                                    else if (mediaPlayer.PlaybackSession.PlaybackState == Windows.Media.Playback.MediaPlaybackState.None)
+                                    {
+                                        ejectButton.IsEnabled = true;
+                                        loadButton.IsEnabled = true;
+                                        extractTrackButton.IsEnabled = true;
+                                        extractTracksButton.IsEnabled = true;
+                                    }
                                      // Volume buttons control
                                      if (mediaPlayer.IsMuted)
                                          muteButton.Content = "\xE767";
@@ -1348,6 +1350,30 @@ namespace AudioVideoPlayer.Pages.CDPlayer
                                          volumeDownButton.IsEnabled = true;
                                          volumeUpButton.IsEnabled = true;
                                      }
+                                 }
+                                 else
+                                 {
+                                     ComboTrackNumber.IsEnabled = false;
+                                     ejectButton.IsEnabled = true;
+                                     loadButton.IsEnabled = true;
+                                     playWAVButton.IsEnabled = true;
+
+                                     playButton.IsEnabled = false;
+                                     playPauseButton.IsEnabled = false;
+                                     pausePlayButton.IsEnabled = false;
+                                     stopButton.IsEnabled = false;
+
+
+                                     minusButton.IsEnabled = false;
+                                     plusButton.IsEnabled = false;
+
+                                     muteButton.IsEnabled = false;
+                                     volumeDownButton.IsEnabled = false;
+                                     volumeUpButton.IsEnabled = false;
+
+                                     extractTrackButton.IsEnabled = false;
+                                     extractTracksButton.IsEnabled = false;
+
                                  }
                              }
                          }

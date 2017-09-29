@@ -15,12 +15,21 @@ namespace AudioVideoPlayer.CDReader
         public string Poster { get; set; }
         public string ISrc { get; set; }
         public TimeSpan Duration { get; set; }
+        public string Album { get; set; }
+        public string Artist { get; set; }
+        public string DiscID { get; set; }
         public int FirstSector { get; set; }
         public int LastSector { get; set; }
 
         public override string ToString()
         {
-            return string.Format("Track: {0} Title: {1} ID: {2} Duration: {3}", Number, string.IsNullOrEmpty(Title) ? "Unknown" : Title, string.IsNullOrEmpty(ISrc) ? "Unknown" : ISrc, Duration);
+            string trackname = Number.ToString("00") + "_track";
+            string prefix = string.Format("Track: {0} Title: {1} Duration: {2}", Number, string.IsNullOrEmpty(Title) ? trackname : Title, Duration);
+            if (!string.IsNullOrEmpty(Album) &&
+                !string.IsNullOrEmpty(Artist) &&
+                !string.IsNullOrEmpty(DiscID))
+                prefix += string.Format(" Album: {0} Artist: {1} ID: {2}", Album, Artist, DiscID);
+            return prefix;
         }
 
     }

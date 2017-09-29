@@ -122,7 +122,8 @@ namespace AudioVideoPlayer
             }
             List<MenuItem> listMenu = new List<MenuItem>();
             listMenu.Add(new MenuItem { Icon = "\xE768;", Name = "Player", PageType = typeof(AudioVideoPlayer.Pages.Player.PlayerPage) });
-            if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.Devices.Custom.CustomDevice"))
+            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(Information.SystemInformation.SystemFamily, "Windows.Desktop", StringComparison.OrdinalIgnoreCase))
                 listMenu.Add(new MenuItem { Icon = "\xE7AD;", Name = "CD Player", PageType = typeof(AudioVideoPlayer.Pages.CDPlayer.CDPlayerPage) } );
             listMenu.Add(new MenuItem { Icon = "\xE8FD;", Name = "Playlist", PageType = typeof(AudioVideoPlayer.Pages.Playlist.PlaylistPage) });
             listMenu.Add(new MenuItem { Icon = "\xE8EF;", Name = "Remote", PageType = typeof(AudioVideoPlayer.Pages.Remote.RemotePage) });

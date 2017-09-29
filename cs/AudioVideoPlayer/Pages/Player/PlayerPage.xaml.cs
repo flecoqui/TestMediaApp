@@ -2363,57 +2363,70 @@ namespace AudioVideoPlayer.Pages.Player
             }
             return result;
         }
+        async System.Threading.Tasks.Task<Windows.Storage.StorageFile> CreateTempFile(Windows.Storage.StorageFolder folder, string filename, string extension)
+        {
+            Windows.Storage.StorageFile file = null;
+            int index = 0;
+            while ((file == null)&&(index<10))
+            {
+                try
+                {
+                    file = await folder.CreateFileAsync(filename + index.ToString() + extension, Windows.Storage.CreationCollisionOption.ReplaceExisting);
+                }
+                catch(Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Exception while creating file: " + ex.Message);
+                }
+                index++;
+            }
+            return file;
+        }
         async System.Threading.Tasks.Task<string> DownloadRemoteFile(string sourceUrl)
         {
             string result = null;
             string extension = GetExtension(sourceUrl);
             string rootname = "poster";
             string filename = string.Empty;
-            int index = -1;
             if (!string.IsNullOrEmpty(extension))
             {
-                
-                while ((result == null)&&(index<2))
+
+                filename = rootname + "_" ;
+                try
                 {
-                    index++;
-                    filename = rootname + "_" + index.ToString();
-                    try
+                    Windows.Storage.StorageFolder folder = Windows.Storage.ApplicationData.Current.LocalFolder;
+                    if (folder != null)
                     {
-                        Windows.Storage.StorageFolder folder = Windows.Storage.ApplicationData.Current.LocalFolder;
-                        if (folder != null)
+                        Windows.Storage.StorageFile file = await CreateTempFile(folder, filename, extension);
+                        //Windows.Storage.StorageFile file = await folder.CreateFileAsync(filename + extension, Windows.Storage.CreationCollisionOption.ReplaceExisting);
+                        if (file != null)
                         {
-                            Windows.Storage.StorageFile file = await folder.CreateFileAsync(filename + extension, Windows.Storage.CreationCollisionOption.ReplaceExisting);
-                            if (file != null)
+                            using (var client = new Windows.Web.Http.HttpClient())
                             {
-                                using (var client = new Windows.Web.Http.HttpClient())
+                                var response = await client.GetAsync(new Uri(sourceUrl));
+                                if (response != null && response.StatusCode == Windows.Web.Http.HttpStatusCode.Ok)
                                 {
-                                    var response = await client.GetAsync(new Uri(sourceUrl));
-                                    if (response != null && response.StatusCode == Windows.Web.Http.HttpStatusCode.Ok)
+                                    using (var stream = await response.Content.ReadAsInputStreamAsync())
                                     {
-                                        using (var stream = await response.Content.ReadAsInputStreamAsync())
+                                        Stream writeStream = await file.OpenStreamForWriteAsync();
+                                        if (writeStream != null)
                                         {
-                                            Stream writeStream = await file.OpenStreamForWriteAsync();
-                                            if (writeStream != null)
-                                            {
-                                                await stream.AsStreamForRead().CopyToAsync(writeStream);
-                                                await writeStream.FlushAsync();
-                                                result = file.Path;
-                                            }
+                                            await stream.AsStreamForRead().CopyToAsync(writeStream);
+                                            await writeStream.FlushAsync();
+                                            result = file.Path;
                                         }
                                     }
                                 }
                             }
                         }
                     }
-                    catch (UnauthorizedAccessException e)
-                    {
-                         System.Diagnostics.Debug.WriteLine("UnauthorizedAccessException while saving remote file locally : " + e.Message);
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine("Exception while saving remote file locally : " + ex.Message);
-                        break;
-                    }
+                }
+                catch (UnauthorizedAccessException e)
+                {
+                    System.Diagnostics.Debug.WriteLine("UnauthorizedAccessException while saving remote file locally : " + e.Message);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Exception while saving remote file locally : " + ex.Message);
                 }
             }
             return result;
