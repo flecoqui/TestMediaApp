@@ -70,6 +70,10 @@
             <uap:LaunchAction Verb="PlayCD" ActionDisplayName="Play CD" ContentEvent="PlayCDAudioOnArrival" />
           </uap:AutoPlayContent>
         </uap:Extension>
+
+        <uap:Extension Category="windows.appService" EntryPoint="CompanionService.CompanionServiceTask">
+          <uap3:AppService Name="com.testmediaapp.companionservice" SupportsRemoteSystems="true"/>
+        </uap:Extension>
         <uap5:Extension Category="windows.startupTask" Executable="AudioVideoPlayer.exe" EntryPoint="AudioVideoPlayer.App">
           <uap5:StartupTask TaskId="TestMediaAppStartupId" Enabled="false" DisplayName="TestMediaAppStartupTask">
           </uap5:StartupTask>
