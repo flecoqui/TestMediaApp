@@ -132,7 +132,7 @@
             </StackPanel>
             <StackPanel x:Name="ApplicationStartContentPanel" Orientation="Vertical"  VerticalAlignment="Center" >
                 <StackPanel Orientation="Vertical" VerticalAlignment="Top" >
-                    <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Application Start at log-in: "/>
+                    <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="AutoStart at log-in: "/>
                         <ToggleSwitch Margin="6,2,2,2" x:Name="ApplicationStart" MinWidth="100"
                                         OffContent="Off"
                                         OnContent="On"

@@ -245,6 +245,7 @@ namespace AudioVideoPlayer
             }
             else if (args.Kind == ActivationKind.StartupTask)
             {
+                LogMessage("OnStartupTaskActivated");
                 StartupTaskActivatedEventArgs startupTaskArgs = args as StartupTaskActivatedEventArgs;
                 LogMessage("StartupTask ID:" + startupTaskArgs.TaskId.ToString());
                 var p = rootFrame.Content as Shell;
@@ -252,6 +253,10 @@ namespace AudioVideoPlayer
                 {
                     ViewModels.StaticSettingsViewModel.ApplicationStart = true;
                     rootFrame.Navigate(typeof(Shell));
+                }
+                else
+                {
+                    p.SetProtocolArgs(new Uri("testmediaapp://?page=playerpage"));
                 }
             }
             else

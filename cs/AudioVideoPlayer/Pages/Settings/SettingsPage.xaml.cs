@@ -70,7 +70,7 @@ namespace AudioVideoPlayer.Pages.Settings
                 WindowModeFull.Visibility = Visibility.Collapsed;
             }
             if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Desktop", StringComparison.OrdinalIgnoreCase) &&
-                (GetBuildNumber(Information.SystemInformation.SystemVersion)>16299))
+                (GetBuildNumber(Information.SystemInformation.SystemVersion)>=16299))
             {
                 ApplicationStartHeaderPanel.Visibility = Visibility.Visible;
                 ApplicationStartContentPanel.Visibility = Visibility.Visible;
@@ -207,11 +207,13 @@ namespace AudioVideoPlayer.Pages.Settings
                             // Task is disabled but can be enabled.
                             Windows.ApplicationModel.StartupTaskState newState = await startupTask.RequestEnableAsync();
                             System.Diagnostics.Debug.WriteLine("Request to enable startup, result = {0}", newState);
+                            if(newState== Windows.ApplicationModel.StartupTaskState.Disabled)
+                                toggleSwitch.IsOn = false;
                             break;
                         case Windows.ApplicationModel.StartupTaskState.DisabledByUser:
                             // Task is disabled and user must enable it manually.
                             Windows.UI.Popups.MessageDialog dialog = new Windows.UI.Popups.MessageDialog(
-                "I know you don't want this app to run " +
+                "You don't want this app to run " +
                 "as soon as you sign in, but if you change your mind, " +
                 "you can enable this in the Startup tab in Task Manager.",
                 "TestStartup");
@@ -231,6 +233,18 @@ namespace AudioVideoPlayer.Pages.Settings
                 else
                 {
 
+                    Windows.ApplicationModel.StartupTask startupTask = await Windows.ApplicationModel.StartupTask.GetAsync("TestMediaAppStartupId");
+                    switch (startupTask.State)
+                    {
+                        case Windows.ApplicationModel.StartupTaskState.Enabled:
+                            // Task is disabled but can be enabled.
+                            startupTask.Disable();
+                            System.Diagnostics.Debug.WriteLine("Request to disable startup");
+                            break;
+                        case Windows.ApplicationModel.StartupTaskState.Disabled:
+                            System.Diagnostics.Debug.WriteLine("Startup is disabled.");
+                            break;
+                    }
                 }
             }
         }
