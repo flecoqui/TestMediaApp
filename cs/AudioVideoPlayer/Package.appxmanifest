@@ -10,7 +10,7 @@
          >
 -->
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5" IgnorableNamespaces="uap uap3 uap5 mp">
-  <Identity Name="52458FLECOQUI.TestMediaApp" Publisher="CN=0F2C9F5D-19D3-44D5-AC3F-64AB88C40609" Version="1.1.34.0" />
+  <Identity Name="52458FLECOQUI.TestMediaApp" Publisher="CN=0F2C9F5D-19D3-44D5-AC3F-64AB88C40609" Version="1.1.35.0" />
   <mp:PhoneIdentity PhoneProductId="096a95d9-b950-4854-ad77-99a1381e9dd9" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>TestMediaApp</DisplayName>
@@ -35,6 +35,17 @@
         </uap:InitialRotationPreference>
       </uap:VisualElements>
       <Extensions>
+        <uap:Extension Category="windows.autoPlayContent">
+          <uap:AutoPlayContent>
+            <uap:LaunchAction Verb="PlayCD" ActionDisplayName="Play CD" ContentEvent="PlayCDAudioOnArrival" />
+          </uap:AutoPlayContent>
+        </uap:Extension>
+        <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="testmediaapp">
+            <uap:Logo>Assets\AudioVideo.png</uap:Logo>
+            <uap:DisplayName>TestMediaApp</uap:DisplayName>
+          </uap:Protocol>
+        </uap:Extension>
         <uap:Extension Category="windows.fileTypeAssociation">
           <uap:FileTypeAssociation Name="testmediaapp">
             <uap:DisplayName>TestMediaApp</uap:DisplayName>
@@ -59,18 +70,6 @@
             </uap:SupportedFileTypes>
           </uap:FileTypeAssociation>
         </uap:Extension>
-        <uap:Extension Category="windows.protocol">
-          <uap:Protocol Name="testmediaapp">
-            <uap:Logo>Assets\AudioVideo.png</uap:Logo>
-            <uap:DisplayName>TestMediaApp</uap:DisplayName>
-          </uap:Protocol>
-        </uap:Extension>
-        <uap:Extension Category="windows.autoPlayContent">
-          <uap:AutoPlayContent>
-            <uap:LaunchAction Verb="PlayCD" ActionDisplayName="Play CD" ContentEvent="PlayCDAudioOnArrival" />
-          </uap:AutoPlayContent>
-        </uap:Extension>
-
         <uap:Extension Category="windows.appService" EntryPoint="CompanionService.CompanionServiceTask">
           <uap3:AppService Name="com.testmediaapp.companionservice" SupportsRemoteSystems="true"/>
         </uap:Extension>
