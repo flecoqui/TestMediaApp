@@ -200,7 +200,7 @@ namespace AudioVideoPlayer.Pages.Settings
             {
                 if (toggleSwitch.IsOn == true)
                 {
-                    Windows.ApplicationModel.StartupTask startupTask = await Windows.ApplicationModel.StartupTask.GetAsync("MyStartupId");
+                    Windows.ApplicationModel.StartupTask startupTask = await Windows.ApplicationModel.StartupTask.GetAsync("TestMediaAppStartupId");
                     switch (startupTask.State)
                     {
                         case Windows.ApplicationModel.StartupTaskState.Disabled:
