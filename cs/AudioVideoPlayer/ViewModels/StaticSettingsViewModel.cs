@@ -25,6 +25,7 @@ namespace AudioVideoPlayer.ViewModels
             FullScreen
         };
         // Player Settings
+        private static bool applicationStart;
         private static bool autoStart;
         private static bool contentLoop;
         private static bool playlistLoop;
@@ -33,6 +34,23 @@ namespace AudioVideoPlayer.ViewModels
         private static int minBitrate;
         private static int liveOffset;
 
+        public static bool ApplicationStart
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(ApplicationStart));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    autoStart = false;
+                else
+                    autoStart = bool.Parse(auto);
+                return applicationStart;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(ApplicationStart), value.ToString());
+                applicationStart = value;
+            }
+        }
 
         public static bool AutoStart
         {

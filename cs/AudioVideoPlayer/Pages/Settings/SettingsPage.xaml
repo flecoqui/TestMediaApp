@@ -127,7 +127,25 @@
                     </ComboBox>
                 </StackPanel>
             </StackPanel>
-            <StackPanel  >
+            <StackPanel  x:Name="ApplicationStartHeaderPanel">
+                <TextBlock  Style="{StaticResource HeaderTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Margin="0,8,0,8"  Text="Application Settings: "/>
+            </StackPanel>
+            <StackPanel x:Name="ApplicationStartContentPanel" Orientation="Vertical"  VerticalAlignment="Center" >
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top" >
+                    <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Application Start at log-in: "/>
+                        <ToggleSwitch Margin="6,2,2,2" x:Name="ApplicationStart" MinWidth="100"
+                                        OffContent="Off"
+                                        OnContent="On"
+                                        VerticalAlignment="Center"
+                                        Style="{ThemeResource CustomToggleSwitchStyle}"                                  
+                                        IsOn="{Binding Settings.ApplicationStart, Mode=TwoWay}"
+                            ToolTipService.ToolTip="Configure the application to start at log-in" 
+                                  Toggled="ApplicationStart_Toggled"
+                                  >
+                    </ToggleSwitch>
+                </StackPanel>
+            </StackPanel>
+            <StackPanel>
                     <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Margin="0,8,0,8"  Text="Player Settings: "/>
             </StackPanel>
             <StackPanel Orientation="Vertical"  VerticalAlignment="Center" >

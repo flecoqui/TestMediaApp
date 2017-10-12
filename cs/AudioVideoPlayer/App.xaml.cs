@@ -243,6 +243,17 @@ namespace AudioVideoPlayer
                     p.SetProtocolArgs(protocolArgs.Uri);
                 }
             }
+            else if (args.Kind == ActivationKind.StartupTask)
+            {
+                StartupTaskActivatedEventArgs startupTaskArgs = args as StartupTaskActivatedEventArgs;
+                LogMessage("StartupTask ID:" + startupTaskArgs.TaskId.ToString());
+                var p = rootFrame.Content as Shell;
+                if (p == null)
+                {
+                    ViewModels.StaticSettingsViewModel.ApplicationStart = true;
+                    rootFrame.Navigate(typeof(Shell));
+                }
+            }
             else
                 rootFrame.Navigate(typeof(Shell));
 

@@ -45,7 +45,17 @@ namespace AudioVideoPlayer.Pages.Settings
     /// </summary>
     public sealed partial class SettingsPage : Page
     {
-
+        int GetBuildNumber(string version)
+        {
+            int result = 0;
+            char[] sep = { '.' };
+            string[] res = version.Split(sep);
+            if((res!=null)&&(res.Count()==4))
+            {
+                int.TryParse(res[2], out result);
+            }
+            return result;
+        }
         /// <summary>
         /// PlaylistPage constructor 
         /// </summary>
@@ -58,6 +68,17 @@ namespace AudioVideoPlayer.Pages.Settings
             {
                 // Show fullWindow button
                 WindowModeFull.Visibility = Visibility.Collapsed;
+            }
+            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Desktop", StringComparison.OrdinalIgnoreCase) &&
+                (GetBuildNumber(Information.SystemInformation.SystemVersion)>16299))
+            {
+                ApplicationStartHeaderPanel.Visibility = Visibility.Visible;
+                ApplicationStartContentPanel.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                ApplicationStartHeaderPanel.Visibility = Visibility.Collapsed;
+                ApplicationStartContentPanel.Visibility = Visibility.Collapsed;
             }
             string s = MulticastCompanionConnectionManager.GetNetworkAdapterIPAddress();
             if (!string.IsNullOrEmpty(s))
@@ -170,6 +191,48 @@ namespace AudioVideoPlayer.Pages.Settings
         private void ColorCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ApplyColor_Click(null,null);
+        }
+
+        private async  void ApplicationStart_Toggled(object sender, RoutedEventArgs e)
+        {
+            ToggleSwitch toggleSwitch = sender as ToggleSwitch;
+            if (toggleSwitch != null)
+            {
+                if (toggleSwitch.IsOn == true)
+                {
+                    Windows.ApplicationModel.StartupTask startupTask = await Windows.ApplicationModel.StartupTask.GetAsync("MyStartupId");
+                    switch (startupTask.State)
+                    {
+                        case Windows.ApplicationModel.StartupTaskState.Disabled:
+                            // Task is disabled but can be enabled.
+                            Windows.ApplicationModel.StartupTaskState newState = await startupTask.RequestEnableAsync();
+                            System.Diagnostics.Debug.WriteLine("Request to enable startup, result = {0}", newState);
+                            break;
+                        case Windows.ApplicationModel.StartupTaskState.DisabledByUser:
+                            // Task is disabled and user must enable it manually.
+                            Windows.UI.Popups.MessageDialog dialog = new Windows.UI.Popups.MessageDialog(
+                "I know you don't want this app to run " +
+                "as soon as you sign in, but if you change your mind, " +
+                "you can enable this in the Startup tab in Task Manager.",
+                "TestStartup");
+                            await dialog.ShowAsync();
+                            toggleSwitch.IsOn = false;
+                            break;
+                        case Windows.ApplicationModel.StartupTaskState.DisabledByPolicy:
+                            System.Diagnostics.Debug.WriteLine(
+                            "Startup disabled by group policy, or not supported on this device");
+                            toggleSwitch.IsOn = false;
+                            break;
+                        case Windows.ApplicationModel.StartupTaskState.Enabled:
+                            System.Diagnostics.Debug.WriteLine("Startup is enabled.");
+                            break;
+                    }
+                }
+                else
+                {
+
+                }
+            }
         }
     }
 

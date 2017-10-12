@@ -160,6 +160,19 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
+        // Application Settings
+        public bool ApplicationStart
+        {
+            get
+            {
+                return StaticSettingsViewModel.ApplicationStart;
+            }
+            set
+            {
+                StaticSettingsViewModel.ApplicationStart = value;
+                NotifyPropertyChanged();
+            }
+        }
 
         // Player Settings
         public bool AutoStart

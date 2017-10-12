@@ -4,11 +4,17 @@
          xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
          xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
          xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+         xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
          xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
          IgnorableNamespaces="uap uap3 mp rescap"
          >
 -->
-<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" IgnorableNamespaces="uap uap3 mp">
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" 
+         xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" 
+         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" 
+         xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" 
+         xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5" 
+         IgnorableNamespaces="uap uap3 uap5 mp">
   <Identity Name="52458FLECOQUI.TestMediaApp" Publisher="CN=0F2C9F5D-19D3-44D5-AC3F-64AB88C40609" Version="1.1.33.0" />
   <mp:PhoneIdentity PhoneProductId="096a95d9-b950-4854-ad77-99a1381e9dd9" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
@@ -17,7 +23,7 @@
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
   <Dependencies>
-    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.14393.0" MaxVersionTested="10.0.15063.0" />
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.14393.0" MaxVersionTested="10.0.16299.0" />
   </Dependencies>
   <Resources>
     <Resource Language="x-generate" />
@@ -72,6 +78,11 @@
             </uap:SupportedFileTypes>
           </uap:FileTypeAssociation>
         </uap:Extension>
+        <uap5:Extension Category="Windows.startupTask" Executable="AudioVideoPlayer.exe" EntryPoint="AudioVideoPlayer.App">
+          <uap5:startupTask
+            TaskId="TestMediaAppStartupId" Enabled="false" DisplayName="TestMediaApp Startup Task">
+          </uap5:startupTask>
+        </uap5:Extension>
       </Extensions>
     </Application>
   </Applications>
