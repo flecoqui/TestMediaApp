@@ -45,14 +45,14 @@ namespace AudioVideoPlayer.Pages.Settings
     /// </summary>
     public sealed partial class SettingsPage : Page
     {
-        int GetBuildNumber(string version)
+        long GetVersionNumber(int Index, string version)
         {
-            int result = 0;
+            long result = 0;
             char[] sep = { '.' };
             string[] res = version.Split(sep);
             if((res!=null)&&(res.Count()==4))
             {
-                int.TryParse(res[2], out result);
+                long.TryParse(res[Index], out result);
             }
             return result;
         }
@@ -69,8 +69,13 @@ namespace AudioVideoPlayer.Pages.Settings
                 // Show fullWindow button
                 WindowModeFull.Visibility = Visibility.Collapsed;
             }
+            // If Desktop and version > 10.0.16299.0
             if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Desktop", StringComparison.OrdinalIgnoreCase) &&
-                (GetBuildNumber(Information.SystemInformation.SystemVersion)>=16299))
+                (GetVersionNumber(0, Information.SystemInformation.SystemVersion)* 281474976710656 +
+                GetVersionNumber(1, Information.SystemInformation.SystemVersion)* 4294967296 +
+                GetVersionNumber(2, Information.SystemInformation.SystemVersion)* 65536 +
+                GetVersionNumber(3, Information.SystemInformation.SystemVersion)) >= (10*281474976710656 + 16299*65536)
+                )
             {
                 ApplicationStartHeaderPanel.Visibility = Visibility.Visible;
                 ApplicationStartContentPanel.Visibility = Visibility.Visible;
