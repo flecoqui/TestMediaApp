@@ -857,7 +857,7 @@ namespace AudioVideoPlayer.ViewModels
             get
             {
                 string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(AzureFolder));
-                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                if (auto == null)
                     azureFolder = "AzureFolder";
                 else
                     azureFolder = auto;

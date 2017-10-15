@@ -833,7 +833,7 @@ namespace AudioVideoPlayer.Helpers
                         else if (item.GetType() == typeof(CloudBlobDirectory))
                         {
                             CloudBlobDirectory subdirectory = (CloudBlobDirectory)item;
-                            bFirst = counter == 0 ? true : false;
+                            bFirst = ((counter == 0) && (bFirst == true))? true : false;
                             int c = await ProcessCloudFolder(bFirst,PlaylistName, container, subdirectory, stream, extensions, bCreateThumbnails, SlideShowPeriod);
                             counter += c;
                         }
