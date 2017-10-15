@@ -851,5 +851,23 @@ namespace AudioVideoPlayer.ViewModels
                 azureContainer = value;
             }
         }
+        private static string azureFolder;
+        public static string AzureFolder
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(AzureFolder));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    azureFolder = "AzureFolder";
+                else
+                    azureFolder = auto;
+                return azureFolder;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(AzureFolder), value.ToString());
+                azureFolder = value;
+            }
+        }
     }
 }

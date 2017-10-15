@@ -573,6 +573,18 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
+        public string AzureFolder
+        {
+            get
+            {
+                return StaticSettingsViewModel.AzureFolder;
+            }
+            set
+            {
+                StaticSettingsViewModel.AzureFolder = value;
+                NotifyPropertyChanged();
+            }
+        }
         private string cloudPlaylistName;
         public string CloudPlaylistName
         {

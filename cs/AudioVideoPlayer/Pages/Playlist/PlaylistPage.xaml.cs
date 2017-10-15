@@ -212,6 +212,8 @@ namespace AudioVideoPlayer.Pages.Playlist
                          cloudPlaylistAccountKey.Visibility = Visibility.Visible;
                          cloudPlaylistContainerLabel.Visibility = Visibility.Visible;
                          cloudPlaylistContainer.Visibility = Visibility.Visible;
+                         cloudPlaylistFolderLabel.Visibility = Visibility.Visible;
+                         cloudPlaylistFolder.Visibility = Visibility.Visible;
 
                          if (IsPicture(cloudPlaylistFilters.Text))
                          {
@@ -263,6 +265,8 @@ namespace AudioVideoPlayer.Pages.Playlist
                          cloudPlaylistAccountKey.Visibility = Visibility.Collapsed;
                          cloudPlaylistContainerLabel.Visibility = Visibility.Collapsed;
                          cloudPlaylistContainer.Visibility = Visibility.Collapsed;
+                         cloudPlaylistFolderLabel.Visibility = Visibility.Collapsed;
+                         cloudPlaylistFolder.Visibility = Visibility.Collapsed;
                          cloudPlaylistPathLabel.Visibility = Visibility.Collapsed;
                          cloudPlaylistPath.Visibility = Visibility.Collapsed;
                          cloudPlaylistPeriodLabel.Visibility = Visibility.Collapsed;
@@ -439,7 +443,7 @@ namespace AudioVideoPlayer.Pages.Playlist
                     !string.IsNullOrEmpty(ViewModelLocator.Settings.CloudPlaylistPath)
                     )
                 {
-                    int counter = await Helpers.MediaHelper.CreateCloudPlaylist(ViewModelLocator.Settings.CloudPlaylistName, ViewModelLocator.Settings.AzureAccountName, ViewModelLocator.Settings.AzureAccountKey, ViewModelLocator.Settings.AzureContainer, ViewModelLocator.Settings.CloudPlaylistFilters, ViewModelLocator.Settings.CloudCreateThumbnails, ViewModelLocator.Settings.CloudSlideShowPeriod, ViewModelLocator.Settings.CloudPlaylistPath);
+                    int counter = await Helpers.MediaHelper.CreateCloudPlaylist(ViewModelLocator.Settings.CloudPlaylistName, ViewModelLocator.Settings.AzureAccountName, ViewModelLocator.Settings.AzureAccountKey, ViewModelLocator.Settings.AzureContainer, ViewModelLocator.Settings.AzureFolder, ViewModelLocator.Settings.CloudPlaylistFilters, ViewModelLocator.Settings.CloudCreateThumbnails, ViewModelLocator.Settings.CloudSlideShowPeriod, ViewModelLocator.Settings.CloudPlaylistPath);
                     cloudPlaylistItemsCount.Text = counter.ToString();
                 }
             }

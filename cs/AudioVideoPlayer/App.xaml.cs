@@ -45,21 +45,21 @@ namespace AudioVideoPlayer
             this.Suspending += OnSuspending;
             // Initialize Log Message List
             MessageList = new System.Collections.Concurrent.ConcurrentQueue<string>();
-            
+
         }
         // Display pointer as a mouse (XBOX Only)
         public void ShowPointer()
         {
             try
             {
-                
+
                 if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
                 {
-                    if(this.RequiresPointerMode != ApplicationRequiresPointerMode.Auto)
+                    if (this.RequiresPointerMode != ApplicationRequiresPointerMode.Auto)
                         this.RequiresPointerMode = ApplicationRequiresPointerMode.Auto;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 LogMessage("Exception while changing Pointer Mode: " + ex.Message);
             }
@@ -94,12 +94,18 @@ namespace AudioVideoPlayer
             }
 #endif
             // Initialize ApplicationStart 
-            Windows.ApplicationModel.StartupTask startupTask = await Windows.ApplicationModel.StartupTask.GetAsync("TestMediaAppStartupId");
-            if (startupTask.State == StartupTaskState.Enabled)
-                ViewModels.StaticSettingsViewModel.ApplicationStart = true;
-            else
-                ViewModels.StaticSettingsViewModel.ApplicationStart = false;
-
+            try
+            {
+                Windows.ApplicationModel.StartupTask startupTask = await Windows.ApplicationModel.StartupTask.GetAsync("TestMediaAppStartupId");
+                if (startupTask.State == StartupTaskState.Enabled)
+                    ViewModels.StaticSettingsViewModel.ApplicationStart = true;
+                else
+                    ViewModels.StaticSettingsViewModel.ApplicationStart = false;
+            }
+            catch (Exception)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while Getting Startup Task");
+            }
             if (e.PreviousExecutionState != ApplicationExecutionState.Running)
             {
                 bool loadState = (e.PreviousExecutionState == ApplicationExecutionState.Terminated);
@@ -231,11 +237,19 @@ namespace AudioVideoPlayer
                 Window.Current.Content = rootFrame;
             }
             // Initialize ApplicationStart 
-            Windows.ApplicationModel.StartupTask startupTask = await Windows.ApplicationModel.StartupTask.GetAsync("TestMediaAppStartupId");
-            if(startupTask.State == StartupTaskState.Enabled)
-                ViewModels.StaticSettingsViewModel.ApplicationStart = true;
-            else
-                ViewModels.StaticSettingsViewModel.ApplicationStart = false;
+            try
+            {
+                Windows.ApplicationModel.StartupTask startupTask = await Windows.ApplicationModel.StartupTask.GetAsync("TestMediaAppStartupId");
+                if (startupTask.State == StartupTaskState.Enabled)
+                    ViewModels.StaticSettingsViewModel.ApplicationStart = true;
+                else
+                    ViewModels.StaticSettingsViewModel.ApplicationStart = false;
+            }
+            catch (Exception)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while Getting Startup Task");
+            }
+
 
             // Protocol activation is the only type of activation that this app handles
             if (args.Kind == ActivationKind.Protocol)

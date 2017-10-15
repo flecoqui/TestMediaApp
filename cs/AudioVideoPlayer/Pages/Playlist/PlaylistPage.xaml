@@ -173,9 +173,10 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition Width="80"/>
                         <ColumnDefinition Width="84"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
@@ -231,16 +232,18 @@
                     <TextBox x:Name="cloudPlaylistAccountName"  IsReadOnly="false"  Grid.Row="15" MinWidth="200"     MaxWidth="200" Grid.Column="1" Grid.ColumnSpan="2"   ToolTipService.ToolTip="Account Name of Azure Storage " Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.AzureAccountName,Mode=TwoWay}"   TextWrapping="Wrap" VerticalAlignment="Center" HorizontalAlignment="Left"   MinHeight="30" />
                     <TextBlock x:Name="cloudPlaylistAccountKeyLabel"  Grid.Row="16" Grid.Column="0" Grid.ColumnSpan="1"   Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Key: "/>
                     <TextBox x:Name="cloudPlaylistAccountKey"  IsReadOnly="false" MinWidth="200"    MaxWidth="200"   Grid.Row="16" Grid.Column="1" Grid.ColumnSpan="2"  ToolTipService.ToolTip="Account Key of Azure Storage " Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.AzureAccountKey,Mode=TwoWay}"   VerticalAlignment="Center"  HorizontalAlignment="Left" MinHeight="30" />
-                    <TextBlock x:Name="cloudPlaylistContainerLabel"  Grid.Row="17" Grid.Column="0" Grid.ColumnSpan="1"    Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Folder: "/>
+                    <TextBlock x:Name="cloudPlaylistContainerLabel"  Grid.Row="17" Grid.Column="0" Grid.ColumnSpan="1"    Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Container: "/>
                     <TextBox x:Name="cloudPlaylistContainer"  IsReadOnly="False"  Grid.Row="17" Grid.Column="1" Grid.ColumnSpan="2"  MinWidth="200"     MaxWidth="200"  ToolTipService.ToolTip="Azure Container which contains media content to create a cloud playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.AzureContainer,Mode=TwoWay}"   VerticalAlignment="Center" HorizontalAlignment="Left" MinHeight="30" />
+                    <TextBlock x:Name="cloudPlaylistFolderLabel"  Grid.Row="18" Grid.Column="0" Grid.ColumnSpan="1"    Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Folder: "/>
+                    <TextBox x:Name="cloudPlaylistFolder"  IsReadOnly="False"  Grid.Row="18" Grid.Column="1" Grid.ColumnSpan="2"  MinWidth="200"     MaxWidth="200"  ToolTipService.ToolTip="Azure Folder which contains media content to create a cloud playlist" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.AzureFolder,Mode=TwoWay}"   VerticalAlignment="Center" HorizontalAlignment="Left" MinHeight="30" />
 
 
 
-                    <TextBlock x:Name="cloudPlaylistPeriodLabel"  Grid.Row="18" Grid.Column="0" Grid.ColumnSpan="2"  Text="Period (ms):" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
-                    <TextBox x:Name="cloudPlaylistPeriod"  IsReadOnly="false"  MinWidth="100"    MaxWidth="100"   Grid.Row="18" Grid.Column="2" Grid.ColumnSpan="1" HorizontalAlignment="Left"  ToolTipService.ToolTip="Path/Uri of the created Playlist in the Documents folder" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.CloudSlideShowPeriod,Mode=TwoWay}" TextWrapping="Wrap" />
+                    <TextBlock x:Name="cloudPlaylistPeriodLabel"  Grid.Row="19" Grid.Column="0" Grid.ColumnSpan="2"  Text="Period (ms):" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
+                    <TextBox x:Name="cloudPlaylistPeriod"  IsReadOnly="false"  MinWidth="100"    MaxWidth="100"   Grid.Row="19" Grid.Column="2" Grid.ColumnSpan="1" HorizontalAlignment="Left"  ToolTipService.ToolTip="Path/Uri of the created Playlist in the Documents folder" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="{x:Bind ViewModelLocator.Settings.CloudSlideShowPeriod,Mode=TwoWay}" TextWrapping="Wrap" />
 
-                    <TextBlock x:Name="cloudPlaylistThumbnailLabel"  Grid.Row="19" Grid.Column="0" Grid.ColumnSpan="2"  Text="Thumbnail:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
-                    <ToggleSwitch x:Name="cloudPlaylistThumbnail"  Grid.Row="19" Grid.Column="2" Grid.ColumnSpan="1"   Margin="2,2,2,2"  MinWidth="100"
+                    <TextBlock x:Name="cloudPlaylistThumbnailLabel"  Grid.Row="20" Grid.Column="0" Grid.ColumnSpan="2"  Text="Thumbnail:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
+                    <ToggleSwitch x:Name="cloudPlaylistThumbnail"  Grid.Row="20" Grid.Column="2" Grid.ColumnSpan="1"   Margin="2,2,2,2"  MinWidth="100"
                                           OffContent="Off"
                                           OnContent="On"
                                           VerticalAlignment="Center"
@@ -248,10 +251,10 @@
                                           IsOn="{x:Bind ViewModelLocator.Settings.CloudCreateThumbnails, Mode=TwoWay}"
                               ToolTipService.ToolTip="Enable/Disable thumbnails search while building cloud music or video playlist. It will take a jpg file in the same folder."    >
                     </ToggleSwitch>
-                    <TextBlock x:Name="cloudPlaylistItemsCountLabel"  Grid.Row="20" Grid.Column="0" Text="Items:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
-                    <TextBox x:Name="cloudPlaylistItemsCount"  IsReadOnly="True" BorderThickness="0" Grid.Row="20" Grid.Column="1" Grid.ColumnSpan="2"  ToolTipService.ToolTip="Path/Uri of the created Playlist in the Documents folder" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="-1" TextWrapping="Wrap" />
-                    <TextBlock Grid.Row="21" VerticalAlignment="Center" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Validate Creation: " />
-                    <Button x:Name="cloudPlaylistCreation"   IsEnabled="true" Content="&#xE78C;" Grid.Row="21" Grid.Column="2"   Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Create a cloud playlist from an existing Cloud Storage container" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="CreateCloudPlaylist_Click" />
+                    <TextBlock x:Name="cloudPlaylistItemsCountLabel"  Grid.Row="21" Grid.Column="0" Text="Items:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
+                    <TextBox x:Name="cloudPlaylistItemsCount"  IsReadOnly="True" BorderThickness="0" Grid.Row="21" Grid.Column="1" Grid.ColumnSpan="2"  ToolTipService.ToolTip="Path/Uri of the created Playlist in the Documents folder" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="-1" TextWrapping="Wrap" />
+                    <TextBlock Grid.Row="22" VerticalAlignment="Center" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Validate Creation: " />
+                    <Button x:Name="cloudPlaylistCreation"   IsEnabled="true" Content="&#xE78C;" Grid.Row="22" Grid.Column="2"   Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Create a cloud playlist from an existing Cloud Storage container" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="CreateCloudPlaylist_Click" />
                 </Grid>
             </StackPanel>
 

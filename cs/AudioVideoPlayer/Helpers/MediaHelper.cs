@@ -19,6 +19,7 @@ using Windows.Storage.FileProperties;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Storage.Streams;
+using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 
@@ -631,7 +632,7 @@ namespace AudioVideoPlayer.Helpers
             }
             return 0;
         }
-        public static async System.Threading.Tasks.Task<int> CreateCloudPlaylist(string PlaylistName, string AccountName, string AccountKey, string Container, string extensions, bool bCreateThumbnails, int SlideShowPeriod, string outputFile)
+        public static async System.Threading.Tasks.Task<int> CreateCloudPlaylistOld(string PlaylistName, string AccountName, string AccountKey, string Container, string extensions, bool bCreateThumbnails, int SlideShowPeriod, string outputFile)
         {
             List<string> blobs = new List<string>();
             int counter = 0;
@@ -757,5 +758,139 @@ namespace AudioVideoPlayer.Helpers
             }
             return -1;
         }
+
+
+        public static async System.Threading.Tasks.Task<int> ProcessCloudFolder(bool bFirst, string PlaylistName,CloudBlobContainer container, CloudBlobDirectory directory, Stream stream, string extensions, bool bCreateThumbnails, int SlideShowPeriod)
+        {
+            int counter = 0;
+            BlobResultSegment result = null;
+            BlobContinuationToken token = null;
+            do
+            {
+                if (directory != null)
+                    result = await directory.ListBlobsSegmentedAsync(token);
+                else
+                    result = await container.ListBlobsSegmentedAsync(null, false, BlobListingDetails.None, 500, token, null, null);
+                if (result != null)
+                {
+                    token = result.ContinuationToken;
+                    foreach (IListBlobItem item in result.Results)
+                    {
+                        if (item.GetType() == typeof(CloudBlockBlob))
+                        {
+                            CloudBlockBlob blob = (CloudBlockBlob)item;
+
+                            string unescapeuri = blob.Uri.ToString();
+                            string ext = GetExtension(unescapeuri);
+                            if ((!string.IsNullOrEmpty(ext)) && (extensions.IndexOf(ext, StringComparison.OrdinalIgnoreCase) >= 0))
+                            {
+                                string artist = string.Empty;
+                                string album = string.Empty;
+                                string posteruri = string.Empty;
+                                if (bCreateThumbnails)
+                                    posteruri = GetPosterUri(unescapeuri, extensions, result.Results);
+                                string title = GetUriFileName(unescapeuri);
+                                if (!string.IsNullOrEmpty(title))
+                                {
+                                    string uri = Uri.EscapeUriString(unescapeuri);
+                                    uri = uri.Replace("\'", "%27");
+
+                                    if (bFirst == true)
+                                    {
+                                        bFirst = false;
+                                        string s = "";
+                                        s += "{";
+                                        if (IsPictureFile(ext))
+                                            s += string.Format(pictureItem, counter.ToString(), title, uri, posteruri, SlideShowPeriod.ToString());
+                                        else if (IsMusicFile(ext))
+                                            s += string.Format(musicItem, counter.ToString(), title, uri, posteruri);
+                                        else
+                                            s += string.Format(videoItem, counter.ToString(), title, uri, posteruri);
+                                        s += "}";
+                                        AppendText(stream, s);
+                                    }
+                                    else
+                                    {
+                                        string s = ",\r\n";
+                                        s += "{";
+                                        if (IsPictureFile(ext))
+                                            s += string.Format(pictureItem, counter.ToString(), title, uri, posteruri, SlideShowPeriod.ToString());
+                                        else if (IsMusicFile(ext))
+                                            s += string.Format(musicItem, counter.ToString(), title, uri, posteruri);
+                                        else
+                                            s += string.Format(videoItem, counter.ToString(), title, uri, posteruri);
+                                        s += "}";
+                                        AppendText(stream, s);
+                                    }
+                                    counter++;
+                                }
+                            }
+                        }
+                        else if (item.GetType() == typeof(CloudPageBlob))
+                        {
+                            CloudPageBlob pageBlob = (CloudPageBlob)item;
+                        }
+                        else if (item.GetType() == typeof(CloudBlobDirectory))
+                        {
+                            CloudBlobDirectory subdirectory = (CloudBlobDirectory)item;
+                            bFirst = counter == 0 ? true : false;
+                            int c = await ProcessCloudFolder(bFirst,PlaylistName, container, subdirectory, stream, extensions, bCreateThumbnails, SlideShowPeriod);
+                            counter += c;
+                        }
+                    }
+                }
+            }
+            while (result.ContinuationToken != null);
+            return counter;
+        }
+        public static async System.Threading.Tasks.Task<int> CreateCloudPlaylist(string PlaylistName, string AccountName, string AccountKey, string Container, string folder, string extensions, bool bCreateThumbnails, int SlideShowPeriod, string outputFile)
+        {
+            List<string> blobs = new List<string>();
+            int counter = 0;
+            try
+            {
+                Windows.Storage.StorageFile writer = await CreateFile(outputFile);
+                if (writer != null)
+                {
+                    Stream stream = await writer.OpenStreamForWriteAsync();
+                    if (stream != null)
+                    {
+                        // Retrieve storage account from connection string.
+                        CloudStorageAccount storageAccount = CloudStorageAccount.Parse(
+                        "DefaultEndpointsProtocol=https;AccountName=" + AccountName + ";AccountKey=" + AccountKey);
+
+                        // Create the blob client.
+                        CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+
+                        // Retrieve reference to a previously created container.
+                        CloudBlobContainer container = blobClient.GetContainerReference(Container);
+
+
+                        // Loop over items within the container and output the length and URI.
+                        //var result = await container.ListBlobsSegmentedAsync(null);
+                        //BlobResultSegment result = null;
+                        //BlobContinuationToken token = null;
+                        string header = headerStart + PlaylistName + headerEnd;
+                        string s = header;
+                        AppendText(stream, s);
+                        CloudBlobDirectory directory = (!string.IsNullOrEmpty(folder) ? container.GetDirectoryReference(folder):null);
+                        bool bFirst = true;
+                        int c = await ProcessCloudFolder(bFirst,PlaylistName, container, directory, stream, extensions, bCreateThumbnails, SlideShowPeriod);
+                        counter += c;
+                        AppendText(stream, footer);
+                        stream.Flush();
+
+                        System.Diagnostics.Debug.WriteLine(counter.ToString() + " files discovered on cloud storage\n");
+                        return counter;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while discovering media file on cloud storage:" + ex.Message);
+            }
+            return -1;
+        }
+
     }
 }
