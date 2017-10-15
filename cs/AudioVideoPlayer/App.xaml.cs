@@ -84,7 +84,7 @@ namespace AudioVideoPlayer
         /// will be used such as when the application is launched to open a specific file.
         /// </summary>
         /// <param name="e">Details about the launch request and process.</param>
-        protected override void OnLaunched(LaunchActivatedEventArgs e)
+        protected override async void OnLaunched(LaunchActivatedEventArgs e)
         {
 
 #if DEBUG
@@ -93,6 +93,13 @@ namespace AudioVideoPlayer
                 this.DebugSettings.EnableFrameRateCounter = true;
             }
 #endif
+            // Initialize ApplicationStart 
+            Windows.ApplicationModel.StartupTask startupTask = await Windows.ApplicationModel.StartupTask.GetAsync("TestMediaAppStartupId");
+            if (startupTask.State == StartupTaskState.Enabled)
+                ViewModels.StaticSettingsViewModel.ApplicationStart = true;
+            else
+                ViewModels.StaticSettingsViewModel.ApplicationStart = false;
+
             if (e.PreviousExecutionState != ApplicationExecutionState.Running)
             {
                 bool loadState = (e.PreviousExecutionState == ApplicationExecutionState.Terminated);
@@ -214,7 +221,7 @@ namespace AudioVideoPlayer
             // Ensure the current window is active 
             Window.Current.Activate();
         }
-        protected override void OnActivated(IActivatedEventArgs args)
+        protected override async void OnActivated(IActivatedEventArgs args)
         {
             LogMessage("OnActivated");
             Frame rootFrame = Window.Current.Content as Frame;
@@ -223,6 +230,12 @@ namespace AudioVideoPlayer
                 rootFrame = new Frame();
                 Window.Current.Content = rootFrame;
             }
+            // Initialize ApplicationStart 
+            Windows.ApplicationModel.StartupTask startupTask = await Windows.ApplicationModel.StartupTask.GetAsync("TestMediaAppStartupId");
+            if(startupTask.State == StartupTaskState.Enabled)
+                ViewModels.StaticSettingsViewModel.ApplicationStart = true;
+            else
+                ViewModels.StaticSettingsViewModel.ApplicationStart = false;
 
             // Protocol activation is the only type of activation that this app handles
             if (args.Kind == ActivationKind.Protocol)

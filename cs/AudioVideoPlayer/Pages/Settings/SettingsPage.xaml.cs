@@ -212,7 +212,7 @@ namespace AudioVideoPlayer.Pages.Settings
                             // Task is disabled but can be enabled.
                             Windows.ApplicationModel.StartupTaskState newState = await startupTask.RequestEnableAsync();
                             System.Diagnostics.Debug.WriteLine("Request to enable startup, result = {0}", newState);
-                            if(newState== Windows.ApplicationModel.StartupTaskState.Disabled)
+                            if(newState != Windows.ApplicationModel.StartupTaskState.Enabled)
                                 toggleSwitch.IsOn = false;
                             break;
                         case Windows.ApplicationModel.StartupTaskState.DisabledByUser:
@@ -237,7 +237,13 @@ namespace AudioVideoPlayer.Pages.Settings
                 }
                 else
                 {
-
+                    /*
+                    IReadOnlyList<Windows.ApplicationModel.StartupTask> startupTaskList = await Windows.ApplicationModel.StartupTask.GetForCurrentPackageAsync();
+                    foreach (var startupTask in startupTaskList)
+                        if(startupTask.State == Windows.ApplicationModel.StartupTaskState.Enabled)
+                        startupTask.Disable();
+                    */
+                    
                     Windows.ApplicationModel.StartupTask startupTask = await Windows.ApplicationModel.StartupTask.GetAsync("TestMediaAppStartupId");
                     switch (startupTask.State)
                     {
@@ -250,6 +256,7 @@ namespace AudioVideoPlayer.Pages.Settings
                             System.Diagnostics.Debug.WriteLine("Startup is disabled.");
                             break;
                     }
+                    
                 }
             }
         }
