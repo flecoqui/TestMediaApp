@@ -545,7 +545,7 @@ namespace AudioVideoPlayer.ViewModels
 
                     playListList = new ObservableCollection<Models.PlayList>();
                     Models.PlayList p = Task.Run(async () => { return await Models.PlayList.GetNewPlaylist("ms-appx:///DataModel/MediaData.json"); }).Result;
-                    if (p != null)
+                    if ((p != null)&&(p.Count>0))
                         playListList.Add(p);
                 }
                 else

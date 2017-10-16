@@ -33,7 +33,7 @@ namespace AudioVideoPlayer.Helpers
         const string musicItem = " \"UniqueId\": \"{0}\", \"Comment\": \"\", \"Title\": \"{1}\", \"ImagePath\": \"ms-appx:///Assets/MUSIC.png\",\"Description\": \"\", \"Content\": \"{2}\", \"PosterContent\": \"{3}\",\"Start\": \"0\",\"Duration\": \"0\",\"PlayReadyUrl\": \"null\",\"PlayReadyCustomData\": \"null\",\"BackgroundAudio\": true";
         const string pictureItem = " \"UniqueId\": \"{0}\", \"Comment\": \"\", \"Title\": \"{1}\", \"ImagePath\": \"ms-appx:///Assets/PHOTO.png\",\"Description\": \"\", \"Content\": \"{2}\", \"PosterContent\": \"{3}\",\"Start\": \"0\",\"Duration\": \"{4}\",\"PlayReadyUrl\": \"null\",\"PlayReadyCustomData\": \"null\",\"BackgroundAudio\": true";
         const string footer = "\r\n]}]}";
-        public const string videoExts = ".asf;.avi;.ismv;.ts;.m4a;.mkv;.mov;.mp4;.wmv;";
+        public const string videoExts = ".asf;.avi;.ismv;.ts;.mkv;.mov;.mp4;.wmv;";
         public const string audioExts = ".mp3;.aac;.wma;.wav;.flac;.m4a;";
         public const string pictureExts = ".png;.jpg";
         public enum MediaType

@@ -482,23 +482,28 @@ namespace AudioVideoPlayer.Pages.Playlist
                     Models.PlayList playlist = await Models.PlayList.GetNewPlaylist(file.Path);
                     if (playlist != null)
                     {
-                        if (!IsThePlaylistNameUsed(playlist.Name))
+                        if (playlist.Count > 0)
                         {
-                            ViewModels.ViewModel vm = this.DataContext as ViewModels.ViewModel;
-                            if (vm != null)
+                            if (!IsThePlaylistNameUsed(playlist.Name))
                             {
-                                ObservableCollection<Models.PlayList> PlayListList = vm.Settings.PlayListList;
-                                PlayListList.Add(playlist);
-                                vm.Settings.PlayListList = PlayListList;
-                                if(!SelectPlaylistWithName(playlist.Name))
+                                ViewModels.ViewModel vm = this.DataContext as ViewModels.ViewModel;
+                                if (vm != null)
                                 {
-                                    ImportButton.IsEnabled = false;
-                                    RemoveButton.IsEnabled = false;
+                                    ObservableCollection<Models.PlayList> PlayListList = vm.Settings.PlayListList;
+                                    PlayListList.Add(playlist);
+                                    vm.Settings.PlayListList = PlayListList;
+                                    if (!SelectPlaylistWithName(playlist.Name))
+                                    {
+                                        ImportButton.IsEnabled = false;
+                                        RemoveButton.IsEnabled = false;
+                                    }
                                 }
                             }
+                            else
+                                SetErrorMessage("Playlist name already used");
                         }
                         else
-                            SetErrorMessage("Playlist name already used");
+                            SetErrorMessage("Playlist empty: 0 item");
                     }
                     else
                         SetErrorMessage("Error while parsing the playlist file");

@@ -134,7 +134,7 @@ namespace AudioVideoPlayer.Pages.Player
             // Update PlaylistList
 
             Models.PlayList playlist = await Models.PlayList.GetNewPlaylist(path);
-            if (playlist != null)
+            if ((playlist != null)&&(playlist.Count>0))
             {
                 if (ViewModelLocator != null)
                 {

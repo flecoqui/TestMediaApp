@@ -26,7 +26,7 @@ namespace AudioVideoPlayer.Models
         {
             MediaDataSource.Clear();
             MediaDataGroup audio_video = await MediaDataSource.GetGroupAsync(path, "audio_video_picture");
-            if ((audio_video != null) && (audio_video.Items.Count > 0))
+            if (audio_video != null) 
             {
                 Models.PlayList playlist = new Models.PlayList(path, audio_video.Title);
                 if (playlist != null)
