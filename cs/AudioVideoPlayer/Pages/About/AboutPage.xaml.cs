@@ -38,7 +38,7 @@ namespace AudioVideoPlayer.Pages.About
         {
             base.OnNavigatedTo(e);
 
-            //Shell.Current.ShowOnlyHeader("About");
+            Shell.Current.GetHamburgerMenu().Focus(Windows.UI.Xaml.FocusState.Programmatic);
 
         }
     }

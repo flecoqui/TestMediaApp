@@ -83,7 +83,7 @@
                 <Rectangle Grid.Column="2"  x:Name="BackgroundElement" Fill="Transparent" />
             </Grid>
         </Grid>
-        <controls:HamburgerMenu x:Name="HamburgerMenu"
+        <controls:HamburgerMenu x:Name="hamburgerMenu"
                                 Foreground="White"
                                 ItemClick="HamburgerMenu_OnItemClick"
                                 ItemTemplate="{StaticResource ButtonTemplate}"

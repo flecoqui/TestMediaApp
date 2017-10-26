@@ -100,6 +100,7 @@ namespace AudioVideoPlayer.Pages.Settings
             // Windows.Phone.UI.Input.HardwareButtons.BackPressed event.
             // If you are using the NavigationHelper provided by some templates,
             // this event is handled for you.
+            AppThemeSwitch.Focus(FocusState.Programmatic);
         }
 
         public bool Reload()
@@ -128,6 +129,8 @@ namespace AudioVideoPlayer.Pages.Settings
                     // Refresh the pages with the new Color                         
                     AudioVideoPlayer.Shell.Current.UpdateTitleBarAndColor(true);
                     Reload();
+                    ColorCombo.Focus(FocusState.Programmatic);
+
                 }
             }
         }

@@ -38,6 +38,10 @@ namespace AudioVideoPlayer
     {
         public static Shell Current { get; private set; }
 
+        public HamburgerMenu GetHamburgerMenu()
+        {
+            return hamburgerMenu;
+        }
         private bool _isPaneOpen;
 
         public bool DisplayWaitRing
@@ -75,6 +79,7 @@ namespace AudioVideoPlayer
             Window.Current.Activated += Current_Activated;
 
             UpdateTitleBarAndColor(true);
+
         }
         // Display pointer as a mouse (XBOX Only)
         public void ShowPointer()
@@ -129,9 +134,9 @@ namespace AudioVideoPlayer
             listMenu.Add(new MenuItem { Icon = "\xE8EF;", Name = "Remote", PageType = typeof(AudioVideoPlayer.Pages.Remote.RemotePage) });
             listMenu.Add(new MenuItem { Icon = "\xE713;", Name = "Settings", PageType = typeof(AudioVideoPlayer.Pages.Settings.SettingsPage) });
 
-            HamburgerMenu.ItemsSource = listMenu;
+            hamburgerMenu.ItemsSource = listMenu;
             // Options
-            HamburgerMenu.OptionsItemsSource = new[]
+            hamburgerMenu.OptionsItemsSource = new[]
             {
                 //new MenuItem{ Icon = "\xE779;", Name = "Sign In", PageType = typeof(AudioVideoPlayer.Pages.SignIn.SignInPage) },
                 new MenuItem{ Icon = "\xE897;", Name = "About", PageType = typeof(AudioVideoPlayer.Pages.About.AboutPage) }
@@ -141,12 +146,27 @@ namespace AudioVideoPlayer
             NavigationFrame.Navigating += NavigationFrame_Navigating;
             NavigationFrame.Navigated += NavigationFrameOnNavigated;
             SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
+            Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
             ProtocolActivatedEventArgs a = e.Parameter as ProtocolActivatedEventArgs;
             if (a!=null)
                 SetProtocolArgs(a.Uri);
             else
                 NavigateToSample(typeof(PlayerPage), null);
         }
+        /// <summary>
+        /// KeyDown event 
+        /// </summary>
+        private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs args)
+        {
+            if (args.VirtualKey == Windows.System.VirtualKey.Back)
+            {
+                if (NavigationFrame.CanGoBack)
+                {
+                    NavigationFrame.GoBack();
+                }
+            }
+        }
+
         private static readonly Regex _regex = new Regex(@"[?|&]([\w\.]+)=([^?|^&]+)");
 
         public static IReadOnlyDictionary<string, string> ParseQueryString(Uri uri)
@@ -238,7 +258,7 @@ namespace AudioVideoPlayer
         private void NavigationFrame_Navigating(object sender, NavigatingCancelEventArgs navigationEventArgs)
         {
           // HamburgerMenu.SelectedItem = category;
-           HamburgerMenu.SelectedOptionsItem = null;
+           hamburgerMenu.SelectedOptionsItem = null;
         }
 
         private void ExpandButton_Click(object sender, RoutedEventArgs e)
@@ -248,7 +268,7 @@ namespace AudioVideoPlayer
 
         private void ExpandOrCloseProperties()
         {
-            var states = VisualStateManager.GetVisualStateGroups(HamburgerMenu).FirstOrDefault();
+            var states = VisualStateManager.GetVisualStateGroups(hamburgerMenu).FirstOrDefault();
             if ((states != null) && (states.CurrentState != null))
             {
                 string currentState = states.CurrentState.Name;
@@ -302,8 +322,14 @@ namespace AudioVideoPlayer
             if (NavigationFrame.CanGoBack)
             {
                 backRequestedEventArgs.Handled = true;
-
                 NavigationFrame.GoBack();
+            }
+            else
+            {
+                // To prevent the user from leaving the application 
+                // with a back key stroke
+                backRequestedEventArgs.Handled = true;
+
             }
         }
 
@@ -349,7 +375,7 @@ namespace AudioVideoPlayer
                     backStack.RemoveAt(backStackCount - 1);
                 }
                 NavigationFrame.Navigate(appPage.PageType);
-                HamburgerMenu.IsPaneOpen = false;
+                hamburgerMenu.IsPaneOpen = false;
                 
             }
         }
@@ -403,7 +429,7 @@ namespace AudioVideoPlayer
             else
                 Window.Current.SetTitleBar(null);
 
-            HamburgerMenu.PaneBackground = new Windows.UI.Xaml.Media.SolidColorBrush(backgroundColor);            
+            hamburgerMenu.PaneBackground = new Windows.UI.Xaml.Media.SolidColorBrush(backgroundColor);            
             Windows.UI.ViewManagement.ApplicationViewTitleBar formattableTitleBar = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TitleBar;
             formattableTitleBar.ButtonForegroundColor = foregroundColor;
             formattableTitleBar.ForegroundColor = foregroundColor;
