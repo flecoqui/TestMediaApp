@@ -23,13 +23,6 @@ namespace AudioVideoPlayer.Pages.SignIn
         public SignInPage()
         {
             InitializeComponent();
-            ShowPointer();
-        }
-        // Display pointer as a mouse (XBOX Only)
-        public void ShowPointer()
-        {
-            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
-                RequiresPointer = RequiresPointer.WhenFocused;
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {

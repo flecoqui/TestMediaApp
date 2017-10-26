@@ -73,7 +73,7 @@ namespace AudioVideoPlayer
 
             Current = this;
             Window.Current.Activated += Current_Activated;
-            ShowPointer();
+
             UpdateTitleBarAndColor(true);
         }
         // Display pointer as a mouse (XBOX Only)

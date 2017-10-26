@@ -62,7 +62,6 @@ namespace AudioVideoPlayer.Pages.Settings
         public SettingsPage()
         {
             this.InitializeComponent();
-            ShowPointer();
             // Show FullWindow on phone
             if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
             {
@@ -88,12 +87,6 @@ namespace AudioVideoPlayer.Pages.Settings
             string s = MulticastCompanionConnectionManager.GetNetworkAdapterIPAddress();
             if (!string.IsNullOrEmpty(s))
                 IPAddress.Text = s; 
-        }
-        // Display pointer as a mouse (XBOX Only)
-        public void ShowPointer()
-        {
-            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
-                RequiresPointer = RequiresPointer.WhenFocused;
         }
         /// <summary>
         /// Invoked when this page is about to be displayed in a Frame.

@@ -61,15 +61,8 @@ namespace AudioVideoPlayer.Pages.Remote
         {
             this.InitializeComponent();
             PageStatus = Status.NoDeviceSelected;
-            ShowPointer();
             UpdateControls();
 
-        }
-        // Display pointer as a mouse (XBOX Only)
-        public void ShowPointer()
-        {
-            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
-                RequiresPointer = RequiresPointer.WhenFocused;
         }
         /// <summary>
         /// Invoked when this page is about to be displayed in a Frame.

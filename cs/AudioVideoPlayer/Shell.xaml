@@ -98,6 +98,8 @@
                                 HamburgerHeight="42"
                                 Style="{StaticResource HamburgerMenuTemplate}"
                                 Grid.Row="1" 
+                                IsTabStop="True"
+                                TabIndex="-1"
                                 >
             <Grid x:Name="RootGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" >
                 <Grid.ColumnDefinitions>

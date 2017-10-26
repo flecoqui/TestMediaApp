@@ -366,6 +366,9 @@ namespace AudioVideoPlayer.Pages.Player
             // Display OS, Device information
             LogMessage(Information.SystemInformation.GetString());
 
+            // Focus on PlayButton
+            playButton.Focus(FocusState.Programmatic);
+
         }
 
 
@@ -1125,7 +1128,7 @@ namespace AudioVideoPlayer.Pages.Player
             // Hack for the Application running on XBOX One to avoid displaying "Remote" border  
             await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
-                playButton.Focus(FocusState.Pointer);
+                playButton.Focus(FocusState.Programmatic);
             }
             );
         }
@@ -1863,18 +1866,6 @@ namespace AudioVideoPlayer.Pages.Player
             }
             return false;
         }
-        // Display pointer as a mouse (XBOX Only)
-        public void ShowPointer()
-        {
-            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
-                RequiresPointer = RequiresPointer.WhenFocused;
-        }
-        // Hide pointer as a mouse (XBOX Only)
-        public void HidePointer()
-        {
-            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
-                RequiresPointer = RequiresPointer.Never;
-        }
         /// <summary>
         /// SetFullWindow for MediaElement, PictureElement and picturePopup
         /// </summary>
@@ -1883,7 +1874,7 @@ namespace AudioVideoPlayer.Pages.Player
             if (state == WindowMediaState.FullWindow)
             {
                 ShowTitleBar(false);
-                HidePointer();
+                //HidePointer();
                 // if playing a picture or a video or audio with poster                
                 if (pictureElement.Visibility == Visibility.Visible)
                 {
@@ -1905,7 +1896,7 @@ namespace AudioVideoPlayer.Pages.Player
             {
 
                 ShowTitleBar(true);
-                HidePointer();
+                //HidePointer();
                 // if playing a picture or a video or audio with poster                
                 if (pictureElement.Visibility == Visibility.Visible)
                 {
@@ -1931,7 +1922,6 @@ namespace AudioVideoPlayer.Pages.Player
             {
 
                 ShowTitleBar(true);
-                ShowPointer();
                 var view = ApplicationView.GetForCurrentView();
                 if ((view.IsFullScreenMode) || (view.AdjacentToLeftDisplayEdge && view.AdjacentToRightDisplayEdge))
                     view.ExitFullScreenMode();
@@ -1940,6 +1930,7 @@ namespace AudioVideoPlayer.Pages.Player
                     mediaPlayerElement.IsFullWindow = false;
                 if (mediaPlayerElement.AreTransportControlsEnabled == true)
                     mediaPlayerElement.AreTransportControlsEnabled = false;
+
                 WindowState = WindowMediaState.WindowMode;
             }
             return true;
@@ -2057,8 +2048,16 @@ namespace AudioVideoPlayer.Pages.Player
         {
             if (args.VirtualKey == Windows.System.VirtualKey.GamepadA)
             {
-                if (IsFullScreen() || IsFullWindow())
+                if (IsFullScreen())
+                {
                     SetWindowMode(WindowMediaState.WindowMode);
+                    fullscreenButton.Focus(FocusState.Programmatic);
+                }
+                else if (IsFullWindow())
+                {
+                    SetWindowMode(WindowMediaState.WindowMode);
+                    fullwindowButton.Focus(FocusState.Programmatic);
+                }
             }
         }
         /// <summary>
