@@ -131,8 +131,8 @@ namespace AudioVideoPlayer.Pages.CDPlayer
             RegisterCDManager();
 
             // Update control and play first video
-            UpdateControls();
-
+            // Focus on PlayButton
+            UpdateControls(false, loadButton);
 
 
 
@@ -284,7 +284,7 @@ namespace AudioVideoPlayer.Pages.CDPlayer
             cdReaderManager.CDReaderDeviceAdded += CDReaderDevice_Added;
             cdReaderManager.CDReaderDeviceRemoved += CDReaderDevice_Removed;
             cdReaderManager.StartDiscovery();
-
+            
             ComboDevices.IsEnabled = true;
 
         }
@@ -366,12 +366,14 @@ namespace AudioVideoPlayer.Pages.CDPlayer
                      ListDeviceInformation.Add(args);
                  ComboDevices.Items.Add(args.Id);
                  CheckListDevices();
-                 await LoadMetadata();
-                 if (ViewModels.StaticSettingsViewModel.AutoStart == true)
+                 if (await LoadMetadata() == true)
                  {
-                     PlayCurrentTrack();
+                     if (ViewModels.StaticSettingsViewModel.AutoStart == true)
+                     {
+                         PlayCurrentTrack();
+                     }
+                     UpdateControls(false,stopButton);
                  }
-                 UpdateControls();
              });
         }
         public  async void AutoPlay(string verb)
@@ -379,9 +381,11 @@ namespace AudioVideoPlayer.Pages.CDPlayer
             if (string.Equals(verb, "PlayCD", StringComparison.OrdinalIgnoreCase))
             {
                 LogMessage("Auto Play CD event");
-                await LoadMetadata();
-                PlayCurrentTrack();
-                UpdateControls();
+                if (await LoadMetadata() == true)
+                {
+                    PlayCurrentTrack();
+                    UpdateControls(false, stopButton);
+                }
             }
         }
         private async System.Threading.Tasks.Task<bool> LoadMetadata()
@@ -409,6 +413,7 @@ namespace AudioVideoPlayer.Pages.CDPlayer
                         {
                             FillComboTrack();
                             LogMessage("Get CD Table Map successfull: " + currentCD.Tracks.Count.ToString() + " tracks");
+                            
                             result = true;
                         }
                     }
@@ -429,8 +434,10 @@ namespace AudioVideoPlayer.Pages.CDPlayer
         /// </summary>
         private async void Load_Click(object sender, RoutedEventArgs e)
         {
-            await LoadMetadata();
+            bool res = await LoadMetadata();
             UpdateControls();
+            if(res==true)
+                playButton.Focus(FocusState.Programmatic);
         }
         /// <summary>
         /// Eject method which eject CD 
@@ -1221,13 +1228,13 @@ namespace AudioVideoPlayer.Pages.CDPlayer
         /// <summary>
         /// UpdateControls Method which update the controls on the page  
         /// </summary>
-        async void UpdateControls(bool bDisable = false)
+         async void UpdateControls(bool bDisable = false, Windows.UI.Xaml.Controls.Control ctrl = null)
         {
 
             await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
                  () =>
                  {
-                     if(bExtracting == true)
+                     if (bExtracting == true)
                      {
                          playButton.IsEnabled = false;
                          playPauseButton.IsEnabled = false;
@@ -1244,7 +1251,7 @@ namespace AudioVideoPlayer.Pages.CDPlayer
 
                          ejectButton.IsEnabled = false;
                          loadButton.IsEnabled = false;
-                         if(extractTrackButton.Content.ToString() == "\xE8D8")
+                         if (extractTrackButton.Content.ToString() == "\xE8D8")
                              extractTrackButton.IsEnabled = true;
                          else
                              extractTrackButton.IsEnabled = false;
@@ -1252,7 +1259,7 @@ namespace AudioVideoPlayer.Pages.CDPlayer
                              extractTracksButton.IsEnabled = true;
                          else
                              extractTracksButton.IsEnabled = false;
-                         
+
                          playWAVButton.IsEnabled = false;
 
                          ComboDevices.IsEnabled = false;
@@ -1286,10 +1293,10 @@ namespace AudioVideoPlayer.Pages.CDPlayer
                          }
                          else
                          {
-                             
+
                              {
 
-                                 if ((ComboTrackNumber.Items!=null) && (ComboTrackNumber.Items.Count > 0))
+                                 if ((ComboTrackNumber.Items != null) && (ComboTrackNumber.Items.Count > 0))
                                  {
                                      ComboTrackNumber.IsEnabled = true;
                                      playButton.IsEnabled = true;
@@ -1311,25 +1318,25 @@ namespace AudioVideoPlayer.Pages.CDPlayer
                                      stopButton.IsEnabled = false;
 
 
-                                    if (mediaPlayer.PlaybackSession.PlaybackState == Windows.Media.Playback.MediaPlaybackState.Playing)
-                                    {
-                                        playPauseButton.IsEnabled = false;
-                                        pausePlayButton.IsEnabled = true;
-                                        stopButton.IsEnabled = true;
+                                     if (mediaPlayer.PlaybackSession.PlaybackState == Windows.Media.Playback.MediaPlaybackState.Playing)
+                                     {
+                                         playPauseButton.IsEnabled = false;
+                                         pausePlayButton.IsEnabled = true;
+                                         stopButton.IsEnabled = true;
 
-                                    }
-                                    else if (mediaPlayer.PlaybackSession.PlaybackState == Windows.Media.Playback.MediaPlaybackState.Paused)
-                                    {
-                                        playPauseButton.IsEnabled = true;
-                                        stopButton.IsEnabled = true;
-                                    }
-                                    else if (mediaPlayer.PlaybackSession.PlaybackState == Windows.Media.Playback.MediaPlaybackState.None)
-                                    {
-                                        ejectButton.IsEnabled = true;
-                                        loadButton.IsEnabled = true;
-                                        extractTrackButton.IsEnabled = true;
-                                        extractTracksButton.IsEnabled = true;
-                                    }
+                                     }
+                                     else if (mediaPlayer.PlaybackSession.PlaybackState == Windows.Media.Playback.MediaPlaybackState.Paused)
+                                     {
+                                         playPauseButton.IsEnabled = true;
+                                         stopButton.IsEnabled = true;
+                                     }
+                                     else if (mediaPlayer.PlaybackSession.PlaybackState == Windows.Media.Playback.MediaPlaybackState.None)
+                                     {
+                                         ejectButton.IsEnabled = true;
+                                         loadButton.IsEnabled = true;
+                                         extractTrackButton.IsEnabled = true;
+                                         extractTracksButton.IsEnabled = true;
+                                     }
                                      // Volume buttons control
                                      if (mediaPlayer.IsMuted)
                                          muteButton.Content = "\xE767";
@@ -1378,6 +1385,9 @@ namespace AudioVideoPlayer.Pages.CDPlayer
                              }
                          }
                      }
+
+                     if (ctrl != null)
+                         ctrl.Focus(FocusState.Programmatic);
                  });
         }
 

@@ -19,6 +19,15 @@ namespace AudioVideoPlayer.Pages.About
 {
     public sealed partial class AboutPage : Page 
     {
+        Windows.UI.Xaml.Controls.Button hamburgerMenuButton
+        {
+            get
+            {
+                return Shell.Current.GetHamburgerMenu().GetHamburgerMenuButton();
+            }
+        }
+    
+
         public string NameOfSystemFamily { get { return nameof(Information.SystemInformation.SystemFamily); } }
         public string SystemFamily { get { return Information.SystemInformation.SystemFamily; } }
         public string SystemVersion { get { return Information.SystemInformation.SystemVersion; } }
@@ -36,10 +45,19 @@ namespace AudioVideoPlayer.Pages.About
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            base.OnNavigatedTo(e);
+            this.Loaded += AboutPage_Loaded;
+        }
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            this.Loaded -= AboutPage_Loaded;
+        }
 
-            Shell.Current.GetHamburgerMenu().Focus(Windows.UI.Xaml.FocusState.Programmatic);
-
+        private void AboutPage_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            if (hamburgerMenuButton != null)
+            {
+                hamburgerMenuButton.Focus(Windows.UI.Xaml.FocusState.Programmatic);
+            }
         }
     }
 }

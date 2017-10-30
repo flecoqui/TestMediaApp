@@ -79,7 +79,21 @@ namespace AudioVideoPlayer
             Window.Current.Activated += Current_Activated;
 
             UpdateTitleBarAndColor(true);
-
+            this.GotFocus += (object sender, RoutedEventArgs ee) =>
+            {
+                FrameworkElement focus = Windows.UI.Xaml.Input.FocusManager.GetFocusedElement() as FrameworkElement;
+                if (focus != null)
+                {
+                    System.Diagnostics.Debug.WriteLine("shell got focus: " + focus.Name + " (" +
+                        focus.GetType().ToString() + ")");
+                }
+                else
+                {
+                    Object f = Windows.UI.Xaml.Input.FocusManager.GetFocusedElement();
+                    if (f != null)
+                        System.Diagnostics.Debug.WriteLine("shell got focus for type: " + f.GetType().ToString());
+                }
+            };
         }
         // Display pointer as a mouse (XBOX Only)
         public void ShowPointer()

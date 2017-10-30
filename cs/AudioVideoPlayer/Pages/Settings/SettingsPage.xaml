@@ -108,7 +108,7 @@
                     </ToggleSwitch>
 
                     <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Color: "/>
-                    <ComboBox x:Name="ColorCombo" Margin="2,2,2,2"  ItemsSource="{Binding Settings.MenuBackgroundColors}"
+                        <ComboBox x:Name="ColorCombo" Margin="2,2,2,2" XYFocusDown="{x:Bind ApplicationStart}"  ItemsSource="{Binding Settings.MenuBackgroundColors}"
                                       SelectedItem="{Binding Settings.MenuBackgroundColor, Mode=OneWay}"
                                       Width="92"                                     
                                       VerticalAlignment="Center" 
@@ -185,9 +185,9 @@
                 <StackPanel Orientation="Vertical"  VerticalAlignment="Center"  >
                     <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Default Player Window Mode: "/>
                     <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  Grid.Row="5" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
-                        <RadioButton GroupName="WindowMode" Content="Window" Style="{ThemeResource CustomRadioButtonStyle}" MinWidth="86" x:Name="WindowModeWindow" IsChecked="{Binding Settings.WindowState,Mode=TwoWay,Converter={StaticResource WindowModeToBoolConverter },ConverterParameter=0}" />
-                        <RadioButton GroupName="WindowMode" Content="FullWindow" Style="{ThemeResource CustomRadioButtonStyle}" x:Name="WindowModeFull" MinWidth="110" IsChecked="{Binding Settings.WindowState,Mode=TwoWay,Converter={StaticResource WindowModeToBoolConverter },ConverterParameter=1}"/>
-                        <RadioButton GroupName="WindowMode" Content="FullScreen" Style="{ThemeResource CustomRadioButtonStyle}" x:Name="WindowModeFullscreen" MinWidth="100" IsChecked="{Binding Settings.WindowState,Mode=TwoWay,Converter={StaticResource WindowModeToBoolConverter },ConverterParameter=2}" />
+                            <RadioButton GroupName="WindowMode" Content="Window" XYFocusUp="{x:Bind ContentLoop}"  Style="{ThemeResource CustomRadioButtonStyle}" MinWidth="86" x:Name="WindowModeWindow" IsChecked="{Binding Settings.WindowState,Mode=TwoWay,Converter={StaticResource WindowModeToBoolConverter },ConverterParameter=0}" />
+                            <RadioButton GroupName="WindowMode" Content="FullWindow" XYFocusUp="{x:Bind ContentLoop}"   Style="{ThemeResource CustomRadioButtonStyle}" x:Name="WindowModeFull" MinWidth="110" IsChecked="{Binding Settings.WindowState,Mode=TwoWay,Converter={StaticResource WindowModeToBoolConverter },ConverterParameter=1}"/>
+                            <RadioButton GroupName="WindowMode" Content="FullScreen" XYFocusUp="{x:Bind ContentLoop}"   Style="{ThemeResource CustomRadioButtonStyle}" x:Name="WindowModeFullscreen" MinWidth="100" IsChecked="{Binding Settings.WindowState,Mode=TwoWay,Converter={StaticResource WindowModeToBoolConverter },ConverterParameter=2}" />
                     </StackPanel>
                 </StackPanel>
             </StackPanel>

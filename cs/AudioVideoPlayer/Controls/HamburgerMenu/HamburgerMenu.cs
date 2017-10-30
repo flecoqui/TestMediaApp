@@ -26,7 +26,10 @@ namespace AudioVideoPlayer.Controls
         private Button _hamburgerButton;
         private ListViewBase _buttonsListView;
         private ListViewBase _optionsListView;
-
+        public Button GetHamburgerMenuButton()
+        {
+            return _hamburgerButton;
+        }
         /// <summary>
         /// Initializes a new instance of the <see cref="HamburgerMenu"/> class.
         /// </summary>

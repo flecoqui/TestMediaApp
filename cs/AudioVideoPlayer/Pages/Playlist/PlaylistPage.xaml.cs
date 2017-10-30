@@ -103,7 +103,13 @@ namespace AudioVideoPlayer.Pages.Playlist
             return false;
 
         }
-
+        Windows.UI.Xaml.Controls.Button hamburgerMenuButton
+        {
+            get
+            {
+                return Shell.Current.GetHamburgerMenu().GetHamburgerMenuButton();
+            }
+        }
         /// <summary>
         /// UpdateControls Method which update the controls on the page  
         /// </summary>
@@ -332,6 +338,9 @@ namespace AudioVideoPlayer.Pages.Playlist
             // Update playlist controls
             localPlaylistItemsCount.Text = "-1";
             UpdateControls();
+
+            // Set Focus to Add button
+            addPlaylistButton.Focus(FocusState.Programmatic);
 
 
         }

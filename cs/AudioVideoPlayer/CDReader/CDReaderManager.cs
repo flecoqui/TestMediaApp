@@ -224,6 +224,7 @@ namespace AudioVideoPlayer.CDReader
 
                 try
                 {
+
                     uint r = await device.SendIOControlAsync(
                            readTableEx,
                         inputBuffer.AsBuffer(), outputBuffer.AsBuffer());

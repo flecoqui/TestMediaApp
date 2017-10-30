@@ -34,6 +34,7 @@ using Windows.Security.Cryptography;
 using Windows.Storage.Streams;
 using System.Text.RegularExpressions;
 using Windows.ApplicationModel.Activation;
+using Windows.Storage.FileProperties;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -2380,7 +2381,7 @@ namespace AudioVideoPlayer.Pages.Player
             }
             return file;
         }
-        async System.Threading.Tasks.Task<string> DownloadRemoteFile(string sourceUrl)
+        async System.Threading.Tasks.Task<string> DownloadRemoteFile(Windows.Storage.StorageFolder folder, string sourceUrl)
         {
             string result = null;
             string extension = GetExtension(sourceUrl);
@@ -2392,7 +2393,7 @@ namespace AudioVideoPlayer.Pages.Player
                 filename = rootname + "_" ;
                 try
                 {
-                    Windows.Storage.StorageFolder folder = Windows.Storage.ApplicationData.Current.LocalFolder;
+                    
                     if (folder != null)
                     {
                         Windows.Storage.StorageFile file = await CreateTempFile(folder, filename, extension);
@@ -2431,6 +2432,64 @@ namespace AudioVideoPlayer.Pages.Player
             return result;
         }
         /// <summary>
+        /// Return Music Suffix for filename
+        /// </summary>
+        private async System.Threading.Tasks.Task<string> GetMusicSuffix(Windows.Storage.StorageFile file)
+        {
+            string result = string.Empty;
+            MusicProperties musicProperties = await file.Properties.GetMusicPropertiesAsync();
+            if(musicProperties!=null)
+            {
+                if(string.IsNullOrEmpty(musicProperties.Album) &&
+                    string.IsNullOrEmpty(musicProperties.Artist))
+                {
+                    char[] invalidPathChars = Path.GetInvalidPathChars();
+                    string input = musicProperties.Artist + "_" + musicProperties.Album;
+                    char a;
+                    foreach (char c in result)
+                    {
+
+                        if (invalidPathChars.Contains(c))
+                            a = '_';
+                        else
+                            a = c;
+
+                        result += a;
+                    }
+                };
+            }
+            return result;
+        }
+        /// <summary>
+        /// Return Video Suffix for filename
+        /// </summary>
+        private async System.Threading.Tasks.Task<string> GetVideoSuffix(Windows.Storage.StorageFile file)
+        {
+            string result = string.Empty;
+            VideoProperties videoProperties = await file.Properties.GetVideoPropertiesAsync();
+            if (videoProperties != null)
+            {
+                if (string.IsNullOrEmpty(videoProperties.Title) &&
+                    string.IsNullOrEmpty(videoProperties.Publisher))
+                {
+                    char[] invalidPathChars = Path.GetInvalidPathChars();
+                    string input = videoProperties.Publisher + "_" + videoProperties.Title;
+                    char a;
+                    foreach (char c in result)
+                    {
+
+                        if (invalidPathChars.Contains(c))
+                            a = '_';
+                        else
+                            a = c;
+
+                        result += a;
+                    }
+                };
+            }
+            return result;
+        }
+        /// <summary>
         /// Return poster stream
         /// </summary>
         private async System.Threading.Tasks.Task<Windows.Storage.Streams.RandomAccessStreamReference> CreatePosterStream(string poster)
@@ -2440,7 +2499,7 @@ namespace AudioVideoPlayer.Pages.Player
             {
                 if (!IsLocalFile(poster))
                 {
-                    string localPath = await DownloadRemoteFile(poster);
+                    string localPath = await DownloadRemoteFile(Windows.Storage.ApplicationData.Current.LocalFolder, poster);
                     if (!string.IsNullOrEmpty(localPath))
                         poster = "file://" + localPath;
                     else
@@ -2453,23 +2512,48 @@ namespace AudioVideoPlayer.Pages.Player
                         Windows.Storage.StorageFile file = await GetFileFromLocalPathUrl(poster);
                         if (file != null)
                         {
-                            // Thumbnail
-                            using (var thumbnail = await file.GetThumbnailAsync((IsMusic(poster) ? Windows.Storage.FileProperties.ThumbnailMode.MusicView: Windows.Storage.FileProperties.ThumbnailMode.VideosView), 300))
+                            string suffix = string.Empty;
+
+                            if (IsMusic(poster))
+                                suffix = await GetMusicSuffix(file);
+                            else
+                                suffix = await GetVideoSuffix(file);
+                            string existingPoster = string.Empty;
+                            if(string.IsNullOrEmpty(suffix))
                             {
-                                if (thumbnail != null &&
-                                    ( (thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Image) || (thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Icon)))
+                                Windows.Storage.StorageFile tf = await Helpers.StorageHelper.GetFile(Windows.Storage.ApplicationData.Current.LocalFolder,
+                                    "Thumb_" + suffix + ".jpg");
+                                if (tf != null)
+                                    existingPoster = "file://" + tf.Path;
+
+                            }
+                            if (string.IsNullOrEmpty(existingPoster))
+                            {
+                                // Thumbnail
+                                using (var thumbnail = await file.GetThumbnailAsync((IsMusic(poster) ? Windows.Storage.FileProperties.ThumbnailMode.MusicView : Windows.Storage.FileProperties.ThumbnailMode.VideosView),192))
                                 {
-                                    Windows.Storage.StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
-                                    if (localFolder != null)
+                                    if (thumbnail != null &&
+                                        ((thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Image) || (thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Icon)))
                                     {
-                                        string filepath = await Helpers.MediaHelper.SaveThumbnailToFileAsync(localFolder, "currentthumb", thumbnail, true);
-                                        if (!string.IsNullOrEmpty(filepath))
+                                        Windows.Storage.StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+                                        if (localFolder != null)
                                         {
-                                            poster = "file://" + filepath;
+                                            string filename = string.Empty;
+                                            if (string.IsNullOrEmpty(suffix))
+                                                filename = "CurrentThumb.jpg";
+                                            else
+                                                filename = "Thumb_" + suffix + ".jpg";
+                                            string filepath = await Helpers.MediaHelper.SaveThumbnailToFileAsync(localFolder, filename, thumbnail, true);
+                                            if (!string.IsNullOrEmpty(filepath))
+                                            {
+                                                poster = "file://" + filepath;
+                                            }
                                         }
                                     }
                                 }
                             }
+                            else
+                                poster = existingPoster;
 
                         }
                     }
@@ -2662,6 +2746,15 @@ namespace AudioVideoPlayer.Pages.Player
             }
             if (IsMusic(PosterUrl))
             {
+                // Comment the line below
+                //if (!IsLocalFile(PosterUrl))
+                //{
+                    
+                //    string localPath = await DownloadRemoteFile(Windows.Storage.ApplicationData.Current.LocalFolder, PosterUrl);
+                //    if (!string.IsNullOrEmpty(localPath))
+                //        PosterUrl = "file://" + localPath;
+                //}
+
                 if (IsLocalFile(PosterUrl))
                 {
                     try
@@ -2669,14 +2762,12 @@ namespace AudioVideoPlayer.Pages.Player
                         Windows.Storage.StorageFile file = await GetFileFromLocalPathUrl(PosterUrl);
                         if (file != null)
                         {
-
+                           
                             // Thumbnail
-                            using (var thumbnail = await file.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.MusicView, 300))
+                            using (var thumbnail = await file.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.MusicView,192,ThumbnailOptions.None))
                             {
                                 if (thumbnail != null && 
                                     (thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Image))
-                                    //||
-                                    //thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Icon))
                                 {
                                     var fileStream = thumbnail.AsStream().AsRandomAccessStream();
                                     if (fileStream != null)
@@ -2694,7 +2785,25 @@ namespace AudioVideoPlayer.Pages.Player
                                 }
                                 else
                                 {
-                                    //Error Message here
+                                    //Try to read with AlbumArtReader provided the size if below 10MB
+                                    var audioStream = await file.OpenReadAsync();
+                                    if ((audioStream != null)&&(audioStream.Size<10000000))
+                                    {
+                                        var albumArtReader = new AlbumArt.AlbumArtReader();
+                                        albumArtReader.Initialize(audioStream);
+                                        var fileStream = await albumArtReader.GetAlbumArtAsync();
+                                        if (fileStream != null)
+                                        {
+                                            Windows.UI.Xaml.Media.Imaging.BitmapImage b = new Windows.UI.Xaml.Media.Imaging.BitmapImage();
+                                            if (b != null)
+                                            {
+                                                b.SetSource(fileStream);
+                                                SetPictureSource(b);
+                                                SetPictureElementSize();
+                                                return true;
+                                            }
+                                        }
+                                    }
                                 }
                             }
 
@@ -2794,9 +2903,23 @@ namespace AudioVideoPlayer.Pages.Player
                         pictureElement.Visibility = Visibility.Collapsed;
                         mediaPlayerElement.Visibility = Visibility.Visible;
                     }
+                    if (IsMusic(content) && string.IsNullOrEmpty(poster))
+                    {
+                        // try to get poster from Audio file
+                        bool res = await SetPosterUrl(content);
+                        if (res == true)
+                        {
+                            pictureElement.Visibility = Visibility.Visible;
+                            mediaPlayerElement.Visibility = Visibility.Collapsed;
+                            poster = content;
+                        }
+                    }
                     result = await SetAudioVideoUrl(content);
                     if (result == true)
+                    {
+
                         mediaPlayer.Play();
+                    }
 
                 }
                 if (result == true)
@@ -3841,6 +3964,8 @@ namespace AudioVideoPlayer.Pages.Player
                 if (await LoadingData(s) == true)
                 {
                     int index = ViewModels.StaticSettingsViewModel.CurrentMediaIndex;
+                    if ((index < 0) || (index > comboStream.Items.Count))
+                        index = 0;
                     comboStream.SelectedIndex = index;
                     MediaItem ms = comboStream.SelectedItem as MediaItem;
                     if (ms != null)

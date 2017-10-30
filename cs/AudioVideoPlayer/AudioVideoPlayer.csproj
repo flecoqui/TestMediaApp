@@ -275,6 +275,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AlbumArt\AlbumArt.vcxproj">
+      <Project>{70e1c67d-fee6-456a-8060-8b413956ffc6}</Project>
+      <Name>AlbumArt</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CompanionService\CompanionService.csproj">
       <Project>{76e50521-9fc8-4242-8811-feda407e2fee}</Project>
       <Name>CompanionService</Name>

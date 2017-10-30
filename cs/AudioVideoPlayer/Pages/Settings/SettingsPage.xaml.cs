@@ -100,9 +100,26 @@ namespace AudioVideoPlayer.Pages.Settings
             // Windows.Phone.UI.Input.HardwareButtons.BackPressed event.
             // If you are using the NavigationHelper provided by some templates,
             // this event is handled for you.
-            AppThemeSwitch.Focus(FocusState.Programmatic);
+            if(e.Parameter !=null)
+                bColorUpdated = Convert.ToBoolean(e.Parameter);
+            this.Loaded += SettingsPage_Loaded;
+        }
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            this.Loaded -= SettingsPage_Loaded;
         }
 
+        private void SettingsPage_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            if (bColorUpdated == true)
+            {
+                bColorUpdated = false;
+                ColorCombo.Focus(FocusState.Programmatic);
+            }
+            else
+                AppThemeSwitch.Focus(FocusState.Programmatic);
+        }
+        bool bColorUpdated = false;
         public bool Reload()
         {
             if (!this.Frame.BackStack.Any())
@@ -113,7 +130,7 @@ namespace AudioVideoPlayer.Pages.Settings
                 var current = this.Frame.BackStack[backStackCount - 1];
                 if(current.SourcePageType == this.GetType())
                     this.Frame.BackStack.RemoveAt(backStackCount - 1);
-                return this.Frame.Navigate(this.GetType(), null);
+                return this.Frame.Navigate(this.GetType(), bColorUpdated);
             }
             return false;
         }
@@ -124,13 +141,13 @@ namespace AudioVideoPlayer.Pages.Settings
                 Windows.UI.Color c = (Windows.UI.Color)ColorCombo.SelectedItem;
                 if (c != ViewModelLocator.Settings.MenuBackgroundColor)
                 {
+                    bColorUpdated = true;
                     // Save the new Color
                     ViewModelLocator.Settings.MenuBackgroundColor = c;
                     // Refresh the pages with the new Color                         
                     AudioVideoPlayer.Shell.Current.UpdateTitleBarAndColor(true);
                     Reload();
-                    ColorCombo.Focus(FocusState.Programmatic);
-
+                    
                 }
             }
         }
