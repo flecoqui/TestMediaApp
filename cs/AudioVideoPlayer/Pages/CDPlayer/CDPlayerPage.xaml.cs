@@ -311,30 +311,39 @@ namespace AudioVideoPlayer.Pages.CDPlayer
             if (ComboDevices.Items.Count > 0)
                 ComboDevices.SelectedIndex = 0;
         }
-        void FillComboTrack()
+        async System.Threading.Tasks.Task<bool> FillComboTrack()
         {
-            ComboTrackNumber.Items.Clear();
-            if ((currentCD != null) &&
-                (currentCD.Tracks.Count > 1))
-            {
-                ComboTrackNumber.IsEnabled = true;
+            bool result = true;        
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+             () =>
+             {
+                 if (ComboTrackNumber.Items != null)
+                     ComboTrackNumber.Items.Clear();
+                 if ((currentCD != null) &&
+                     (currentCD.Tracks.Count >=1))
+                 {
+                     ComboTrackNumber.IsEnabled = true;
 
-                for (int i = 0; i < currentCD.Tracks.Count; i++)
-                {
-                    if (string.IsNullOrEmpty(currentCD.Tracks[i].Title))
-                        currentCD.Tracks[i].Title = "Track " + currentCD.Tracks[i].Number.ToString();
-                    if (string.IsNullOrEmpty(currentCD.Tracks[i].Poster))
-                        currentCD.Tracks[i].Poster = "ms-appx:///Assets/MUSIC.png";
-                    //string s = currentCD.Tracks[i].ToString();
-                    ComboTrackNumber.Items.Add(currentCD.Tracks[i]);
-                }
-            }
-            if (ComboTrackNumber.Items.Count > 0)
-            {
-                ComboTrackNumber.SelectedIndex = 0;
-            }
-            else
-                ComboTrackNumber.IsEnabled = false;
+                     for (int i = 0; i < currentCD.Tracks.Count; i++)
+                     {
+                         if (string.IsNullOrEmpty(currentCD.Tracks[i].Title))
+                             currentCD.Tracks[i].Title = "Track " + currentCD.Tracks[i].Number.ToString();
+                         if (string.IsNullOrEmpty(currentCD.Tracks[i].Poster))
+                             currentCD.Tracks[i].Poster = "ms-appx:///Assets/CD.png";
+                         //string s = currentCD.Tracks[i].ToString();
+                         ComboTrackNumber.Items.Add(currentCD.Tracks[i]);
+                     }
+                     result = true;
+                 }
+                 if (ComboTrackNumber.Items.Count > 0)
+                 {
+                     ComboTrackNumber.SelectedIndex = 0;
+                 }
+                 else
+                     ComboTrackNumber.IsEnabled = false;
+
+             });
+            return result;
         }
         private async void CDReaderDevice_Removed(CDReaderManager sender, CDReaderDevice args)
         {
@@ -407,13 +416,48 @@ namespace AudioVideoPlayer.Pages.CDPlayer
                 {
                     try
                     {
-                        LogMessage("Device Name: " + device.Name);
-                        currentCD = await cdReaderManager.ReadMediaMetadata(device.Id);
+                        LogMessage("Load Metadata for Device ID: " + device.Id);
+                        currentCD = await cdReaderManager.ReadCDTOC(device.Id);
                         if ((currentCD != null) && (currentCD.Tracks.Count > 1))
                         {
-                            FillComboTrack();
-                            LogMessage("Get CD Table Map successfull: " + currentCD.Tracks.Count.ToString() + " tracks");
+                            LogMessage("Read CDTOC successfull: ");
+                            foreach(var t in currentCD.Tracks)
+                            {
+                                LogMessage("Track " + t.Number.ToString() + " sector: " + t.FirstSector.ToString());
+                            }
+                            byte[] CDTextArray = await cdReaderManager.ReadCDText(device.Id);
+                            if (CDTextArray != null)
+                            {
+                                LogMessage("Read CDText successfull: ");
+                                currentCD = cdReaderManager.FillCDWithLocalMetadata(currentCD, CDTextArray);
+                                if (!string.IsNullOrEmpty(currentCD.Artist)) LogMessage("Artist: " + currentCD.Artist);
+                                if (!string.IsNullOrEmpty(currentCD.AlbumTitle)) LogMessage("Album: " + currentCD.AlbumTitle);
+                                foreach (var t in currentCD.Tracks)
+                                {
+                                    LogMessage("Track " + t.Number.ToString() + " title: " + t.Title);
+                                }
+                            }
                             
+                            if(ViewModels.StaticSettingsViewModel.OnlineMetadata)
+                            {
+                                // get the discID to retrieve data from Internet
+                                string discid = await cdReaderManager.ReadCDDiscid(device.Id);
+                                if(!string.IsNullOrEmpty(discid))
+                                {
+                                    LogMessage("Read discid successfull: " + discid.ToString());
+                                    currentCD = await cdReaderManager.FillCDWithOnlineMetadata(currentCD, discid);
+                                    if (!string.IsNullOrEmpty(currentCD.Artist)) LogMessage("Artist: " + currentCD.Artist);
+                                    if (!string.IsNullOrEmpty(currentCD.AlbumTitle)) LogMessage("Album: " + currentCD.AlbumTitle);
+                                    foreach (var t in currentCD.Tracks)
+                                    {
+                                        LogMessage("Track " + t.Number.ToString() + " title: " + t.Title);
+                                    }
+                                }
+                            }
+                            await UpdatePoster();
+                            await FillComboTrack();
+                            LogMessage("Get CD Table Map successfull: " + currentCD.Tracks.Count.ToString() + " tracks");
+
                             result = true;
                         }
                     }
@@ -466,9 +510,16 @@ namespace AudioVideoPlayer.Pages.CDPlayer
                             if (result == true)
                             {
                                 LogMessage("Media Ejection successful");
+                                CurrentMediaTrack = string.Empty;
+                                CurrentPosterUrl = string.Empty;
+                                currentCD.albumArtUrl = "ms-appx:///Assets/CD.png";
+                                currentCD.Artist = string.Empty;
+                                currentCD.AlbumTitle = string.Empty;
+
                                 if (currentCD.Tracks != null)
                                     currentCD.Tracks.Clear();
-                                FillComboTrack();
+                                await UpdatePoster();
+                                await FillComboTrack();
                                 UpdateControls();
                             }
 
@@ -964,16 +1015,31 @@ namespace AudioVideoPlayer.Pages.CDPlayer
                     }
                 });
         }
-
+        async System.Threading.Tasks.Task<bool> UpdatePoster()
+        {
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+             async () =>
+             {
+                 await SetPosterUrl(currentCD.albumArtUrl);
+             });
+            return true;
+        }
         /// <summary>
         /// This method is called when the Media failed.
         /// </summary>
-        private void MediaElement_MediaFailed(Windows.Media.Playback.MediaPlayer sender, Windows.Media.Playback.MediaPlayerFailedEventArgs e)
+        private async void MediaElement_MediaFailed(Windows.Media.Playback.MediaPlayer sender, Windows.Media.Playback.MediaPlayerFailedEventArgs e)
         {
             LogMessage("Media failed: " + e.ErrorMessage + (e.ExtendedErrorCode !=null? " Error: " + e.ExtendedErrorCode.Message: ""));
             CurrentMediaTrack = string.Empty;
             CurrentPosterUrl = string.Empty;
+            currentCD.albumArtUrl = "ms-appx:///Assets/CD.png"; 
+            currentCD.Artist = string.Empty;
+            currentCD.AlbumTitle = string.Empty;
+            if (currentCD.Tracks != null)
+                currentCD.Tracks.Clear();
             ReleaseDisplay();
+            await UpdatePoster();
+            await FillComboTrack();
             UpdateControls();
         }
 
@@ -1802,7 +1868,7 @@ namespace AudioVideoPlayer.Pages.CDPlayer
                 {
                     Windows.Storage.StorageFile file = await GetFileFromLocalPathUrl(poster);
                     if (file == null)
-                        file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new System.Uri("ms-appx:///Assets/Music.png"));
+                        file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new System.Uri("ms-appx:///Assets/CD.png"));
                     if (file != null)
                         s = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromFile(file);
                 }
@@ -1897,7 +1963,7 @@ namespace AudioVideoPlayer.Pages.CDPlayer
         }
         private async System.Threading.Tasks.Task<bool> SetDefaultPoster()
         {
-            var uri = new System.Uri("ms-appx:///Assets/Music.png");
+            var uri = new System.Uri("ms-appx:///Assets/CD.png");
             Windows.Storage.StorageFile file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(uri);
             if (file != null)
             {

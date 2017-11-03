@@ -189,6 +189,7 @@
     </AppxManifest>
     <None Include="AudioVideoPlayer_StoreKey.pfx" />
     <None Include="AudioVideoPlayer_TemporaryKey.pfx" />
+    <Content Include="Assets\CD.png" />
     <Content Include="Assets\VIDEO.png" />
     <Content Include="DataModel\MediaData.json" />
   </ItemGroup>

@@ -199,6 +199,18 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
+        public bool OnlineMetadata
+        {
+            get
+            {
+                return StaticSettingsViewModel.OnlineMetadata;
+            }
+            set
+            {
+                StaticSettingsViewModel.OnlineMetadata = value;
+                NotifyPropertyChanged();
+            }
+        }
         public bool PlaylistLoop
         {
             get

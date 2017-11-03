@@ -29,6 +29,7 @@ namespace AudioVideoPlayer.ViewModels
         private static bool autoStart;
         private static bool contentLoop;
         private static bool playlistLoop;
+        private static bool onlineMetadata;
         private static PlayerWindowState windowState;
         private static int maxBitrate;
         private static int minBitrate;
@@ -84,6 +85,23 @@ namespace AudioVideoPlayer.ViewModels
             {
                 Helpers.SettingsHelper.SaveSettingsValue(nameof(ContentLoop), value.ToString());
                 contentLoop = value;
+            }
+        }
+        public static bool OnlineMetadata
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(OnlineMetadata));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    onlineMetadata = true;
+                else
+                    onlineMetadata = bool.Parse(auto);
+                return onlineMetadata;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(OnlineMetadata), value.ToString());
+                onlineMetadata = value;
             }
         }
         public static bool PlaylistLoop

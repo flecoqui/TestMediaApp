@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 using Windows.Devices.Custom;
 using Windows.Devices.Enumeration;
 using Windows.Foundation;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
+using System.IO;
+using Windows.Web.Http;
 
 namespace AudioVideoPlayer.CDReader
 {
@@ -97,6 +101,114 @@ namespace AudioVideoPlayer.CDReader
             }
             return result;
         }
+        public async System.Threading.Tasks.Task<CDMetadata> ReadCDTOC(string Id)
+        {
+            CDMetadata result = null;
+            var customDevice = await Windows.Devices.Custom.CustomDevice.FromIdAsync(Id,
+                DeviceAccessMode.ReadWrite,
+                DeviceSharingMode.Exclusive);
+            if (customDevice != null)
+            {
+                try
+                {
+                    int[] SectorArray = await GetCDSectorArray(customDevice);
+                    if ((SectorArray != null) && (SectorArray.Length > 1))
+                    {
+                        result = new CDMetadata();
+                        for (int i = 0; i < (SectorArray.Length - 1); i++)
+                        {
+                            CDTrackMetadata t = new CDTrackMetadata() { Number = i + 1, Title = string.Empty, ISrc = string.Empty, FirstSector = SectorArray[i], LastSector = SectorArray[i + 1], Duration = TimeSpan.FromSeconds((SectorArray[i + 1] - SectorArray[i]) * CD_RAW_SECTOR_SIZE / (44100 * 4)) };
+                            if (i < result.Tracks.Count)
+                                result.Tracks[i] = t;
+                            else
+                                result.Tracks.Add(t);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Exception while reading Media Metadata: " + ex.Message);
+                    result = null;
+
+                }
+            }
+            return result;
+        }
+        public async System.Threading.Tasks.Task<string> ReadCDDiscid(string Id)
+        {
+            string result = string.Empty;
+            var customDevice = await Windows.Devices.Custom.CustomDevice.FromIdAsync(Id,
+                DeviceAccessMode.ReadWrite,
+                DeviceSharingMode.Exclusive);
+            if (customDevice != null)
+            {
+                try
+                {
+                    int[] SectorArray = await GetCDSectorArray(customDevice);
+                    if ((SectorArray != null) && (SectorArray.Length > 1))
+                    {
+                        // SHA-1 
+                        // first track
+                        Windows.Security.Cryptography.Core.HashAlgorithmProvider sha1 = Windows.Security.Cryptography.Core.HashAlgorithmProvider.OpenAlgorithm(Windows.Security.Cryptography.Core.HashAlgorithmNames.Sha1);
+                        if (sha1 != null)
+                        {
+                            // SHA-1 
+                            // first track
+                            int track = 1;
+                            string stringToEncod = string.Format("{0:X2}", track);
+                            track = SectorArray.Length - 1;
+                            stringToEncod += string.Format("{0:X2}", track);
+                            stringToEncod += string.Format("{0:X8}", SectorArray[SectorArray.Length - 1] + 150);
+                            for (int i = 0; i < 99; i++)
+                            {
+                                if (i < (SectorArray.Length - 1))
+                                    stringToEncod += string.Format("{0:X8}", SectorArray[i] + 150);
+                                else
+                                    stringToEncod += "00000000";
+                            }
+                            Windows.Storage.Streams.IBuffer buffer = Windows.Security.Cryptography.CryptographicBuffer.ConvertStringToBinary(stringToEncod, Windows.Security.Cryptography.BinaryStringEncoding.Utf8);
+                            Windows.Storage.Streams.IBuffer hashBuffer = sha1.HashData(buffer);
+                            result = Windows.Security.Cryptography.CryptographicBuffer.EncodeToBase64String(hashBuffer);
+                            // Update to be compliant with MusicBrainz
+                            result = result.Replace('+', '.');
+                            result = result.Replace('/', '_');
+                            result = result.Replace('=', '-');
+                            result += "?inc=artists+recordings&toc=1+" + (SectorArray.Length - 1).ToString() + "+" + (SectorArray[SectorArray.Length - 1] + 150).ToString();
+                            for (int i = 0; i < (SectorArray.Length - 1); i++)
+                                result += "+" + (SectorArray[i] + 150).ToString();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Exception while reading Media Metadata: " + ex.Message);
+                    result = string.Empty;
+
+                }
+            }
+            return result;
+        }
+        public async System.Threading.Tasks.Task<byte[]> ReadCDText(string Id)
+        {
+            byte[] result = null;
+            var customDevice = await Windows.Devices.Custom.CustomDevice.FromIdAsync(Id,
+                DeviceAccessMode.ReadWrite,
+                DeviceSharingMode.Exclusive);
+            if (customDevice != null)
+            {
+                try
+                {
+                    result = await GetCDTextArray(customDevice);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Exception while reading Media Metadata: " + ex.Message);
+                    result = null;
+
+                }
+            }
+            return result;
+        }
         public async System.Threading.Tasks.Task<CDMetadata> ReadMediaMetadata(string Id)
         {
             CDMetadata result = null;
@@ -122,7 +234,7 @@ namespace AudioVideoPlayer.CDReader
                         byte[] TextArray = await GetCDTextArray(customDevice);
                         if (TextArray != null)
                         {
-                            var r = FillCDMetadata(result, TextArray);
+                            var r = FillCDWithLocalMetadata(result, TextArray);
                             if (r != null)
                                 result = r;
                         }
@@ -251,7 +363,121 @@ namespace AudioVideoPlayer.CDReader
             }
             return Array;
         }
-        CDMetadata FillCDMetadata(CDMetadata currentCD, byte[] TextArray)
+        public async System.Threading.Tasks.Task<string> GetAlbumArtUrl(string MBID)
+        {
+            string result = string.Empty;
+            try
+            {
+                AlbumArtObject albumArt = await GetAlbumArtObjects(MBID);
+                if (albumArt != null)
+                {
+                    if ((albumArt.images != null) &&
+                        (albumArt.images.Count >= 1))
+                    {
+                        if (albumArt.images[0].approved == true)
+                        {
+                            if (albumArt.images[0].thumbnails != null)
+                            {
+                                if (!string.IsNullOrEmpty(albumArt.images[0].thumbnails.large))
+                                    result = albumArt.images[0].thumbnails.large;
+                                else if (!string.IsNullOrEmpty(albumArt.images[0].thumbnails.small))
+                                    result = albumArt.images[0].thumbnails.small;
+                                else if (!string.IsNullOrEmpty(albumArt.images[0].image))
+                                    result = albumArt.images[0].image;
+                            }
+
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while getting album art url: " + ex.Message);
+                result = string.Empty;
+            }
+            return result;
+        }
+
+        public async System.Threading.Tasks.Task<CDMetadata> FillCDWithOnlineMetadata(CDMetadata currentCD, string discid)
+        {
+            try
+            {
+                //Clear CD and Track metadata info:
+                currentCD.ISrc = string.Empty;
+                currentCD.Message = string.Empty;
+                currentCD.Genre = string.Empty;
+                currentCD.AlbumTitle = string.Empty;
+                currentCD.Artist = string.Empty;
+                currentCD.albumArtUrl = string.Empty;
+                currentCD.DiscID = string.Empty;
+                if (!string.IsNullOrEmpty(discid))
+                {
+                    char[] sep = { '?' };
+                    string[] array = discid.Split(sep);
+                    if (array.Count() >= 1)
+                    {
+                        currentCD.DiscID = array[0];
+                        DiscIDObject v = await GetCDObjects(discid);
+                        if(v!=null)
+                        { 
+                            if((v.releases!=null)&&(v.releases.Count>0))
+                            {
+                                for(int i = 0; i < v.releases.Count;i++)
+                                {
+                                    if ((v.releases[i].media != null) && (v.releases[i].media.Count > 0))
+                                    {
+                                        for (int j = 0; j < v.releases[i].media.Count; j++)
+                                        {
+                                            if (string.Equals(v.releases[i].media[j].format, "CD", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                if ((v.releases[i].media[j].discs != null) && (v.releases[i].media[j].discs.Count > 0))
+                                                {
+                                                    for (int k = 0; k < v.releases[i].media[j].discs.Count; k++)
+                                                    {
+                                                        if (string.Equals(v.releases[i].media[j].discs[k].id, currentCD.DiscID))
+                                                        {
+                                                            // Found 
+                                                            currentCD.AlbumTitle = v.releases[i].title;
+                                                            if((v.releases[i].artistcredit!=null)&&
+                                                                (v.releases[i].artistcredit.Count>0))
+                                                            {
+                                                                currentCD.Artist = v.releases[i].artistcredit[0].name;
+                                                            }
+                                                            currentCD.albumArtUrl = await GetAlbumArtUrl(v.releases[i].id);
+                                                            if ((v.releases[i].media[j].tracks!=null)&&(v.releases[i].media[j].tracks.Count == currentCD.Tracks.Count))
+                                                            {
+                                                                for (int m = 0; m < v.releases[i].media[j].tracks.Count; m++)
+                                                                {
+                                                                    if (currentCD.Tracks[m].Number == v.releases[i].media[j].tracks[m].position)
+                                                                    {
+                                                                        currentCD.Tracks[m].Artist = currentCD.Artist;
+                                                                        currentCD.Tracks[m].Album = currentCD.AlbumTitle;
+                                                                        currentCD.Tracks[m].Poster = currentCD.albumArtUrl;
+                                                                        currentCD.Tracks[m].Title = v.releases[i].media[j].tracks[m].title;
+                                                                    }
+                                                                }
+                                                            }
+                                                            return currentCD;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        } 
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while getting online Medtadata: " + ex.Message);
+                currentCD = null;
+            }
+            return currentCD;
+        }
+        public CDMetadata FillCDWithLocalMetadata(CDMetadata currentCD, byte[] TextArray)
         {
             try
             {
@@ -439,5 +665,78 @@ namespace AudioVideoPlayer.CDReader
         IOControlCode readTableEx = new IOControlCode(FILE_DEVICE_CD_ROM, 0x0015, IOControlAccessMode.Read, IOControlBufferingMethod.Buffered);
         IOControlCode readRaw = new IOControlCode(FILE_DEVICE_CD_ROM, 0x000F, IOControlAccessMode.Read, IOControlBufferingMethod.DirectOutput);
 
+
+        #region OnlineMetadata
+
+
+        public static T ReadToObject<T>(string json)
+        {
+            T deserializedObject;
+            MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
+            DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
+            deserializedObject = (T)ser.ReadObject(ms);
+            return deserializedObject;
+        }
+        public static async System.Threading.Tasks.Task<AlbumArtObject> GetAlbumArtObjects(string MBID)
+        {
+            AlbumArtObject Result = null;
+            Uri restAPIUri = null;
+            restAPIUri = new Uri("http://coverartarchive.org/release/" + MBID);
+            string url = string.Empty;
+            try
+            {
+                HttpClient hc = new HttpClient();
+                hc.DefaultRequestHeaders.TryAppendWithoutValidation("Accept", "application/json");
+                hc.DefaultRequestHeaders.TryAppendWithoutValidation("User-Agent", Information.SystemInformation.ApplicationName + "/" +Information.SystemInformation.ApplicationVersion);
+                hc.DefaultRequestHeaders.Remove("Accept-Encoding");
+
+                HttpResponseMessage rep = await hc.GetAsync(restAPIUri);
+                if ((rep != null) && (rep.StatusCode == HttpStatusCode.Ok) && (rep.Content != null))
+                {
+                    string s = rep.Content.ReadAsStringAsync().GetResults();
+                    if (!string.IsNullOrEmpty(s))
+                    {
+                        Result = ReadToObject<AlbumArtObject>(s);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception " + e.Message);
+            }
+
+            return Result;
+        }
+        public static async System.Threading.Tasks.Task<DiscIDObject> GetCDObjects(string discID)
+        {
+            DiscIDObject Result = null;
+            Uri restAPIUri = null;
+            restAPIUri = new Uri("https://musicbrainz.org/ws/2/discid/" + discID);
+            string url = string.Empty;
+            try
+            {
+                HttpClient hc = new HttpClient();
+                hc.DefaultRequestHeaders.TryAppendWithoutValidation("Accept", "application/json");
+                hc.DefaultRequestHeaders.TryAppendWithoutValidation("User-Agent", Information.SystemInformation.ApplicationName + "/" + Information.SystemInformation.ApplicationVersion);
+                hc.DefaultRequestHeaders.Remove("Accept-Encoding");
+
+                HttpResponseMessage rep = await hc.GetAsync(restAPIUri);
+                if ((rep != null) && (rep.StatusCode == HttpStatusCode.Ok) && (rep.Content != null))
+                {
+                    string s = rep.Content.ReadAsStringAsync().GetResults();
+                    if (!string.IsNullOrEmpty(s))
+                    {
+                        Result = ReadToObject<DiscIDObject>(s);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception " + e.Message);
+            }
+
+            return Result;
+        }
+        #endregion
     }
 }

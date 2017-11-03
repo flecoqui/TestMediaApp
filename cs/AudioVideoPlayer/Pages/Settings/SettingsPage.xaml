@@ -182,7 +182,18 @@
                               ToolTipService.ToolTip="Configure the player to loop at the end of the current content"    >
                 </ToggleSwitch>
                 </StackPanel>
-                <StackPanel Orientation="Vertical"  VerticalAlignment="Center"  >
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top" >
+                        <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Online Metadata: "/>
+                        <ToggleSwitch Margin="2,2,2,2" x:Name="OnlineMetadata" MinWidth="100"
+                                          OffContent="Off"
+                                          OnContent="On"
+                                          VerticalAlignment="Center"
+                                          Style="{ThemeResource CustomToggleSwitchStyle}"                                  
+                                          IsOn="{Binding Settings.OnlineMetadata, Mode=TwoWay}"
+                              ToolTipService.ToolTip="Configure the player to automatically download metadata from Internet"    >
+                        </ToggleSwitch>
+                 </StackPanel>
+                 <StackPanel Orientation="Vertical"  VerticalAlignment="Center"  >
                     <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Default Player Window Mode: "/>
                     <StackPanel Orientation="Horizontal"  VerticalAlignment="Center"  Grid.Row="5" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2" >
                             <RadioButton GroupName="WindowMode" Content="Window" XYFocusUp="{x:Bind ContentLoop}"  Style="{ThemeResource CustomRadioButtonStyle}" MinWidth="86" x:Name="WindowModeWindow" IsChecked="{Binding Settings.WindowState,Mode=TwoWay,Converter={StaticResource WindowModeToBoolConverter },ConverterParameter=0}" />
