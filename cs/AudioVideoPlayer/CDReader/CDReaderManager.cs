@@ -14,6 +14,11 @@ using Windows.Web.Http;
 
 namespace AudioVideoPlayer.CDReader
 {
+    class TOCTrack
+    {
+        public int Position { get; set; }
+        public bool bData { get; set; }
+    }
     class CDReaderManager
     {
         DeviceWatcher deviceWatcher;
@@ -111,17 +116,20 @@ namespace AudioVideoPlayer.CDReader
             {
                 try
                 {
-                    int[] SectorArray = await GetCDSectorArray(customDevice);
+                    TOCTrack[] SectorArray = await GetCDSectorArray(customDevice);
                     if ((SectorArray != null) && (SectorArray.Length > 1))
                     {
                         result = new CDMetadata();
                         for (int i = 0; i < (SectorArray.Length - 1); i++)
                         {
-                            CDTrackMetadata t = new CDTrackMetadata() { Number = i + 1, Title = string.Empty, ISrc = string.Empty, FirstSector = SectorArray[i], LastSector = SectorArray[i + 1], Duration = TimeSpan.FromSeconds((SectorArray[i + 1] - SectorArray[i]) * CD_RAW_SECTOR_SIZE / (44100 * 4)) };
-                            if (i < result.Tracks.Count)
-                                result.Tracks[i] = t;
-                            else
-                                result.Tracks.Add(t);
+                            if (SectorArray[i].bData == false)
+                            {
+                                CDTrackMetadata t = new CDTrackMetadata() { Number = i + 1, Title = string.Empty, ISrc = string.Empty, FirstSector = SectorArray[i].Position, LastSector = SectorArray[i + 1].Position, Duration = TimeSpan.FromSeconds((SectorArray[i + 1].Position - SectorArray[i].Position) * CD_RAW_SECTOR_SIZE / (44100 * 4)) };
+                                if (i < result.Tracks.Count)
+                                    result.Tracks[i] = t;
+                                else
+                                    result.Tracks.Add(t);
+                            }
                         }
                     }
                 }
@@ -144,7 +152,7 @@ namespace AudioVideoPlayer.CDReader
             {
                 try
                 {
-                    int[] SectorArray = await GetCDSectorArray(customDevice);
+                    TOCTrack[] SectorArray = await GetCDSectorArray(customDevice);
                     if ((SectorArray != null) && (SectorArray.Length > 1))
                     {
                         // SHA-1 
@@ -155,14 +163,27 @@ namespace AudioVideoPlayer.CDReader
                             // SHA-1 
                             // first track
                             int track = 1;
+                            int lastIndex = SectorArray.Length - 1;
+                            for(int i = 0; i < SectorArray.Length;i++)
+                            {
+                                if (SectorArray[i].bData == true)
+                                {
+                                    lastIndex = i;
+                                    break;
+                                }
+                            }
+                                
                             string stringToEncod = string.Format("{0:X2}", track);
-                            track = SectorArray.Length - 1;
+                            track = lastIndex;
                             stringToEncod += string.Format("{0:X2}", track);
-                            stringToEncod += string.Format("{0:X8}", SectorArray[SectorArray.Length - 1] + 150);
+                            if(lastIndex == (SectorArray.Length - 1))
+                                stringToEncod += string.Format("{0:X8}", SectorArray[lastIndex].Position + 150);
+                            else
+                                stringToEncod += string.Format("{0:X8}", SectorArray[lastIndex].Position + 150 - 11400);
                             for (int i = 0; i < 99; i++)
                             {
-                                if (i < (SectorArray.Length - 1))
-                                    stringToEncod += string.Format("{0:X8}", SectorArray[i] + 150);
+                                if (i < (lastIndex))
+                                    stringToEncod += string.Format("{0:X8}", SectorArray[i].Position + 150);
                                 else
                                     stringToEncod += "00000000";
                             }
@@ -173,9 +194,14 @@ namespace AudioVideoPlayer.CDReader
                             result = result.Replace('+', '.');
                             result = result.Replace('/', '_');
                             result = result.Replace('=', '-');
-                            result += "?inc=artists+recordings&toc=1+" + (SectorArray.Length - 1).ToString() + "+" + (SectorArray[SectorArray.Length - 1] + 150).ToString();
-                            for (int i = 0; i < (SectorArray.Length - 1); i++)
-                                result += "+" + (SectorArray[i] + 150).ToString();
+                            result += "?inc=artists+recordings&toc=1+" + lastIndex.ToString() + "+" ;
+                            if (lastIndex == (SectorArray.Length - 1))
+                                result += (SectorArray[lastIndex].Position + 150).ToString();
+                            else
+                                result += (SectorArray[lastIndex].Position + 150 - 11400).ToString();
+
+                            for (int i = 0; i < lastIndex; i++)
+                                result += "+" + (SectorArray[i].Position + 150).ToString();
                         }
                     }
                 }
@@ -219,13 +245,13 @@ namespace AudioVideoPlayer.CDReader
             {
                 try
                 {
-                    int[] SectorArray = await GetCDSectorArray(customDevice);
+                    TOCTrack[] SectorArray = await GetCDSectorArray(customDevice);
                     if ((SectorArray != null) && (SectorArray.Length > 1))
                     {
                         result = new CDMetadata();
                         for (int i = 0; i < (SectorArray.Length - 1); i++)
                         {
-                            CDTrackMetadata t = new CDTrackMetadata() { Number = i + 1, Title = string.Empty, ISrc = string.Empty, FirstSector = SectorArray[i], LastSector = SectorArray[i + 1], Duration = TimeSpan.FromSeconds((SectorArray[i + 1] - SectorArray[i]) * CD_RAW_SECTOR_SIZE / (44100 * 4))};
+                            CDTrackMetadata t = new CDTrackMetadata() { Number = i + 1, Title = string.Empty, ISrc = string.Empty, FirstSector = SectorArray[i].Position, LastSector = SectorArray[i + 1].Position, Duration = TimeSpan.FromSeconds((SectorArray[i + 1].Position - SectorArray[i].Position) * CD_RAW_SECTOR_SIZE / (44100 * 4))};
                             if (i < result.Tracks.Count)
                                 result.Tracks[i] = t;
                             else
@@ -259,13 +285,13 @@ namespace AudioVideoPlayer.CDReader
             {
                 try
                 {
-                    int[] SectorArray = await GetCDSectorArray(customDevice);
+                    TOCTrack[] SectorArray = await GetCDSectorArray(customDevice);
                     if ((SectorArray != null) && (SectorArray.Length > 1))
                     {
                         result = new CDMetadata();
                         for (int i = 0; i < (SectorArray.Length - 1); i++)
                         {
-                            CDTrackMetadata t = new CDTrackMetadata() { Number = i + 1, Title = string.Empty, ISrc = string.Empty, FirstSector = SectorArray[i], LastSector = SectorArray[i + 1], Duration = TimeSpan.FromSeconds((SectorArray[i + 1] - SectorArray[i]) * CD_RAW_SECTOR_SIZE / (44100 * 4)) };
+                            CDTrackMetadata t = new CDTrackMetadata() { Number = i + 1, Title = string.Empty, ISrc = string.Empty, FirstSector = SectorArray[i].Position, LastSector = SectorArray[i + 1].Position, Duration = TimeSpan.FromSeconds((SectorArray[i + 1].Position - SectorArray[i].Position) * CD_RAW_SECTOR_SIZE / (44100 * 4)) };
                             if (i < result.Tracks.Count)
                                 result.Tracks[i] = t;
                             else
@@ -286,9 +312,9 @@ namespace AudioVideoPlayer.CDReader
         {
             return (int)(frame + 75 * (sec - 2 + 60 * min));
         }
-        private async System.Threading.Tasks.Task<int[]> GetCDSectorArray(Windows.Devices.Custom.CustomDevice device)
+        private async System.Threading.Tasks.Task<TOCTrack[]> GetCDSectorArray(Windows.Devices.Custom.CustomDevice device)
         {
-            int[] Array = null;
+            TOCTrack[] Array = null;
             if (device != null)
             {
                 var outputBuffer = new byte[MAXIMUM_NUMBER_TRACKS * 8 + 4];
@@ -303,7 +329,7 @@ namespace AudioVideoPlayer.CDReader
                     {
                         int i_tracks = outputBuffer[3] - outputBuffer[2] + 1;
 
-                        Array = new int[i_tracks + 1];
+                        Array = new TOCTrack[i_tracks + 1];
                         if (Array != null)
                         {
                             for (int i = 0; (i <= i_tracks) && (4 + i * 8 + 4 + 3 < r); i++)
@@ -312,8 +338,14 @@ namespace AudioVideoPlayer.CDReader
                                     outputBuffer[4 + i * 8 + 4 + 1],
                                     outputBuffer[4 + i * 8 + 4 + 2],
                                     outputBuffer[4 + i * 8 + 4 + 3]);
-                                Array[i] = sectors;
-                                System.Diagnostics.Debug.WriteLine("track number: " + i.ToString() + " sectors: " + sectors.ToString());
+                                TOCTrack toc = new TOCTrack();
+                                if (toc != null)
+                                {
+                                    toc.Position = sectors;
+                                    toc.bData = ((outputBuffer[4 + i * 8 + 1] & 0x04) == 0x04);
+                                    Array[i] = toc;
+                                    System.Diagnostics.Debug.WriteLine("track number: " + i.ToString() + " sectors: " + sectors.ToString() + (((outputBuffer[4 + i * 8 + 1] & 0x04) == 0x04) ? " data " : "") + (((outputBuffer[4 + i * 8 + 1] & 0x04) == 0x00) ? " audio " : "") + ((outputBuffer[4 + i * 8 + 2] == 0xAA) ? " lead-out " : ""));
+                                }
                             }
                         }
                     }
@@ -398,7 +430,7 @@ namespace AudioVideoPlayer.CDReader
             return result;
         }
 
-        public async System.Threading.Tasks.Task<CDMetadata> FillCDWithOnlineMetadata(CDMetadata currentCD, string discid)
+        public async System.Threading.Tasks.Task<CDMetadata> FillCDWithOnlineMetadataOld(CDMetadata currentCD, string discid)
         {
             try
             {
@@ -477,6 +509,121 @@ namespace AudioVideoPlayer.CDReader
             }
             return currentCD;
         }
+
+
+        public bool IsCDFound(Release r, string DiscID,bool bAlbumArt)
+        {
+            if ((r.media != null) && (r.media.Count > 0))
+            {
+                for (int j = 0; j < r.media.Count; j++)
+                {
+                    if ((string.Equals(r.media[j].format, "CD", StringComparison.OrdinalIgnoreCase))&&
+                        (r.media[j].discs != null) && (r.media[j].discs.Count > 0))
+                    {
+                        for (int k = 0; k < r.media[j].discs.Count; k++)
+                        {
+                            if (string.Equals(r.media[j].discs[k].id, DiscID))
+                            {
+                                if (bAlbumArt == true)
+                                {
+                                    if ((r.coverartarchive != null) &&
+                                        (r.coverartarchive.artwork == true) &&
+                                        (r.coverartarchive.front == true))
+                                        return true;
+                                }
+                                else
+                                    return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        public async System.Threading.Tasks.Task<CDMetadata> FillCDWithOnlineMetadata(CDMetadata currentCD, string discid)
+        {
+            try
+            {
+                //Clear CD and Track metadata info:
+                currentCD.ISrc = string.Empty;
+                currentCD.Message = string.Empty;
+                currentCD.Genre = string.Empty;
+                currentCD.AlbumTitle = string.Empty;
+                currentCD.Artist = string.Empty;
+                currentCD.albumArtUrl = string.Empty;
+                currentCD.DiscID = string.Empty;
+                if (!string.IsNullOrEmpty(discid))
+                {
+                    char[] sep = { '?' };
+                    string[] array = discid.Split(sep);
+                    if (array.Count() >= 1)
+                    {
+                        currentCD.DiscID = array[0];
+                        DiscIDObject v = await GetCDObjects(discid);
+                        if (v != null)
+                        {
+                            if ((v.releases != null) && (v.releases.Count > 0))
+                            {
+                                int Index = -1;
+                                for (int i = 0; i < v.releases.Count; i++)
+                                {
+                                    if (IsCDFound(v.releases[i], currentCD.DiscID,true))
+                                    {
+                                        Index = i;
+                                        break;
+                                    }
+                                    if ((Index<0)&&(IsCDFound(v.releases[i], currentCD.DiscID, false)))
+                                    {
+                                        Index = i;
+                                    }
+                                }
+                                if (Index>=0)
+                                {
+                                    // Found 
+                                    currentCD.AlbumTitle = v.releases[Index].title;
+                                    if ((v.releases[Index].artistcredit != null) &&
+                                        (v.releases[Index].artistcredit.Count > 0))
+                                    {
+                                        currentCD.Artist = v.releases[Index].artistcredit[0].name;
+                                    }
+                                    currentCD.albumArtUrl = await GetAlbumArtUrl(v.releases[Index].id);
+
+                                    for (int j = 0; j < v.releases[Index].media.Count; j++)
+                                    {
+                                        if ((string.Equals(v.releases[Index].media[j].format, "CD", StringComparison.OrdinalIgnoreCase)) &&
+                                            (v.releases[Index].media[j].discs != null) && (v.releases[Index].media[j].discs.Count > 0))
+                                        {
+                                            if ((v.releases[Index].media[j].tracks != null) && (v.releases[Index].media[j].tracks.Count == currentCD.Tracks.Count))
+                                            {
+                                                for (int m = 0; m < v.releases[Index].media[j].tracks.Count; m++)
+                                                {
+                                                    if (currentCD.Tracks[m].Number == v.releases[Index].media[j].tracks[m].position)
+                                                    {
+                                                        currentCD.Tracks[m].Artist = currentCD.Artist;
+                                                        currentCD.Tracks[m].Album = currentCD.AlbumTitle;
+                                                        currentCD.Tracks[m].Poster = currentCD.albumArtUrl;
+                                                        currentCD.Tracks[m].Title = v.releases[Index].media[j].tracks[m].title;
+                                                    }
+                                                }
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    return currentCD;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while getting online Medtadata: " + ex.Message);
+                currentCD = null;
+            }
+            return currentCD;
+        }
+
         public CDMetadata FillCDWithLocalMetadata(CDMetadata currentCD, byte[] TextArray)
         {
             try

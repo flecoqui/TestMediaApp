@@ -198,6 +198,10 @@ namespace AudioVideoPlayer.CDReader
                     // Fill the buffer till the new position 
                     var t = FillInternalStream(position);
                     t.Wait();
+                    if (t.Result == false)
+                    {
+                        return;
+                    }
                 }
                 System.Diagnostics.Debug.WriteLine("Seek: " + position.ToString() + " - Stream Size: " + internalStream.Size + " Stream position: " + internalStream.Position);
                 ReadDataIndex = position;
@@ -263,14 +267,22 @@ namespace AudioVideoPlayer.CDReader
                     intarray = BitConverter.GetBytes((int)2);
                     for (int i = 0; i < intarray.Length; i++)
                         inputBuffer[12 + i] = intarray[i];
-                    uint r = 0; ;
-                    r = await CDReaderDevice.SendIOControlAsync(
-                           readRaw, inputBuffer.AsBuffer(), outputBuffer.AsBuffer());
-                    if (r > 0)
+                    uint r = 0;
+                    try
                     {
-                        uint len = await this.WriteAsync(outputBuffer.AsBuffer(0, (int)r));
-                        if (len == r)
-                            result = true;
+                        r = await CDReaderDevice.SendIOControlAsync(
+                               readRaw, inputBuffer.AsBuffer(), outputBuffer.AsBuffer());
+                        if (r > 0)
+                        {
+                            uint len = await this.WriteAsync(outputBuffer.AsBuffer(0, (int)r));
+                            if (len == r)
+                                result = true;
+                        }
+                    }
+                    catch(Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Exception while reading CD at Index: "+ index.ToString() +" Exception: "  + ex.Message);
+                        break;
                     }
                     k += (ulong)numberSector;
                 }
@@ -292,6 +304,12 @@ namespace AudioVideoPlayer.CDReader
                         {
                             // Fill the buffer
                             result = await FillInternalStream(ReadDataIndex + count);
+                            if (result != true)
+                            {
+                                System.ArgumentNullException ex = new System.ArgumentNullException("Exception while reading CD Track");
+                                throw ex;
+                            }
+
                         }
                         if (internalStream != null)
                         {

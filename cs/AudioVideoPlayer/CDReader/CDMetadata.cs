@@ -201,7 +201,7 @@ namespace AudioVideoPlayer.CDReader
         public string statusid { get; set; }
         [DataMember(Name = "artist-credit")]
         public List<ArtistCredit> artistcredit { get; set; }
-        [DataMember(Name = "coverart-archive")]
+        [DataMember(Name = "cover-art-archive")]
         public CoverArtArchive coverartarchive { get; set; }
     }
     [DataContract]
