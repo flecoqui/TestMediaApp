@@ -143,6 +143,11 @@ namespace AudioVideoPlayer
                     rootFrame.Navigate(typeof(Shell), e.Arguments);
                 }
             }
+
+            // Core Windows Bound
+            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
+                Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().SetDesiredBoundsMode(Windows.UI.ViewManagement.ApplicationViewBoundsMode.UseCoreWindow);
+
             // Ensure the current window is active
             Window.Current.Activate();
         }

@@ -75,10 +75,14 @@ namespace AudioVideoPlayer
         {
             InitializeComponent();
 
+            this.Background = new Windows.UI.Xaml.Media.SolidColorBrush(this.ViewModelLocator.Settings.MenuBackgroundColor);
             Current = this;
             Window.Current.Activated += Current_Activated;
 
-            UpdateTitleBarAndColor(true);
+            // TV Safe Area for XBOX One
+            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
+                this.Margin = new Thickness(28, 12, 28, 12);
+
             this.GotFocus += (object sender, RoutedEventArgs ee) =>
             {
                 FrameworkElement focus = Windows.UI.Xaml.Input.FocusManager.GetFocusedElement() as FrameworkElement;
@@ -126,6 +130,7 @@ namespace AudioVideoPlayer
 
         protected override async  void OnNavigatedTo(NavigationEventArgs e)
         {
+            UpdateTitleBarAndColor(true);
             // Set Minimum size for the view
             Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().SetPreferredMinSize(new Windows.Foundation.Size
             {
@@ -477,6 +482,15 @@ namespace AudioVideoPlayer
             else
             {
                 if (this.RequestedTheme != ElementTheme.Light) this.RequestedTheme = ElementTheme.Light;
+            }
+            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
+            {
+                this.Background = new Windows.UI.Xaml.Media.SolidColorBrush(this.ViewModelLocator.Settings.MenuBackgroundColor);
+                Windows.UI.Xaml.Controls.Frame ui = this.Parent as Windows.UI.Xaml.Controls.Frame;
+                if (ui != null)
+                {
+                    ui.Background = this.Background;
+                }
             }
 
         }
