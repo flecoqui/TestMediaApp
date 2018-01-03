@@ -94,6 +94,14 @@ namespace AudioVideoPlayer.Pages.Player
         private TimeSpan CurrentDuration;
         // Start up position of the current playing media 
         private TimeSpan CurrentStartPosition;
+        // flag to force LiveCurrentStartPosition (Smooth Streaming only) 
+        private bool SetLiveCurrentStartPosition;
+        // flag to log Live Buffer 
+        private bool LogLiveBuffer;
+        // flag to log Live Buffer information
+        private bool LogDownload;
+        // flag to log Live Buffer information
+        private bool LogSubtitle;
         // Time when the application is starting to play a picture 
         private DateTime StartPictureTime;
 
@@ -361,6 +369,10 @@ namespace AudioVideoPlayer.Pages.Player
                 PlayCurrentUrl();
             }
 
+            LogDownload = ViewModels.StaticSettingsViewModel.DownloadLogs;
+            LogSubtitle = ViewModels.StaticSettingsViewModel.SubtitleLogs;
+            LogLiveBuffer = ViewModels.StaticSettingsViewModel.LiveBufferLogs;
+
             // Update control and play first video
             UpdateControls();
 
@@ -470,8 +482,8 @@ namespace AudioVideoPlayer.Pages.Player
             mediaPlayer.MediaFailed += new TypedEventHandler<Windows.Media.Playback.MediaPlayer, Windows.Media.Playback.MediaPlayerFailedEventArgs>(MediaElement_MediaFailed);
             mediaPlayer.MediaEnded += new TypedEventHandler<Windows.Media.Playback.MediaPlayer, object>(MediaElement_MediaEnded);
             mediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
-            //if (Windows.Foundation.Metadata.ApiInformation.IsEventPresent("Windows.Media.Playback.MediaPlaybackSession", "SeekableRangesChanged"))
-            //    mediaPlayer.PlaybackSession.SeekableRangesChanged += PlaybackSession_SeekableRangesChanged;
+            if (Windows.Foundation.Metadata.ApiInformation.IsEventPresent("Windows.Media.Playback.MediaPlaybackSession", "SeekableRangesChanged"))
+                mediaPlayer.PlaybackSession.SeekableRangesChanged += PlaybackSession_SeekableRangesChanged;
             mediaPlayerElement.DoubleTapped += doubleTapped;
             mediaPlayerElement.KeyDown += OnKeyDown;
             IsFullWindowToken = mediaPlayerElement.RegisterPropertyChangedCallback(MediaPlayerElement.IsFullWindowProperty, new DependencyPropertyChangedCallback(IsFullWindowChanged));
@@ -546,8 +558,8 @@ namespace AudioVideoPlayer.Pages.Player
                 mediaPlayer.MediaEnded -= MediaElement_MediaEnded;
                 mediaPlayer.PlaybackSession.PlaybackStateChanged -= PlaybackSession_PlaybackStateChanged;
             }
-            //if (Windows.Foundation.Metadata.ApiInformation.IsEventPresent("Windows.Media.Playback.MediaPlaybackSession", "SeekableRangesChanged"))
-            //    mediaPlayer.PlaybackSession.SeekableRangesChanged -= PlaybackSession_SeekableRangesChanged;
+            if (Windows.Foundation.Metadata.ApiInformation.IsEventPresent("Windows.Media.Playback.MediaPlaybackSession", "SeekableRangesChanged"))
+                mediaPlayer.PlaybackSession.SeekableRangesChanged -= PlaybackSession_SeekableRangesChanged;
             mediaPlayerElement.DoubleTapped -= doubleTapped;
             mediaPlayerElement.KeyDown -= OnKeyDown;
             mediaPlayerElement.UnregisterPropertyChangedCallback(MediaElement.IsFullWindowProperty, IsFullWindowToken);
@@ -749,20 +761,23 @@ namespace AudioVideoPlayer.Pages.Player
         /// <summary>
         /// This method is called to display the live buffer window with Creator Update SDK.
         /// </summary>
-        //private void PlaybackSession_SeekableRangesChanged(Windows.Media.Playback.MediaPlaybackSession sender, object args)
-        //{
-            //var ranges = sender.GetSeekableRanges();
-            //if ((ranges != null) && (adaptiveMediaSource != null))
-            //{
-            //    foreach (var time in ranges)
-            //    {
-            //        var times = adaptiveMediaSource.GetCorrelatedTimes();
-            //        if (times != null)
-            //            LogMessage("Video Buffer available from StartTime: " + time.Start.ToString() + " till EndTime: " + time.End.ToString() + " Current Position: " + times.Position.ToString() + " ProgramDateTime: " + times.ProgramDateTime.ToString());
-            //    }
-            //}
+        private void PlaybackSession_SeekableRangesChanged(Windows.Media.Playback.MediaPlaybackSession sender, object args)
+        {
+            if (LogLiveBuffer)
+            {
+                var ranges = sender.GetSeekableRanges();
+                if ((ranges != null) && (adaptiveMediaSource != null))
+                {
+                    foreach (var time in ranges)
+                    {
+                        var times = adaptiveMediaSource.GetCorrelatedTimes();
+                        if (times != null)
+                            LogMessage("Video Buffer available from StartTime: " + time.Start.ToString() + " till EndTime: " + time.End.ToString() + " Current Position: " + times.Position.ToString() + " ProgramDateTime: " + times.ProgramDateTime.ToString());
+                    }
+                }
+            }
 
-        //}
+        }
 
         /// <summary>
         /// This method is called when the Media State changed .
@@ -809,7 +824,7 @@ namespace AudioVideoPlayer.Pages.Player
         private async void MediaElement_MediaOpened(Windows.Media.Playback.MediaPlayer sender, object e)
         {
             LogMessage("Media opened");
-            if((mediaPlayer.PlaybackSession!=null) && (mediaPlayer.PlaybackSession.CanSeek))
+            if((mediaPlayer.PlaybackSession!=null) && (mediaPlayer.PlaybackSession.CanSeek) && (SetLiveCurrentStartPosition == true))
             {
                 mediaPlayer.PlaybackSession.Position = CurrentStartPosition;
             }
@@ -2872,6 +2887,7 @@ namespace AudioVideoPlayer.Pages.Player
                 CurrentMediaUrl = string.Empty;
                 CurrentPosterUrl = string.Empty;
                 CurrentStartPosition = new TimeSpan(0);
+                SetLiveCurrentStartPosition = false;
                 CurrentDuration = new TimeSpan(0);
                 StartPictureTime = DateTime.MinValue;
                 if (IsPicture(content))
@@ -3339,6 +3355,7 @@ namespace AudioVideoPlayer.Pages.Player
                             adaptiveMediaSource.DownloadFailed += AdaptiveMediaSource_DownloadFailed;
                             adaptiveMediaSource.DownloadRequested += AdaptiveMediaSource_DownloadRequested;
                             adaptiveMediaSource.PlaybackBitrateChanged += AdaptiveMediaSource_PlaybackBitrateChanged;
+                            
 
                             LogMessage("Available bitrates: ");
                             uint startupBitrate = 0;
@@ -3363,8 +3380,32 @@ namespace AudioVideoPlayer.Pages.Player
                             adaptiveMediaSource.DesiredLiveOffset = TimeSpan.FromSeconds(lo);
                             LogMessage("Desired Live Offset:: " + lo.ToString());
 
-                            mediaPlayer.Source = Windows.Media.Core.MediaSource.CreateFromAdaptiveMediaSource(adaptiveMediaSource);
-                            return true;
+                            Windows.Media.Core.MediaSource source = Windows.Media.Core.MediaSource.CreateFromAdaptiveMediaSource(adaptiveMediaSource);
+                            if (source != null)
+                            {
+                                Windows.Media.Playback.MediaPlaybackItem playbackItem = new Windows.Media.Playback.MediaPlaybackItem(source);
+                                if (playbackItem != null)
+                                {
+                                    // Turn on English captions by default
+                                    playbackItem.TimedMetadataTracksChanged += (item, args) =>
+                                    {
+                                        if (args.CollectionChange == CollectionChange.ItemInserted)
+                                        {
+                                            LogMessage("TimedMetadataTracksChanged, Number of tracks:" + item.TimedMetadataTracks.Count.ToString());
+
+                                            uint changedTrackIndex = args.Index;
+                                            Windows.Media.Core.TimedMetadataTrack changedTrack = playbackItem.TimedMetadataTracks[(int)changedTrackIndex];
+
+                                            if (changedTrack.Language == "en")
+                                            {
+                                                playbackItem.TimedMetadataTracks.SetPresentationMode(changedTrackIndex, Windows.Media.Playback.TimedMetadataTrackPresentationMode.PlatformPresented);
+                                            }
+                                        }
+                                    };
+                                    mediaPlayer.Source = playbackItem;
+                                    return true;
+                                }
+                            }
                         }
                         else
                             LogMessage("Failed to create AdaptiveMediaSource: " + result.Status.ToString());
@@ -3500,7 +3541,8 @@ namespace AudioVideoPlayer.Pages.Player
                 }
                 else if (args.UpdateType == Microsoft.Media.AdaptiveStreaming.AdaptiveSourceStatusUpdateType.StartEndTime)
                 {
-                    // LogMessage("Smooth Streaming Time changed - Start " + (new TimeSpan(args.StartTime)).ToString() + " End: " + (new TimeSpan(Math.Max(args.EndTime, args.StartTime + args.AdaptiveSource.Manifest.Duration))).ToString() + " Live: " + (new TimeSpan(args.EndTime)).ToString() + " Position: " + mediaPlayer.PlaybackSession.Position.ToString());
+                    if(LogLiveBuffer)
+                         LogMessage("Smooth Streaming Time changed - Start " + (new TimeSpan(args.StartTime)).ToString() + " End: " + (new TimeSpan(Math.Max(args.EndTime, args.StartTime + args.AdaptiveSource.Manifest.Duration))).ToString() + " Live: " + (new TimeSpan(args.EndTime)).ToString() + " Position: " + mediaPlayer.PlaybackSession.Position.ToString());
                     // Set Live Offset for Live Smooth Stream                        
                     if (ViewModels.StaticSettingsViewModel.LiveOffset >= 0)
                     {
@@ -3508,11 +3550,9 @@ namespace AudioVideoPlayer.Pages.Player
                         {
                             LogMessage("Smooth Streaming Time changed - Start " + (new TimeSpan(args.StartTime)).ToString() + " End: " + (new TimeSpan(Math.Max(args.EndTime, args.StartTime + args.AdaptiveSource.Manifest.Duration))).ToString() + " Live: " + (new TimeSpan(args.EndTime)).ToString() + " Position: " + mediaPlayer.PlaybackSession.Position.ToString());
                             CurrentStartPosition = TimeSpan.FromTicks(args.EndTime) - TimeSpan.FromSeconds(ViewModels.StaticSettingsViewModel.LiveOffset);
+                            SetLiveCurrentStartPosition = true;
                             LogMessage("Changing Live Smooth Streaming Start position to: " + CurrentStartPosition.ToString());
                         }
-                      //  else
-                      //      LogMessage("Smooth Streaming Time changed - Start " + (new TimeSpan(args.StartTime)).ToString() + " End: " + (new TimeSpan(Math.Max(args.EndTime, args.StartTime + args.AdaptiveSource.Manifest.Duration))).ToString() + " Live: " + (new TimeSpan(args.EndTime)).ToString() + " Position: " + mediaPlayer.PlaybackSession.Position.ToString());
-
                     }
 
                 }
@@ -3549,16 +3589,284 @@ namespace AudioVideoPlayer.Pages.Player
         {
             LogMessage("PlaybackBitrateChanged from " + args.OldValue + " to " + args.NewValue);
         }
+        public static ulong ParseTime(string s)
+        {
+            ulong d = 0;
+            System.Text.RegularExpressions.Regex shortTime = new System.Text.RegularExpressions.Regex(@"^\s*(\d+)?:?(\d+):(\d+).(\d+)\s*$");
+            //            System.Text.RegularExpressions.Regex shortTime = new System.Text.RegularExpressions.Regex(@"^\s*(\d+)?:?(\d+):([\d\.]+)\s*$");
+            // System.Text.RegularExpressions.Regex longTime = new System.Text.RegularExpressions.Regex(@"^\s*(\d{2}):(\d{2}):(\d{2}):(\d{2})\s*$");
+            System.Text.RegularExpressions.MatchCollection mc = shortTime.Matches(s);
+            if ((mc != null) && (mc.Count == 1))
+            {
+                ulong hours = 0;
+                ulong minutes = 0;
+                ulong seconds = 0;
+                ulong milliseconds = 0;
+                if (mc[0].Groups.Count >= 5)
+                {
+                    if (ulong.TryParse(mc[0].Groups[1].Value, out hours))
+                    {
+                        if (ulong.TryParse(mc[0].Groups[2].Value, out minutes))
+                        {
+                            if (ulong.TryParse(mc[0].Groups[3].Value, out seconds))
+                            {
+                                if (ulong.TryParse(mc[0].Groups[4].Value, out milliseconds))
+                                {
+                                    d = hours * 3600 * 1000 + minutes * 60 * 1000 + seconds * 1000 + milliseconds;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return d;
+        }
 
+        public static string TimeToString(ulong d)
+        {
+            ulong hours = d / (3600 * 1000);
+            ulong minutes = (d - hours * 3600 * 1000) / (60 * 1000);
+            ulong seconds = (d - hours * 3600 * 1000 - minutes * 60 * 1000) / 1000;
+            ulong milliseconds = (d - hours * 3600 * 1000 - minutes * 60 * 1000 - seconds * 1000);
+            //if (hours == 0)
+            //    return string.Format("{0:00}:{1:00}.{2:000}", minutes, seconds, milliseconds);
+            //else 
+            if (hours < 100)
+                return string.Format("{0:00}:{1:00}:{2:00}.{3:000}", hours, minutes, seconds, milliseconds);
+            else
+                return string.Format("{0}:{1:00}:{2:00}.{3:000}", hours, minutes, seconds, milliseconds);
+        }
+        public class SubtitileItem
+        {
+            public ulong startTime;
+            public ulong endTime;
+            public string subtitle;
+            public SubtitileItem(ulong start, ulong end, string sub)
+            {
+                startTime = start;
+                endTime = end;
+                subtitle = sub;
+            }
+            public override string ToString()
+            {
+                return TimeToString(startTime) + " --> " + TimeToString(endTime) + "\r\n" + subtitle + "\r\n\r\n";
+            }
+        }
+
+        private string ConvertWebVTT(string input)
+        {
+            string output = string.Empty;
+            if(!string.IsNullOrEmpty(input))
+            {
+                string[] separator = { "\r\n", "\r", "\n" }; 
+                string[] linesArray = input.Split(separator, StringSplitOptions.None);
+                if((linesArray!=null) && (linesArray.Length>1))
+                {
+                    if((linesArray[0].Contains("WEBVTT"))&&
+                        (linesArray[1].Contains("X-TIMESTAMP-MAP")))
+                    {
+                        Regex blankLine = new Regex(@"^\s*$");
+                        Regex captionLine = new Regex(@"^(?:<v\s+([^>]+)>)?([^\r\n]+)$");
+                        Regex timeLine = new Regex(@"^([\d\.:]+)\s+-->\s+([\d\.:]+)(?:\s.*)?$");
+                        ulong startTime = ulong.MaxValue;
+                        ulong endTime = ulong.MaxValue;
+                        string caption = string.Empty ;
+                        string args = linesArray[1].Replace("X-TIMESTAMP-MAP=", "");
+                        ulong plusTime = 0;
+                        ulong minusTime = 0;
+                        ulong mpegtsTime = ulong.MaxValue;
+                        ulong localTime = ulong.MaxValue;
+                        char[] sep = { ','};
+                        string[] values = args.Split(sep);
+                        if((values!=null)&&(values.Length == 2))
+                        {
+                            for (int i = 0; i < values.Length; i++)
+                            {
+                                if (values[i].Trim().StartsWith("MPEGTS:"))
+                                {
+                                    string loc = values[i].Trim().Replace("MPEGTS:", "");
+                                    if (ulong.TryParse(loc, out mpegtsTime))
+                                        mpegtsTime = mpegtsTime / 90;
+
+
+                                }
+                                if (values[i].Trim().StartsWith("LOCAL:"))
+                                {
+                                    string loc = values[i].Trim().Replace("LOCAL:","");
+                                    localTime = ParseTime(loc);
+                                }
+                            }
+                        }
+                        if ((localTime != ulong.MaxValue)&&(mpegtsTime != ulong.MaxValue))
+                        {
+                            if (localTime > mpegtsTime)
+                                minusTime = localTime - mpegtsTime;
+                            else
+                                plusTime = mpegtsTime - localTime;
+                            List<SubtitileItem> captionArray = new List<SubtitileItem>();
+                            for (int i = 2; i < linesArray.Length; i++)
+                            {
+                                if (blankLine.IsMatch(linesArray[i]))
+                                {
+                                    if (!string.IsNullOrEmpty(caption) &&
+                                        (startTime != ulong.MaxValue) &&
+                                        (endTime != ulong.MaxValue))
+                                    {
+                                        SubtitileItem item = new SubtitileItem(startTime - minusTime + plusTime, endTime - minusTime + plusTime, caption);
+                                        if (item != null)
+                                            captionArray.Add(item);
+                                    }
+                                    startTime = ulong.MaxValue;
+                                    endTime = ulong.MaxValue;
+                                    caption = string.Empty;
+                                    continue;
+                                }
+
+                                MatchCollection m = timeLine.Matches(linesArray[i]);
+                                if ((m != null) && (m.Count >= 1))
+                                {
+                                    if (!string.IsNullOrEmpty(caption) &&
+                                         (startTime != ulong.MaxValue) &&
+                                         (endTime != ulong.MaxValue))
+                                    {
+                                        SubtitileItem item = new SubtitileItem(startTime - minusTime + plusTime, endTime - minusTime + plusTime, caption);
+                                        if (item != null)
+                                            captionArray.Add(item);
+                                    }
+                                    startTime = ulong.MaxValue;
+                                    endTime = ulong.MaxValue;
+                                    caption = string.Empty;
+
+                                    GroupCollection gc = m[0].Groups;
+                                    if (gc.Count == 3)
+                                    {
+                                        startTime = ParseTime(gc[1].Value);
+                                        endTime = ParseTime(gc[2].Value);
+                                    }
+                                    //for (int k= 0; k< cc.Count; k++)
+                                    //{
+                                    //    ParseTime(cc[k].Value);
+                                    //}
+                                    continue;
+                                }
+
+                                m = captionLine.Matches(linesArray[i]);
+                                if ((m != null) && (m.Count >= 1) && (startTime != ulong.MaxValue) && (endTime != ulong.MaxValue))
+                                {
+                                    GroupCollection gc = m[0].Groups;
+                                    if (gc.Count == 3)
+                                    {
+                                        if (!string.IsNullOrEmpty(caption))
+                                            caption += " " + gc[2].Value;
+                                        else
+                                            caption = gc[2].Value;
+                                    }
+                                }
+                            }
+
+                            if (!string.IsNullOrEmpty(caption) &&
+                                (startTime != ulong.MaxValue) &&
+                                (endTime != ulong.MaxValue))
+                            {
+                                SubtitileItem item = new SubtitileItem(startTime - minusTime + plusTime, endTime - minusTime + plusTime, caption);
+                                if (item != null)
+                                    captionArray.Add(item);
+                            }
+
+                            output += "WEBVTT\r\n\r\n";
+                            for (int i = 0; i < captionArray.Count; i++)
+                            {
+                                if (!string.IsNullOrEmpty(captionArray[i].subtitle))
+                                {
+                                    output += captionArray[i].ToString();
+                                }
+                            }
+
+                        }
+                        
+                    }
+                }
+            }
+            return output;
+        }
         /// <summary>
         /// Called when the download of a DASH or HLS chunk is requested
         /// </summary>
 
         private async void AdaptiveMediaSource_DownloadRequested(Windows.Media.Streaming.Adaptive.AdaptiveMediaSource sender, Windows.Media.Streaming.Adaptive.AdaptiveMediaSourceDownloadRequestedEventArgs args)
         {
-            //            LogMessage("DownloadRequested for uri: " + args.ResourceUri.ToString());
+            if(LogDownload)
+                LogMessage("DownloadRequested for uri: " + args.ResourceUri.ToString() + " type: " + args.ResourceType.ToString());
+
+            //
+            // If the requested resource is a WEBVTT file
+            // Check the WEBVTT file:
+            // if the file contains X-TIMESTAMP-MAP 
+            // it may be required to change the timestamps in the  WEBVTT File
+            // 
+            if ((args.ResourceUri.ToString().EndsWith(".vtt")) || (args.ResourceUri.ToString().EndsWith(".webvtt")))
+            {
+                var defer = args.GetDeferral();
+                if (defer != null)
+                {
+                    using (var httpClient = new Windows.Web.Http.HttpClient())
+                    {
+
+                        string text = string.Empty;
+                        Windows.Web.Http.HttpResponseMessage hrm = null;
+                        try
+                        {
+                            hrm = await httpClient.GetAsync(args.ResourceUri);
+                            if((hrm!=null)&&(hrm.StatusCode == Windows.Web.Http.HttpStatusCode.Ok))
+                            {
+                                var b = await hrm.Content.ReadAsBufferAsync();
+                                text = System.Text.UTF8Encoding.UTF8.GetString(b.ToArray());
+                            }
+                           // text = await httpClient.GetStringAsync(args.ResourceUri);
+                        }
+                        catch(Exception ex)
+                        {
+                            text = string.Empty;
+                            LogMessage("Exception while downloading subtitles: " + ex.Message);
+                        }
+
+                        if (LogSubtitle)
+                            LogMessage("Input Subtitles: " + text);
+                        if (!string.IsNullOrEmpty(text)&& (text.Contains("X-TIMESTAMP-MAP")))
+                        {
+                            // convert string to stream
+                            string convertedText = ConvertWebVTT(text);
+                            if (!string.IsNullOrEmpty(convertedText))
+                            {
+                                byte[] byteArray = System.Text.Encoding.UTF8.GetBytes(convertedText);
+                                if (byteArray != null)
+                                {
+                                    MemoryStream stream = new MemoryStream(byteArray);
+                                    if (stream != null)
+                                    {
+                                        args.Result.ResourceUri = args.ResourceUri;
+                                        args.Result.ContentType = args.ResourceType.ToString();
+                                        args.Result.InputStream = stream.AsInputStream();
+                                    }
+
+                                }
+                                if (LogSubtitle)
+                                    LogMessage("Converted Subtitle: " + convertedText);
+                            }
+                        }
+                    }
+                    defer.Complete();
+                    return;
+                }
+            }
+
+            // 
+            // If no Http Headers are defined 
+            // nothing to do
+            // 
             if ((httpHeaders == null) || (httpHeaders.Count == 0))
                 return;
+
 
             var deferral = args.GetDeferral();
             if (deferral != null)

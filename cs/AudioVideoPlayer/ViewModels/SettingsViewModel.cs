@@ -211,6 +211,42 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
+        public bool LiveBufferLogs
+        {
+            get
+            {
+                return StaticSettingsViewModel.LiveBufferLogs;
+            }
+            set
+            {
+                StaticSettingsViewModel.LiveBufferLogs = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public bool DownloadLogs
+        {
+            get
+            {
+                return StaticSettingsViewModel.DownloadLogs;
+            }
+            set
+            {
+                StaticSettingsViewModel.DownloadLogs = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public bool SubtitleLogs
+        {
+            get
+            {
+                return StaticSettingsViewModel.SubtitleLogs;
+            }
+            set
+            {
+                StaticSettingsViewModel.SubtitleLogs = value;
+                NotifyPropertyChanged();
+            }
+        }
         public bool PlaylistLoop
         {
             get

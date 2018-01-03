@@ -258,6 +258,45 @@
               </StackPanel>
 
             </StackPanel>
+                <StackPanel   >
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top" >
+                        <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Margin="0,8,0,8"  Text="Logs Settings: "/>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top" >
+                    <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Live Buffer: "/>
+                    <ToggleSwitch Margin="2,2,2,2" x:Name="LiveBufferLogs" MinWidth="100"
+                                          OffContent="Off"
+                                          OnContent="On"
+                                          VerticalAlignment="Center"
+                                          Style="{ThemeResource CustomToggleSwitchStyle}"                                  
+                                          IsOn="{Binding Settings.LiveBufferLogs, Mode=TwoWay}"
+                              ToolTipService.ToolTip="Configure the player to log live buffer changes"    >
+                    </ToggleSwitch>
+                </StackPanel>
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top" >
+                    <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Download chunks and manifest: "/>
+                    <ToggleSwitch Margin="2,2,2,2" x:Name="DownloadLogs" MinWidth="100"
+                                          OffContent="Off"
+                                          OnContent="On"
+                                          VerticalAlignment="Center"
+                                          Style="{ThemeResource CustomToggleSwitchStyle}"                                  
+                                          IsOn="{Binding Settings.DownloadLogs, Mode=TwoWay}"
+                              ToolTipService.ToolTip="Configure the player to log download reqests"    >
+                    </ToggleSwitch>
+                </StackPanel>
+
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top" >
+                    <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Subtitles: "/>
+                    <ToggleSwitch Margin="2,2,2,2" x:Name="SubtitleLogs" MinWidth="100"
+                                          OffContent="Off"
+                                          OnContent="On"
+                                          VerticalAlignment="Center"
+                                          Style="{ThemeResource CustomToggleSwitchStyle}"                                  
+                                          IsOn="{Binding Settings.SubtitleLogs, Mode=TwoWay}"
+                              ToolTipService.ToolTip="Configure the player to log subtitles content"    >
+                    </ToggleSwitch>
+                </StackPanel>
             </StackPanel>
 
         </Grid>

@@ -30,6 +30,9 @@ namespace AudioVideoPlayer.ViewModels
         private static bool contentLoop;
         private static bool playlistLoop;
         private static bool onlineMetadata;
+        private static bool liveBufferLogs;
+        private static bool downloadLogs;
+        private static bool subtitleLogs;
         private static PlayerWindowState windowState;
         private static int maxBitrate;
         private static int minBitrate;
@@ -102,6 +105,57 @@ namespace AudioVideoPlayer.ViewModels
             {
                 Helpers.SettingsHelper.SaveSettingsValue(nameof(OnlineMetadata), value.ToString());
                 onlineMetadata = value;
+            }
+        }
+        public static bool LiveBufferLogs
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(LiveBufferLogs));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    liveBufferLogs = false;
+                else
+                    liveBufferLogs = bool.Parse(auto);
+                return liveBufferLogs;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(LiveBufferLogs), value.ToString());
+                liveBufferLogs = value;
+            }
+        }
+        public static bool DownloadLogs
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(DownloadLogs));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    downloadLogs = false;
+                else
+                    downloadLogs = bool.Parse(auto);
+                return downloadLogs;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(DownloadLogs), value.ToString());
+                downloadLogs = value;
+            }
+        }
+        public static bool SubtitleLogs
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(SubtitleLogs));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    subtitleLogs = false;
+                else
+                    subtitleLogs = bool.Parse(auto);
+                return subtitleLogs;
+            }
+            set
+            {
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(SubtitleLogs), value.ToString());
+                subtitleLogs = value;
             }
         }
         public static bool PlaylistLoop
