@@ -12,7 +12,7 @@ This application has been developped to test the playback of media assets on pla
 Those media assets can be protected with DRM like PlayReady.
 This sample application does support the following containers:<p/>
 	-   **Video**: VMV, MP4, MPEG2-TS, MKV, HLS, MPEG-DASH, Smooth Streaming</p> 
-	-   **Audio**: WMA, MP3, FLAC</p>
+	-   **Audio**: WMA, MP3, AAC, M4A, FLAC</p>
 	-   **Picture**: JPG, PNG</p>
 
 Actually the application can play all the video and audio format supported natively by Windows 10.
