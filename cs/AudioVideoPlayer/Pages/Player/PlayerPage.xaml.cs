@@ -2103,6 +2103,29 @@ namespace AudioVideoPlayer.Pages.Player
         private string httpHeadersString;
         // Dictionary which contains the http headers for the http request
         Dictionary<string, string> httpHeaders;
+        long GetVersionNumber(int Index, string version)
+        {
+            long result = 0;
+            char[] sep = { '.' };
+            string[] res = version.Split(sep);
+            if ((res != null) && (res.Count() == 4))
+            {
+                long.TryParse(res[Index], out result);
+            }
+            return result;
+        }
+        /// <summary>
+        /// This method indicates whether the OS is at least RS4 which support natively Smooth Streaming
+        /// </summary>
+        bool IsRS4()
+        {
+            if ((GetVersionNumber(0, Information.SystemInformation.SystemVersion) * 281474976710656 +
+                GetVersionNumber(1, Information.SystemInformation.SystemVersion) * 4294967296 +
+                GetVersionNumber(2, Information.SystemInformation.SystemVersion) * 65536 +
+                GetVersionNumber(3, Information.SystemInformation.SystemVersion)) >= (10 * 281474976710656 + 17134 * 65536))
+                return true;
+            return false;
+        }
         /// <summary>
         /// This method return a collection of http Headers
         /// </summary>
@@ -3312,7 +3335,7 @@ namespace AudioVideoPlayer.Pages.Player
                 {
 
                     // If SMOOTH stream
-                    if (IsSmoothStreaming(Content))
+                    if (IsSmoothStreaming(Content)&&(IsRS4()==false))
                     {
                      //   string modifier = Content.Contains("?") ? "&" : "?";
                      //   string newUriString = string.Concat(Content, modifier, "ignore=", Guid.NewGuid());
@@ -3321,7 +3344,7 @@ namespace AudioVideoPlayer.Pages.Player
                     }
                     else
                     {
-                        // If DASH or HLS content
+                        // If DASH, HLS or SMOOTH (OS version >= RS4) content
                         // Create the AdaptiveMediaSource
                         Windows.Media.Streaming.Adaptive.AdaptiveMediaSourceCreationResult result = null;
                         if (httpHeaders != null)

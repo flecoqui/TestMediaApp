@@ -13,7 +13,7 @@
           "Title": "Azure Media Services Overview (SMOOTH)",
           "ImagePath": "ms-appx:///Assets/SMOOTH.png",
           "Description": "Azure Media Services Overview (SMOOTH)",
-          "Content": "http://amssamples.streaming.mediaservices.windows.net/91492735-c523-432b-ba01-faba6c2206a2/AzureMediaServicesPromo.ism/manifest",
+          "Content": "http://amssamples.streaming.mediaservices.windows.net/91492735-c523-432b-ba01-faba6c2206a2/AzureMediaServicesPromo.ism/Manifest",
           "PosterContent": "",
           "Start": "0",
           "Duration": "0",
