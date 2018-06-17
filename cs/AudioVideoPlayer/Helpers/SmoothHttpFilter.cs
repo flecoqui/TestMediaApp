@@ -34,7 +34,7 @@ namespace AudioVideoPlayer.Helpers
                     if(response.Content.Headers.ContainsKey("Content-Type"))
                     {
                         if (response.Content.Headers["Content-Type"].StartsWith("text/xml"))
-                            response.Content.Headers["Content -Type"] = "application/vnd.ms-sstr+xml";
+                            response.Content.Headers["Content-Type"] = "application/vnd.ms-sstr+xml";
                     }
                 }
                 return response;
