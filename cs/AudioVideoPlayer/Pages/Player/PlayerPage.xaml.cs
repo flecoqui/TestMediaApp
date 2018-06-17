@@ -35,6 +35,7 @@ using Windows.Storage.Streams;
 using System.Text.RegularExpressions;
 using Windows.ApplicationModel.Activation;
 using Windows.Storage.FileProperties;
+using Windows.Web.Http.Filters;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -3239,7 +3240,7 @@ namespace AudioVideoPlayer.Pages.Player
 
             return result;
         }
-
+        
         /// <summary>
         /// SetAudioVideoUrl
         /// Prepare the MediaElement to play audio or video content 
@@ -3351,7 +3352,9 @@ namespace AudioVideoPlayer.Pages.Player
                         {
                             try
                             {
-                                Windows.Web.Http.HttpClient httpClient = new Windows.Web.Http.HttpClient();
+                                var baseFilter = new HttpBaseProtocolFilter();
+                                var SmoothFilter = new Helpers.SmoothHttpFilter(baseFilter);
+                                Windows.Web.Http.HttpClient httpClient = new Windows.Web.Http.HttpClient(SmoothFilter);
                                 SetHttpHeaders(httpHeaders, httpClient.DefaultRequestHeaders);
                                 result = await Windows.Media.Streaming.Adaptive.AdaptiveMediaSource.CreateFromUriAsync(new Uri(Content), httpClient);
                             }
@@ -3361,7 +3364,13 @@ namespace AudioVideoPlayer.Pages.Player
                             }
                         }
                         else
-                            result = await Windows.Media.Streaming.Adaptive.AdaptiveMediaSource.CreateFromUriAsync(new Uri(Content));
+                        {
+                            var baseFilter = new HttpBaseProtocolFilter();
+                            var SmoothFilter = new Helpers.SmoothHttpFilter(baseFilter);
+                            Windows.Web.Http.HttpClient httpClient = new Windows.Web.Http.HttpClient(SmoothFilter);
+
+                            result = await Windows.Media.Streaming.Adaptive.AdaptiveMediaSource.CreateFromUriAsync(new Uri(Content), httpClient);
+                        }
                         if (result.Status == Windows.Media.Streaming.Adaptive.AdaptiveMediaSourceCreationStatus.Success)
                         {
                             if (adaptiveMediaSource != null)
