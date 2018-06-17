@@ -179,9 +179,15 @@ namespace AudioVideoPlayer
         {
             if (args.VirtualKey == Windows.System.VirtualKey.Back)
             {
-                if (NavigationFrame.CanGoBack)
+                Object f = Windows.UI.Xaml.Input.FocusManager.GetFocusedElement();
+                if (f != null)
                 {
-                    NavigationFrame.GoBack();
+                    if (NavigationFrame.CanGoBack)
+                    {
+                        if (f.GetType() == typeof(Windows.UI.Xaml.Controls.TextBox))
+                            return;
+                        NavigationFrame.GoBack();
+                    }
                 }
             }
         }
