@@ -2,6 +2,7 @@
 <StoreAssociation xmlns="http://schemas.microsoft.com/appx/2010/storeassociation">
   <Publisher>CN=0F2C9F5D-19D3-44D5-AC3F-64AB88C40609</Publisher>
   <PublisherDisplayName>FLECOQUI</PublisherDisplayName>
+  <DeveloperAccountType>MSA</DeveloperAccountType>
   <GeneratePackageHash>http://www.w3.org/2001/04/xmlenc#sha256</GeneratePackageHash>
   <SupportedLocales>
     <Language Code="af" InMinimumRequirementSet="true" />
@@ -371,29 +372,13 @@
     <MainPackageIdentityName>52458FLECOQUI.Kerbors</MainPackageIdentityName>
     <MainPackageIdentityName>52458FLECOQUI.Kerfot</MainPackageIdentityName>
     <MainPackageIdentityName>52458FLECOQUI.LiveAndVODBackend</MainPackageIdentityName>
+    <MainPackageIdentityName>52458FLECOQUI.MRAzureNotHubApp</MainPackageIdentityName>
     <MainPackageIdentityName>52458FLECOQUI.StartupTask</MainPackageIdentityName>
     <MainPackageIdentityName>52458FLECOQUI.TechDays2014AVPlayerTool</MainPackageIdentityName>
     <MainPackageIdentityName>52458FLECOQUI.TechDays2014WinAVPlayer</MainPackageIdentityName>
     <MainPackageIdentityName>52458FLECOQUI.TestInApp</MainPackageIdentityName>
     <MainPackageIdentityName>52458FLECOQUI.TestInAppOperatorBilling</MainPackageIdentityName>
-    <MainPackageIdentityName>52458FLECOQUI.TestTemplateApp</MainPackageIdentityName>
-    <MainPackageIdentityName>52458FLECOQUI.TestUnmanaged</MainPackageIdentityName>
-    <MainPackageIdentityName>52458FLECOQUI.TestUWPStore</MainPackageIdentityName>
-    <MainPackageIdentityName>52458FLECOQUI.UniversalVideoPlayer</MainPackageIdentityName>
-    <MainPackageIdentityName>52458FLECOQUI.192363350C1B0</MainPackageIdentityName>
-    <MainPackageIdentityName>52458FLECOQUI.Win8WP8iOSAndroid</MainPackageIdentityName>
-    <MainPackageIdentityName>52458FLECOQUI.BubbleDrive</MainPackageIdentityName>
-    <MainPackageIdentityName>52458FLECOQUI.BubbleTV</MainPackageIdentityName>
-    <MainPackageIdentityName>52458FLECOQUI.InternalTestAPPX</MainPackageIdentityName>
-    <MainPackageIdentityName>52458FLECOQUI.InternalTestBT</MainPackageIdentityName>
-    <MainPackageIdentityName>52458FLECOQUI.Kerbors</MainPackageIdentityName>
-    <MainPackageIdentityName>52458FLECOQUI.Kerfot</MainPackageIdentityName>
-    <MainPackageIdentityName>52458FLECOQUI.LiveAndVODBackend</MainPackageIdentityName>
-    <MainPackageIdentityName>52458FLECOQUI.StartupTask</MainPackageIdentityName>
-    <MainPackageIdentityName>52458FLECOQUI.TechDays2014AVPlayerTool</MainPackageIdentityName>
-    <MainPackageIdentityName>52458FLECOQUI.TechDays2014WinAVPlayer</MainPackageIdentityName>
-    <MainPackageIdentityName>52458FLECOQUI.TestInApp</MainPackageIdentityName>
-    <MainPackageIdentityName>52458FLECOQUI.TestInAppOperatorBilling</MainPackageIdentityName>
+    <MainPackageIdentityName>52458FLECOQUI.TestMediaApp-Subscription</MainPackageIdentityName>
     <MainPackageIdentityName>52458FLECOQUI.TestTemplateApp</MainPackageIdentityName>
     <MainPackageIdentityName>52458FLECOQUI.TestUnmanaged</MainPackageIdentityName>
     <MainPackageIdentityName>52458FLECOQUI.TestUWPStore</MainPackageIdentityName>

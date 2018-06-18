@@ -2115,6 +2115,16 @@ namespace AudioVideoPlayer.Pages.Player
             }
             return result;
         }
+        bool IsLocalhostConnection(string url)
+        {
+            if(!string.IsNullOrEmpty(url))
+            {
+                if (url.ToLower().StartsWith("http://localhost/") ||
+                    url.ToLower().StartsWith("https://localhost/"))
+                    return true;
+            }
+            return false;
+        }
         /// <summary>
         /// This method indicates whether the OS is at least RS4 which support natively Smooth Streaming
         /// </summary>
@@ -3353,6 +3363,8 @@ namespace AudioVideoPlayer.Pages.Player
                             try
                             {
                                 var baseFilter = new HttpBaseProtocolFilter();
+                                if (IsLocalhostConnection(Content))
+                                    baseFilter.UseProxy = false;
                                 var SmoothFilter = new Helpers.SmoothHttpFilter(baseFilter);
                                 Windows.Web.Http.HttpClient httpClient = new Windows.Web.Http.HttpClient(SmoothFilter);
                                 SetHttpHeaders(httpHeaders, httpClient.DefaultRequestHeaders);
@@ -3366,6 +3378,8 @@ namespace AudioVideoPlayer.Pages.Player
                         else
                         {
                             var baseFilter = new HttpBaseProtocolFilter();
+                            if (IsLocalhostConnection(Content))
+                                baseFilter.UseProxy = false;
                             var SmoothFilter = new Helpers.SmoothHttpFilter(baseFilter);
                             Windows.Web.Http.HttpClient httpClient = new Windows.Web.Http.HttpClient(SmoothFilter);
 
@@ -3418,13 +3432,24 @@ namespace AudioVideoPlayer.Pages.Player
                                 Windows.Media.Playback.MediaPlaybackItem playbackItem = new Windows.Media.Playback.MediaPlaybackItem(source);
                                 if (playbackItem != null)
                                 {
+                                    if((playbackItem.TimedMetadataTracks!=null)&& (playbackItem.TimedMetadataTracks.LongCount() >= 0))
+                                    {
+                                        LogMessage("Timed Metadata Tracks discovered while the url is opened:"); 
+                                        foreach (var subtitletrack in playbackItem.TimedMetadataTracks)
+                                        {
+                                            LogMessage("TrackID: " + subtitletrack.Id + " Type " + subtitletrack.TrackKind.ToString() + " Lang: " + subtitletrack.Language.ToString());
+                                        }
+                                    }
                                     // Turn on English captions by default
                                     playbackItem.TimedMetadataTracksChanged += (item, args) =>
                                     {
                                         if (args.CollectionChange == CollectionChange.ItemInserted)
                                         {
-                                            LogMessage("TimedMetadataTracksChanged, Number of tracks:" + item.TimedMetadataTracks.Count.ToString());
-
+                                            LogMessage("Timed Metadata Tracks updated:");
+                                            foreach (var subtitletrack in playbackItem.TimedMetadataTracks)
+                                            {
+                                                LogMessage("TrackID: " + subtitletrack.Id + " Type " + subtitletrack.TrackKind.ToString() + " Lang: " + subtitletrack.Language.ToString());
+                                            }
                                             uint changedTrackIndex = args.Index;
                                             Windows.Media.Core.TimedMetadataTrack changedTrack = playbackItem.TimedMetadataTracks[(int)changedTrackIndex];
 
@@ -3668,12 +3693,12 @@ namespace AudioVideoPlayer.Pages.Player
             else
                 return string.Format("{0}:{1:00}:{2:00}.{3:000}", hours, minutes, seconds, milliseconds);
         }
-        public class SubtitileItem
+        public class SubtitleItem
         {
             public ulong startTime;
             public ulong endTime;
             public string subtitle;
-            public SubtitileItem(ulong start, ulong end, string sub)
+            public SubtitleItem(ulong start, ulong end, string sub)
             {
                 startTime = start;
                 endTime = end;
@@ -3735,7 +3760,7 @@ namespace AudioVideoPlayer.Pages.Player
                                 minusTime = localTime - mpegtsTime;
                             else
                                 plusTime = mpegtsTime - localTime;
-                            List<SubtitileItem> captionArray = new List<SubtitileItem>();
+                            List<SubtitleItem> captionArray = new List<SubtitleItem>();
                             for (int i = 2; i < linesArray.Length; i++)
                             {
                                 if (blankLine.IsMatch(linesArray[i]))
@@ -3744,7 +3769,7 @@ namespace AudioVideoPlayer.Pages.Player
                                         (startTime != ulong.MaxValue) &&
                                         (endTime != ulong.MaxValue))
                                     {
-                                        SubtitileItem item = new SubtitileItem(startTime - minusTime + plusTime, endTime - minusTime + plusTime, caption);
+                                        SubtitleItem item = new SubtitleItem(startTime - minusTime + plusTime, endTime - minusTime + plusTime, caption);
                                         if (item != null)
                                             captionArray.Add(item);
                                     }
@@ -3761,7 +3786,7 @@ namespace AudioVideoPlayer.Pages.Player
                                          (startTime != ulong.MaxValue) &&
                                          (endTime != ulong.MaxValue))
                                     {
-                                        SubtitileItem item = new SubtitileItem(startTime - minusTime + plusTime, endTime - minusTime + plusTime, caption);
+                                        SubtitleItem item = new SubtitleItem(startTime - minusTime + plusTime, endTime - minusTime + plusTime, caption);
                                         if (item != null)
                                             captionArray.Add(item);
                                     }
@@ -3800,7 +3825,7 @@ namespace AudioVideoPlayer.Pages.Player
                                 (startTime != ulong.MaxValue) &&
                                 (endTime != ulong.MaxValue))
                             {
-                                SubtitileItem item = new SubtitileItem(startTime - minusTime + plusTime, endTime - minusTime + plusTime, caption);
+                                SubtitleItem item = new SubtitleItem(startTime - minusTime + plusTime, endTime - minusTime + plusTime, caption);
                                 if (item != null)
                                     captionArray.Add(item);
                             }
