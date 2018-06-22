@@ -84,7 +84,10 @@ namespace AudioVideoPlayer.Pages.Player
         private Windows.Media.Streaming.Adaptive.AdaptiveMediaSource adaptiveMediaSource = null; //ams represents the AdaptiveMedaSource used throughout this sample
         // attribute used to register Smooth Streaming component
         private Microsoft.Media.AdaptiveStreaming.AdaptiveSourceManager smoothStreamingManager = null;
-
+        // PlaybackItem used for the Subtitle
+        Windows.Media.Playback.MediaPlaybackItem playbackItem = null;
+        // Subtitle Dictionary
+        Dictionary<Windows.Media.Core.TimedTextSource, Uri> timedTextSourceMap;
         // Current Title if any
         private string CurrentTitle;
         // Url of the current playing media 
@@ -380,6 +383,11 @@ namespace AudioVideoPlayer.Pages.Player
             // Display OS, Device information
             LogMessage(Information.SystemInformation.GetString());
 
+            // Message for localhost content 
+            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Desktop"))
+            {
+                LogMessage("If you need to play locally hosted content (url starting with \"http://localhost/\"), run the following command:\r\nCheckNetIsolation.exe LoopbackExempt -a -p=S-1-15-2-2982070501-967104153-2962845618-3522483597-428830490-3611180981-3161762328\r\n");
+            }
             // Focus on PlayButton
             playButton.Focus(FocusState.Programmatic);
 
@@ -774,6 +782,27 @@ namespace AudioVideoPlayer.Pages.Player
                         var times = adaptiveMediaSource.GetCorrelatedTimes();
                         if (times != null)
                             LogMessage("Video Buffer available from StartTime: " + time.Start.ToString() + " till EndTime: " + time.End.ToString() + " Current Position: " + times.Position.ToString() + " ProgramDateTime: " + times.ProgramDateTime.ToString());
+
+                        try
+                        {
+                            // Create our timeline properties object 
+                            var timelineProperties = new Windows.Media.SystemMediaTransportControlsTimelineProperties();
+
+                            // Fill in the data, using the media elements properties 
+                            timelineProperties.StartTime = time.Start;
+                            timelineProperties.MinSeekTime = time.Start;
+                            timelineProperties.Position = mediaPlayer.PlaybackSession.Position;
+                            timelineProperties.MaxSeekTime = time.End;
+                            timelineProperties.EndTime = time.End;
+
+                            // Update the System Media transport Controls 
+                            SystemControls.UpdateTimelineProperties(timelineProperties);
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine("Exception while updating the timeline: " + ex.Message);
+
+                        }
                     }
                 }
             }
@@ -830,6 +859,7 @@ namespace AudioVideoPlayer.Pages.Player
                 mediaPlayer.PlaybackSession.Position = CurrentStartPosition;
             }
             await UpdateControlsDisplayUpdater(CurrentTitle, CurrentMediaUrl, CurrentPosterUrl);
+            UpdateControlTimeline();
             UpdateControls();
         }
         /// <summary>
@@ -2624,7 +2654,32 @@ namespace AudioVideoPlayer.Pages.Player
             }
             return s;
         }
+        bool UpdateControlTimeline()
+        {
+            bool result = false;
+            try
+            {
+                // Create our timeline properties object 
+                var timelineProperties = new Windows.Media.SystemMediaTransportControlsTimelineProperties();
 
+                // Fill in the data, using the media elements properties 
+                timelineProperties.StartTime = TimeSpan.FromSeconds(0);
+                timelineProperties.MinSeekTime = TimeSpan.FromSeconds(0);
+                timelineProperties.Position = mediaPlayer.PlaybackSession.Position;
+                timelineProperties.MaxSeekTime = mediaPlayer.PlaybackSession.NaturalDuration;
+                timelineProperties.EndTime = mediaPlayer.PlaybackSession.NaturalDuration;
+
+                // Update the System Media transport Controls 
+                SystemControls.UpdateTimelineProperties(timelineProperties);
+                result = true;
+            }
+            catch(Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while updating the timeline: " + ex.Message);
+
+            }
+            return result;
+        }
         /// <summary>
         /// This method Update the SystemControls Display information
         /// </summary>
@@ -3250,7 +3305,62 @@ namespace AudioVideoPlayer.Pages.Player
 
             return result;
         }
-        
+
+        bool CreateTimeTextSources(Windows.Media.Core.MediaSource source)
+        {
+            bool result = false;
+           
+            if (timedTextSourceMap != null)
+            {
+                foreach(var val in timedTextSourceMap)
+                {
+                    val.Key.Resolved -= TimedTextSource_Resolved;                    
+                }
+                timedTextSourceMap = null;
+            }
+            timedTextSourceMap = new Dictionary<Windows.Media.Core.TimedTextSource, Uri>();
+            if (timedTextSourceMap != null)
+            {
+                // Add Subtitles
+                var timedTextSourceUri_En = new Uri("https://blobstoragebackup.blob.core.windows.net/caption/caption_en.srt");
+                var timedTextSource_En = Windows.Media.Core.TimedTextSource.CreateFromUri(timedTextSourceUri_En);
+                timedTextSourceMap[timedTextSource_En] = timedTextSourceUri_En;
+                timedTextSource_En.Resolved += TimedTextSource_Resolved;
+
+                var timedTextSourceUri_Pt = new Uri("https://blobstoragebackup.blob.core.windows.net/caption/caption_pt.srt");
+                var timedTextSource_Pt = Windows.Media.Core.TimedTextSource.CreateFromUri(timedTextSourceUri_Pt);
+                timedTextSourceMap[timedTextSource_Pt] = timedTextSourceUri_Pt;
+                timedTextSource_Pt.Resolved += TimedTextSource_Resolved;
+
+                // Add the TimedTextSource to the MediaSource
+                source.ExternalTimedTextSources.Add(timedTextSource_En);
+                source.ExternalTimedTextSources.Add(timedTextSource_Pt);
+                result = true;
+            }
+            return result;
+        }
+    private void TimedTextSource_Resolved(Windows.Media.Core.TimedTextSource sender, Windows.Media.Core.TimedTextSourceResolveResultEventArgs args)
+        {
+            var timedTextSourceUri = timedTextSourceMap[sender];
+
+            if (args.Error != null)
+            {
+                // Show that there was an error in your UI
+                LogMessage("There was an error resolving track: " + timedTextSourceUri);
+                return;
+            }
+
+            // Add a label for each resolved track
+            var timedTextSourceUriString = timedTextSourceUri.AbsoluteUri;
+            if (timedTextSourceUriString.Contains("_en"))
+            {
+                args.Tracks[0].Label = "English";
+            }
+            else if (timedTextSourceUriString.Contains("_pt"))
+            {
+                args.Tracks[0].Label = "Portuguese";
+            }
+        }
         /// <summary>
         /// SetAudioVideoUrl
         /// Prepare the MediaElement to play audio or video content 
@@ -3348,9 +3458,10 @@ namespace AudioVideoPlayer.Pages.Player
                     // If SMOOTH stream
                     if (IsSmoothStreaming(Content)&&(IsRS4()==false))
                     {
-                     //   string modifier = Content.Contains("?") ? "&" : "?";
-                     //   string newUriString = string.Concat(Content, modifier, "ignore=", Guid.NewGuid());
-                        mediaPlayer.Source = Windows.Media.Core.MediaSource.CreateFromUri(new Uri(Content));
+                        //   string modifier = Content.Contains("?") ? "&" : "?";
+                        //   string newUriString = string.Concat(Content, modifier, "ignore=", Guid.NewGuid());
+                        Windows.Media.Core.MediaSource ms = Windows.Media.Core.MediaSource.CreateFromUri(new Uri(Content));
+                        mediaPlayer.Source = ms;
                         return true;
                     }
                     else
@@ -3429,10 +3540,20 @@ namespace AudioVideoPlayer.Pages.Player
                             Windows.Media.Core.MediaSource source = Windows.Media.Core.MediaSource.CreateFromAdaptiveMediaSource(adaptiveMediaSource);
                             if (source != null)
                             {
-                                Windows.Media.Playback.MediaPlaybackItem playbackItem = new Windows.Media.Playback.MediaPlaybackItem(source);
+                                // Source
+                                //if(IsSmoothStreaming(Content))
+                                //{
+                                //    CreateTimeTextSources(source);
+                                //}
+                                if (playbackItem!=null)
+                                {
+                                    playbackItem.TimedMetadataTracksChanged -= PlaybackItem_TimedMetadataTracksChanged;
+                                    playbackItem = null;
+                                }
+                                playbackItem = new Windows.Media.Playback.MediaPlaybackItem(source);
                                 if (playbackItem != null)
                                 {
-                                    if((playbackItem.TimedMetadataTracks!=null)&& (playbackItem.TimedMetadataTracks.LongCount() >= 0))
+                                    if((playbackItem.TimedMetadataTracks!=null)&& (playbackItem.TimedMetadataTracks.LongCount() > 0))
                                     {
                                         LogMessage("Timed Metadata Tracks discovered while the url is opened:"); 
                                         foreach (var subtitletrack in playbackItem.TimedMetadataTracks)
@@ -3440,25 +3561,7 @@ namespace AudioVideoPlayer.Pages.Player
                                             LogMessage("TrackID: " + subtitletrack.Id + " Type " + subtitletrack.TrackKind.ToString() + " Lang: " + subtitletrack.Language.ToString());
                                         }
                                     }
-                                    // Turn on English captions by default
-                                    playbackItem.TimedMetadataTracksChanged += (item, args) =>
-                                    {
-                                        if (args.CollectionChange == CollectionChange.ItemInserted)
-                                        {
-                                            LogMessage("Timed Metadata Tracks updated:");
-                                            foreach (var subtitletrack in playbackItem.TimedMetadataTracks)
-                                            {
-                                                LogMessage("TrackID: " + subtitletrack.Id + " Type " + subtitletrack.TrackKind.ToString() + " Lang: " + subtitletrack.Language.ToString());
-                                            }
-                                            uint changedTrackIndex = args.Index;
-                                            Windows.Media.Core.TimedMetadataTrack changedTrack = playbackItem.TimedMetadataTracks[(int)changedTrackIndex];
-
-                                            if (changedTrack.Language == "en")
-                                            {
-                                                playbackItem.TimedMetadataTracks.SetPresentationMode(changedTrackIndex, Windows.Media.Playback.TimedMetadataTrackPresentationMode.PlatformPresented);
-                                            }
-                                        }
-                                    };
+                                    playbackItem.TimedMetadataTracksChanged += PlaybackItem_TimedMetadataTracksChanged;
                                     mediaPlayer.Source = playbackItem;
                                     return true;
                                 }
@@ -3478,9 +3581,32 @@ namespace AudioVideoPlayer.Pages.Player
             }
             return false;
         }
+
+        private void PlaybackItem_TimedMetadataTracksChanged(Windows.Media.Playback.MediaPlaybackItem sender, IVectorChangedEventArgs args)
+        {
+            if (args.CollectionChange == CollectionChange.ItemInserted)
+            {
+                LogMessage("Timed Metadata Tracks updated:");
+                foreach (var subtitletrack in playbackItem.TimedMetadataTracks)
+                {
+                    LogMessage("TrackID: " + subtitletrack.Id + " Type " + subtitletrack.TrackKind.ToString() + " Lang: " + subtitletrack.Language.ToString());
+                }
+                uint changedTrackIndex = args.Index;
+                Windows.Media.Core.TimedMetadataTrack changedTrack = playbackItem.TimedMetadataTracks[(int)changedTrackIndex];
+
+                if (changedTrack.Language == "en")
+                {
+                    playbackItem.TimedMetadataTracks.SetPresentationMode(changedTrackIndex, Windows.Media.Playback.TimedMetadataTrackPresentationMode.PlatformPresented);
+                }
+            }
+        }
         #endregion
 
         #region SmoothStreaming
+        static bool IsCaptionStream(Microsoft.Media.AdaptiveStreaming.IManifestStream stream)
+        {
+            return stream.Type == Microsoft.Media.AdaptiveStreaming.MediaStreamType.Text && (stream.SubType == "CAPT" || stream.SubType == "SUBT");
+        }
         /// <summary>
         /// Called when the SMOOTH manifest has been downloaded and parsed
         /// If the asset is in the cache don't restrick track: the MediaCache will select the correct audio and video track
@@ -3492,6 +3618,8 @@ namespace AudioVideoPlayer.Pages.Player
             LogMessage("Manifest Ready for uri: " + sender.Uri.ToString());
             uint MaxBitRate = (uint) ViewModels.StaticSettingsViewModel.MaxBitrate;
             uint MinBitRate = (uint) ViewModels.StaticSettingsViewModel.MinBitrate;
+            // Get the list of subtitle streams
+           //  List<Microsoft.Media.AdaptiveStreaming.IManifestStream> AvailableCaptionStreams = args.AdaptiveSource.Manifest.AvailableStreams.Where(IsCaptionStream).Select(s => s).ToList();
 
             foreach (var stream in args.AdaptiveSource.Manifest.SelectedStreams)
             {
@@ -3610,6 +3738,26 @@ namespace AudioVideoPlayer.Pages.Player
                             SetLiveCurrentStartPosition = true;
                             LogMessage("Changing Live Smooth Streaming Start position to: " + CurrentStartPosition.ToString());
                         }
+                    }
+                    try
+                    {
+                        // Create our timeline properties object 
+                        var timelineProperties = new Windows.Media.SystemMediaTransportControlsTimelineProperties();
+
+                        // Fill in the data, using the media elements properties 
+                        timelineProperties.StartTime = new TimeSpan(args.StartTime);
+                        timelineProperties.MinSeekTime = new TimeSpan(args.StartTime);
+                        timelineProperties.Position = mediaPlayer.PlaybackSession.Position;
+                        timelineProperties.MaxSeekTime = new TimeSpan(args.EndTime);
+                        timelineProperties.EndTime = new TimeSpan(args.EndTime);
+
+                        // Update the System Media transport Controls 
+                        SystemControls.UpdateTimelineProperties(timelineProperties);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Exception while updating the timeline: " + ex.Message);
+
                     }
 
                 }
