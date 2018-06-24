@@ -3335,6 +3335,7 @@ namespace AudioVideoPlayer.Pages.Player
                 // Add the TimedTextSource to the MediaSource
                 source.ExternalTimedTextSources.Add(timedTextSource_En);
                 source.ExternalTimedTextSources.Add(timedTextSource_Pt);
+                
                 result = true;
             }
             return result;
@@ -3460,9 +3461,31 @@ namespace AudioVideoPlayer.Pages.Player
                     {
                         //   string modifier = Content.Contains("?") ? "&" : "?";
                         //   string newUriString = string.Concat(Content, modifier, "ignore=", Guid.NewGuid());
-                        Windows.Media.Core.MediaSource ms = Windows.Media.Core.MediaSource.CreateFromUri(new Uri(Content));
-                        mediaPlayer.Source = ms;
-                        return true;
+                        Windows.Media.Core.MediaSource source = Windows.Media.Core.MediaSource.CreateFromUri(new Uri(Content));
+                        
+                       // CreateTimeTextSources(source);
+                        if (playbackItem != null)
+                        {
+                            playbackItem.AudioTracksChanged -= PlaybackItem_AudioTracksChanged;
+                            playbackItem.TimedMetadataTracksChanged -= PlaybackItem_TimedMetadataTracksChanged;
+                            playbackItem = null;
+                        }
+                        playbackItem = new Windows.Media.Playback.MediaPlaybackItem(source);
+                        if (playbackItem != null)
+                        {
+                            if ((playbackItem.TimedMetadataTracks != null) && (playbackItem.TimedMetadataTracks.LongCount() > 0))
+                            {
+                                LogMessage("Timed Metadata Tracks discovered while the url is opened:");
+                                foreach (var subtitletrack in playbackItem.TimedMetadataTracks)
+                                {
+                                    LogMessage("TrackID: " + subtitletrack.Id + " Type " + subtitletrack.TrackKind.ToString() + " Lang: " + subtitletrack.Language.ToString());
+                                }
+                            }
+                            playbackItem.AudioTracksChanged += PlaybackItem_AudioTracksChanged;
+                            playbackItem.TimedMetadataTracksChanged += PlaybackItem_TimedMetadataTracksChanged;
+                            mediaPlayer.Source = playbackItem;
+                            return true;
+                        }
                     }
                     else
                     {
@@ -3547,6 +3570,7 @@ namespace AudioVideoPlayer.Pages.Player
                                 //}
                                 if (playbackItem!=null)
                                 {
+                                    playbackItem.AudioTracksChanged -= PlaybackItem_AudioTracksChanged;
                                     playbackItem.TimedMetadataTracksChanged -= PlaybackItem_TimedMetadataTracksChanged;
                                     playbackItem = null;
                                 }
@@ -3561,6 +3585,7 @@ namespace AudioVideoPlayer.Pages.Player
                                             LogMessage("TrackID: " + subtitletrack.Id + " Type " + subtitletrack.TrackKind.ToString() + " Lang: " + subtitletrack.Language.ToString());
                                         }
                                     }
+                                    playbackItem.AudioTracksChanged += PlaybackItem_AudioTracksChanged;
                                     playbackItem.TimedMetadataTracksChanged += PlaybackItem_TimedMetadataTracksChanged;
                                     mediaPlayer.Source = playbackItem;
                                     return true;
@@ -3580,6 +3605,24 @@ namespace AudioVideoPlayer.Pages.Player
                 CurrentPosterUrl = string.Empty;
             }
             return false;
+        }
+
+        private async void PlaybackItem_AudioTracksChanged(Windows.Media.Playback.MediaPlaybackItem sender, IVectorChangedEventArgs args)
+        {
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                if (args.CollectionChange == CollectionChange.ItemInserted)
+                {
+                    LogMessage("Audio Tracks updated:");
+
+                    for (int index = 0; index < sender.AudioTracks.Count; index++)
+                    {
+                        var audioTrack = sender.AudioTracks[index];
+                        LogMessage("TrackID: " + audioTrack.Id + " Type " + audioTrack.TrackKind.ToString() + " Lang: " + audioTrack.Language.ToString());
+                    }
+                }
+
+            });
         }
 
         private void PlaybackItem_TimedMetadataTracksChanged(Windows.Media.Playback.MediaPlaybackItem sender, IVectorChangedEventArgs args)
@@ -3619,14 +3662,65 @@ namespace AudioVideoPlayer.Pages.Player
             uint MaxBitRate = (uint) ViewModels.StaticSettingsViewModel.MaxBitrate;
             uint MinBitRate = (uint) ViewModels.StaticSettingsViewModel.MinBitrate;
             // Get the list of subtitle streams
-           //  List<Microsoft.Media.AdaptiveStreaming.IManifestStream> AvailableCaptionStreams = args.AdaptiveSource.Manifest.AvailableStreams.Where(IsCaptionStream).Select(s => s).ToList();
+            //  List<Microsoft.Media.AdaptiveStreaming.IManifestStream> AvailableCaptionStreams = args.AdaptiveSource.Manifest.AvailableStreams.Where(IsCaptionStream).Select(s => s).ToList();
+            // CreateTimeTextSources();
+            foreach (var stream in args.AdaptiveSource.Manifest.AvailableStreams)
+            {
+                if (stream.Type == Microsoft.Media.AdaptiveStreaming.MediaStreamType.Audio)
+                {
+                    foreach (var track in stream.AvailableTracks)
+                    {
+                        string Lang = string.Empty;
+                        string Name = string.Empty;
+                        try
+                        {
+                            Lang = stream.GetAttribute("Language");
+                            Name = stream.GetAttribute("Name");
 
+                        }
+                        catch(Exception)
+                        {
+
+                        }
+                        if (string.IsNullOrEmpty(Lang))
+                            Lang = "Unknown";
+                        if (string.IsNullOrEmpty(Name))
+                            Name = "Unknown";
+                        LogMessage("Audio Stream: " + Name + " Bitrate: " + track.Bitrate.ToString() + " Lang: " + Lang);
+
+                                            }
+                }
+                if (stream.Type == Microsoft.Media.AdaptiveStreaming.MediaStreamType.Text)
+                {
+                    foreach (var track in stream.AvailableTracks)
+                    {
+                        string Lang = string.Empty;
+                        string Name = string.Empty;
+                        try
+                        {
+                            Lang = stream.GetAttribute("Language");
+                            Name = stream.GetAttribute("Name");
+
+                        }
+                        catch (Exception)
+                        {
+
+                        }
+                        if (string.IsNullOrEmpty(Lang))
+                            Lang = "Unknown";
+                        if (string.IsNullOrEmpty(Name))
+                            Name = "Unknown";
+
+                        LogMessage("Text Stream: " + Name  + " Bitrate: " + track.Bitrate.ToString() + " Lang: " + Lang);
+
+                    }
+                }
+            }
             foreach (var stream in args.AdaptiveSource.Manifest.SelectedStreams)
             {
-
                 if (stream.Type == Microsoft.Media.AdaptiveStreaming.MediaStreamType.Video)
                 {
-                    
+                    LogMessage("Video Stream: ");
                     foreach (var track in stream.SelectedTracks)
                     {
                         LogMessage("  Bitrate: " + track.Bitrate.ToString() + " Width: " + track.MaxWidth.ToString() + " Height: " + track.MaxHeight.ToString() + " FourCC: " + track.FourCC) ;
