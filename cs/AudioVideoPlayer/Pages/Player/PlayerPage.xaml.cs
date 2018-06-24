@@ -87,7 +87,7 @@ namespace AudioVideoPlayer.Pages.Player
         // PlaybackItem used for the Subtitle
         Windows.Media.Playback.MediaPlaybackItem playbackItem = null;
         // Subtitle Dictionary
-        Dictionary<Windows.Media.Core.TimedTextSource, Uri> timedTextSourceMap;
+        //Dictionary<Windows.Media.Core.TimedTextSource, Uri> timedTextSourceMap;
         // Current Title if any
         private string CurrentTitle;
         // Url of the current playing media 
@@ -3310,56 +3310,38 @@ namespace AudioVideoPlayer.Pages.Player
         {
             bool result = false;
            
-            if (timedTextSourceMap != null)
+
+            if (Helpers.SmoothHttpFilter.ListSubtitle != null)
             {
-                foreach(var val in timedTextSourceMap)
+                foreach(var sub in Helpers.SmoothHttpFilter.ListSubtitle)
                 {
-                    val.Key.Resolved -= TimedTextSource_Resolved;                    
+
+                    if (sub.Value.SubtitleSource != null)
+                    {
+                        sub.Value.SubtitleSource.Resolved += TimedTextSource_Resolved;
+                        // Add the TimedTextSource to the MediaSource
+                        source.ExternalTimedTextSources.Add(sub.Value.SubtitleSource);
+                    }
                 }
-                timedTextSourceMap = null;
-            }
-            timedTextSourceMap = new Dictionary<Windows.Media.Core.TimedTextSource, Uri>();
-            if (timedTextSourceMap != null)
-            {
-                // Add Subtitles
-                var timedTextSourceUri_En = new Uri("https://blobstoragebackup.blob.core.windows.net/caption/caption_en.srt");
-                var timedTextSource_En = Windows.Media.Core.TimedTextSource.CreateFromUri(timedTextSourceUri_En);
-                timedTextSourceMap[timedTextSource_En] = timedTextSourceUri_En;
-                timedTextSource_En.Resolved += TimedTextSource_Resolved;
-
-                var timedTextSourceUri_Pt = new Uri("https://blobstoragebackup.blob.core.windows.net/caption/caption_pt.srt");
-                var timedTextSource_Pt = Windows.Media.Core.TimedTextSource.CreateFromUri(timedTextSourceUri_Pt);
-                timedTextSourceMap[timedTextSource_Pt] = timedTextSourceUri_Pt;
-                timedTextSource_Pt.Resolved += TimedTextSource_Resolved;
-
-                // Add the TimedTextSource to the MediaSource
-                source.ExternalTimedTextSources.Add(timedTextSource_En);
-                source.ExternalTimedTextSources.Add(timedTextSource_Pt);
-                
                 result = true;
             }
             return result;
         }
-    private void TimedTextSource_Resolved(Windows.Media.Core.TimedTextSource sender, Windows.Media.Core.TimedTextSourceResolveResultEventArgs args)
+        private void TimedTextSource_Resolved(Windows.Media.Core.TimedTextSource sender, Windows.Media.Core.TimedTextSourceResolveResultEventArgs args)
         {
-            var timedTextSourceUri = timedTextSourceMap[sender];
-
-            if (args.Error != null)
+            foreach (var sub in Helpers.SmoothHttpFilter.ListSubtitle)
             {
-                // Show that there was an error in your UI
-                LogMessage("There was an error resolving track: " + timedTextSourceUri);
-                return;
-            }
-
-            // Add a label for each resolved track
-            var timedTextSourceUriString = timedTextSourceUri.AbsoluteUri;
-            if (timedTextSourceUriString.Contains("_en"))
-            {
-                args.Tracks[0].Label = "English";
-            }
-            else if (timedTextSourceUriString.Contains("_pt"))
-            {
-                args.Tracks[0].Label = "Portuguese";
+                if (sub.Value.SubtitleSource == sender)
+                {
+                    if (args.Error != null)
+                    {
+                        // Show that there was an error in your UI
+                        LogMessage("There was an error resolving track: " + sub.Value.SubtitleUri);
+                        return;
+                    }
+                    args.Tracks[0].Label = sub.Value.Language;
+                    break;
+                }
             }
         }
         /// <summary>
@@ -3463,7 +3445,7 @@ namespace AudioVideoPlayer.Pages.Player
                         //   string newUriString = string.Concat(Content, modifier, "ignore=", Guid.NewGuid());
                         Windows.Media.Core.MediaSource source = Windows.Media.Core.MediaSource.CreateFromUri(new Uri(Content));
                         
-                       // CreateTimeTextSources(source);
+                        CreateTimeTextSources(source);
                         if (playbackItem != null)
                         {
                             playbackItem.AudioTracksChanged -= PlaybackItem_AudioTracksChanged;
@@ -3564,10 +3546,10 @@ namespace AudioVideoPlayer.Pages.Player
                             if (source != null)
                             {
                                 // Source
-                                //if(IsSmoothStreaming(Content))
-                                //{
-                                //    CreateTimeTextSources(source);
-                                //}
+                                if (IsSmoothStreaming(Content))
+                                {
+                                    CreateTimeTextSources(source);
+                                }
                                 if (playbackItem!=null)
                                 {
                                     playbackItem.AudioTracksChanged -= PlaybackItem_AudioTracksChanged;
