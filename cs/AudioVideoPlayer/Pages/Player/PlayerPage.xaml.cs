@@ -3438,8 +3438,8 @@ namespace AudioVideoPlayer.Pages.Player
                 else
                 {
 
-                    // If SMOOTH stream
-                    if (IsSmoothStreaming(Content)&&(IsRS4()==false))
+                    // If SMOOTH stream and OS Version < RS4 or user don't wont to use NativeSmoothLibrary 
+                    if (IsSmoothStreaming(Content)&&((ViewModels.StaticSettingsViewModel.NativeSmoothLibrary==false)||(!IsRS4())))
                     {
                         //   string modifier = Content.Contains("?") ? "&" : "?";
                         //   string newUriString = string.Concat(Content, modifier, "ignore=", Guid.NewGuid());

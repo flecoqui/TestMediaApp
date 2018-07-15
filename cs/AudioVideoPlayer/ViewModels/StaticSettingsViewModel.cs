@@ -33,6 +33,7 @@ namespace AudioVideoPlayer.ViewModels
         private static bool liveBufferLogs;
         private static bool downloadLogs;
         private static bool subtitleLogs;
+        private static bool nativeSmoothLibrary;
         private static PlayerWindowState windowState;
         private static int maxBitrate;
         private static int minBitrate;
@@ -88,6 +89,50 @@ namespace AudioVideoPlayer.ViewModels
             {
                 Helpers.SettingsHelper.SaveSettingsValue(nameof(ContentLoop), value.ToString());
                 contentLoop = value;
+            }
+        }
+        static long GetVersionNumber(int Index, string version)
+        {
+            long result = 0;
+            char[] sep = { '.' };
+            string[] res = version.Split(sep);
+            if ((res != null) && (res.Count() == 4))
+            {
+                long.TryParse(res[Index], out result);
+            }
+            return result;
+        }
+        /// <summary>
+        /// This method indicates whether the OS is at least RS4 which support natively Smooth Streaming
+        /// </summary>
+        static bool IsRS4()
+        {
+            if ((GetVersionNumber(0, Information.SystemInformation.SystemVersion) * 281474976710656 +
+                GetVersionNumber(1, Information.SystemInformation.SystemVersion) * 4294967296 +
+                GetVersionNumber(2, Information.SystemInformation.SystemVersion) * 65536 +
+                GetVersionNumber(3, Information.SystemInformation.SystemVersion)) >= (10 * 281474976710656 + 17134 * 65536))
+                return true;
+            return false;
+        }
+        public static bool NativeSmoothLibrary
+        {
+            get
+            {
+                string auto = (string)Helpers.SettingsHelper.ReadSettingsValue(nameof(NativeSmoothLibrary));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    nativeSmoothLibrary = false;
+                else
+                    nativeSmoothLibrary = bool.Parse(auto);
+                if ((nativeSmoothLibrary == true) && (!IsRS4()))
+                    nativeSmoothLibrary = false;
+                return nativeSmoothLibrary;
+            }
+            set
+            {
+                if ((value == true) && (!IsRS4()))
+                    value = false;
+                Helpers.SettingsHelper.SaveSettingsValue(nameof(NativeSmoothLibrary), value.ToString());
+                nativeSmoothLibrary = value;
             }
         }
         public static bool OnlineMetadata

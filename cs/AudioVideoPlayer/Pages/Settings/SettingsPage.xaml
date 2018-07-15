@@ -202,6 +202,20 @@
                     </StackPanel>
                 </StackPanel>
             </StackPanel>
+                <StackPanel>
+                    <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Margin="0,8,0,8"  Text="Smooth Settings: "/>
+                </StackPanel>
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top" >
+                    <TextBlock Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="Windows 10 1803 Smooth Library: "/>
+                    <ToggleSwitch Margin="2,2,2,2" x:Name="NativeSmooth" MinWidth="100"
+                                          OffContent="Off"
+                                          OnContent="On"
+                                          VerticalAlignment="Center"
+                                          Style="{ThemeResource CustomToggleSwitchStyle}"                                  
+                                          IsOn="{Binding Settings.NativeSmoothLibrary, Mode=TwoWay}"
+                              ToolTipService.ToolTip="Configure the player to use the native Windows 10 Smooth Streaming Library (only available since Windows 10 1803)"    >
+                    </ToggleSwitch>
+                </StackPanel>
             </StackPanel>
             <StackPanel x:Name="SecondPanel" Margin="8,0,0,0" Grid.Row="2" Grid.RowSpan="1" Grid.Column="0" Grid.ColumnSpan="2">
             <StackPanel   >

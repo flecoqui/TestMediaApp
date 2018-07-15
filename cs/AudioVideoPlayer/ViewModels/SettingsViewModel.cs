@@ -199,6 +199,18 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
+        public bool NativeSmoothLibrary
+        {
+            get
+            {
+                return StaticSettingsViewModel.NativeSmoothLibrary;
+            }
+            set
+            {
+                StaticSettingsViewModel.NativeSmoothLibrary = value;
+                NotifyPropertyChanged();
+            }
+        }
         public bool OnlineMetadata
         {
             get
