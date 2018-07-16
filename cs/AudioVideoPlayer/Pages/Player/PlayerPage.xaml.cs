@@ -3630,7 +3630,7 @@ namespace AudioVideoPlayer.Pages.Player
         #region SmoothStreaming
         static bool IsCaptionStream(Microsoft.Media.AdaptiveStreaming.IManifestStream stream)
         {
-            return stream.Type == Microsoft.Media.AdaptiveStreaming.MediaStreamType.Text && (stream.SubType == "CAPT" || stream.SubType == "SUBT");
+            return stream.Type == Microsoft.Media.AdaptiveStreaming.MediaStreamType.Text && (stream.SubType == "CAPT" || stream.SubType == "SUBT" || stream.SubType == "");
         }
         /// <summary>
         /// Called when the SMOOTH manifest has been downloaded and parsed

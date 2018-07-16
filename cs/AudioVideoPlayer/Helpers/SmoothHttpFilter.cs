@@ -251,7 +251,7 @@ namespace AudioVideoPlayer.Helpers
                 else if (StreamIndexTypeType == "text")
                 {
                     string Subtype = GetManifestStreamIndexSubtype(loc);
-                    if ((!string.IsNullOrEmpty(Subtype)) && ((Subtype.ToLower() == "capt") || (Subtype.ToLower() == "subt")))
+                    if ((Subtype != null) && ((Subtype.ToLower() == "capt") || (Subtype.ToLower() == "subt") || (Subtype.ToLower() == "")))
                     {
 
                         string Lang = GetManifestStreamIndexLanguage(loc);
