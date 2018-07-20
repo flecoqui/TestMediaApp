@@ -772,7 +772,7 @@ namespace AudioVideoPlayer.Pages.Player
         /// </summary>
         private void PlaybackSession_SeekableRangesChanged(Windows.Media.Playback.MediaPlaybackSession sender, object args)
         {
-            if (LogLiveBuffer)
+            if ( (LogLiveBuffer)|| (LogSubtitle))
             {
                 var ranges = sender.GetSeekableRanges();
                 if ((ranges != null) && (adaptiveMediaSource != null))
@@ -4085,7 +4085,7 @@ namespace AudioVideoPlayer.Pages.Player
             // if the file contains X-TIMESTAMP-MAP 
             // it may be required to change the timestamps in the  WEBVTT File
             // 
-            if ((args.ResourceUri.ToString().EndsWith(".vtt")) || (args.ResourceUri.ToString().EndsWith(".webvtt")))
+            if ( (args.ResourceUri.ToString().EndsWith(".vtt")) || (args.ResourceUri.ToString().EndsWith(".webvtt")))
             {
                 var defer = args.GetDeferral();
                 if (defer != null)
@@ -4112,7 +4112,9 @@ namespace AudioVideoPlayer.Pages.Player
                         }
 
                         if (LogSubtitle)
-                            LogMessage("Input Subtitles: " + text);
+                        {
+                            LogMessage("Input Subtitles Content: " + text);
+                        }
                         if (!string.IsNullOrEmpty(text)&& (text.Contains("X-TIMESTAMP-MAP")))
                         {
                             // convert string to stream
