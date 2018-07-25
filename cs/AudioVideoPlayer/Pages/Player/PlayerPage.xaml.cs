@@ -507,6 +507,8 @@ namespace AudioVideoPlayer.Pages.Player
             maxBitrate.TextChanged += BitrateTextChanged;
             minBitrate.TextChanged += BitrateTextChanged;
 
+            // Initialize mediaUri Paste event
+            mediaUri.Paste += MediaUri_Paste;
 
             // Start timer
             timer = new DispatcherTimer();
@@ -519,6 +521,41 @@ namespace AudioVideoPlayer.Pages.Player
             }
             return bResult;
         }
+
+        private async void MediaUri_Paste(object sender, TextControlPasteEventArgs e)
+        {
+            TextBox uribox = sender as TextBox;
+            if (uribox != null)
+            {
+                // Mark the event as handled first. Otherwise, the
+                // default paste action will happen, then the custom paste
+                // action, and the user will see the text box content change.
+                e.Handled = true;
+
+                // Get content from the clipboard.
+                var dataPackageView = Windows.ApplicationModel.DataTransfer.Clipboard.GetContent();
+                if (dataPackageView.Contains(Windows.ApplicationModel.DataTransfer.StandardDataFormats.Text))
+                {
+                    try
+                    {
+                        var text = await dataPackageView.GetTextAsync();
+
+                        // Remove line breaks from multi-line text and
+                        // replace with comma(,).
+                        string singleLineText = text.Replace("\r\n", " ");
+
+                        // Replace any text currently in the text box.
+                        uribox.Text = singleLineText.Trim();
+                    }
+                    catch (Exception)
+                    {
+                        // Ignore or handle exception as needed.
+                    }
+                }
+            }
+        }
+
+
 
 
 
@@ -584,6 +621,9 @@ namespace AudioVideoPlayer.Pages.Player
             // Initialize minBitrate and maxBitrate TextBox
             maxBitrate.TextChanged -= BitrateTextChanged;
             minBitrate.TextChanged -= BitrateTextChanged;
+
+            // Unitialize Paste event
+            mediaUri.Paste -= MediaUri_Paste;
 
             // Stop timer
             if (timer != null)
@@ -3320,6 +3360,8 @@ namespace AudioVideoPlayer.Pages.Player
                     {
                         sub.Value.SubtitleSource.Resolved += TimedTextSource_Resolved;
                         // Add the TimedTextSource to the MediaSource
+                        //
+                        //Windows.Media.Core.TimedTextSource s = Windows.Media.Core.TimedTextSource.CreateFromStream();
                         source.ExternalTimedTextSources.Add(sub.Value.SubtitleSource);
                     }
                 }
