@@ -7,24 +7,14 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Web.Http.Filters;
 using System.Runtime.InteropServices.WindowsRuntime;
-
+using System.IO;
 
 namespace AudioVideoPlayer.Helpers
 {
-    public struct SubtitleDescription
-    {
-        public string Name { get; set; }
-        public string Language { get; set; }
-        public string SubType { get; set; }
-        public string StreamIndexContent { get; set; }
-        public string SubtitleUri { get; set; }
 
-        public Windows.Media.Core.TimedTextSource SubtitleSource { get; set; }
-    }
     public class SmoothHttpFilter : IHttpFilter
     {
         private IHttpFilter innerFilter;
-        public static Dictionary<string, SubtitleDescription> ListSubtitle;
         public SmoothHttpFilter(IHttpFilter innerFilter)
         {
             if (innerFilter == null)
@@ -33,7 +23,7 @@ namespace AudioVideoPlayer.Helpers
             }
             this.innerFilter = innerFilter;
         }
-        public string GetManifestHeader(string manifest)
+        public static string GetManifestHeader(string manifest)
         {
             string result = string.Empty;
             if(!string.IsNullOrEmpty(manifest))
@@ -44,7 +34,7 @@ namespace AudioVideoPlayer.Helpers
             }
             return result;
         }
-        public string GetManifestTail(string manifest)
+        public static string GetManifestTail(string manifest)
         {
             string result = string.Empty;
             if (!string.IsNullOrEmpty(manifest))
@@ -69,7 +59,7 @@ namespace AudioVideoPlayer.Helpers
             }
             return result;
         }
-        public int GetManifestStreamIndexCount(string manifest)
+        public static int GetManifestStreamIndexCount(string manifest)
         {
             int result = 0;
             if (!string.IsNullOrEmpty(manifest))
@@ -85,7 +75,7 @@ namespace AudioVideoPlayer.Helpers
             }
             return result;
         }
-        public string GetManifestStreamIndex(string manifest,int Index)
+        public static string GetManifestStreamIndex(string manifest,int Index)
         {
             string result = string.Empty;
             if (!string.IsNullOrEmpty(manifest))
@@ -113,7 +103,7 @@ namespace AudioVideoPlayer.Helpers
             }
             return result;
         }
-        public string GetManifestStreamIndexType(string StreamIndex)
+        public static string GetManifestStreamIndexType(string StreamIndex)
         {
             string result = string.Empty;
             if (!string.IsNullOrEmpty(StreamIndex))
@@ -132,7 +122,7 @@ namespace AudioVideoPlayer.Helpers
             }
             return result;
         }
-        public string GetManifestStreamIndexSubtype(string StreamIndex)
+        public static string GetManifestStreamIndexSubtype(string StreamIndex)
         {
             string result = string.Empty;
             if (!string.IsNullOrEmpty(StreamIndex))
@@ -151,7 +141,7 @@ namespace AudioVideoPlayer.Helpers
             }
             return result;
         }
-        public string GetManifestStreamIndexLanguage(string StreamIndex)
+        public static string GetManifestStreamIndexLanguage(string StreamIndex)
         {
             string result = string.Empty;
             if (!string.IsNullOrEmpty(StreamIndex))
@@ -170,7 +160,7 @@ namespace AudioVideoPlayer.Helpers
             }
             return result;
         }
-        public string GetManifestStreamIndexName(string StreamIndex)
+        public static string GetManifestStreamIndexName(string StreamIndex)
         {
             string result = string.Empty;
             if (!string.IsNullOrEmpty(StreamIndex))
@@ -189,45 +179,13 @@ namespace AudioVideoPlayer.Helpers
             }
             return result;
         }
-        public string GetSubtitleUri(string StreamIndexContent)
+        public static string GetSubtitleUri(string StreamIndexContent)
         {
-            string result = "ms-appx:///Assets/sample.srt";
+            string result = "ms-appx:///Assets/sample-webvtt.srt";
             return result;
         }
-        public bool ClearSubtitleDescription()
-        {
-            bool result = true;
-            if (ListSubtitle != null)
-                ListSubtitle.Clear();
-            ListSubtitle = null;
-            return result;
-        }
-        public bool AddSubtitleDescription(string Name, string SubType, string Lang, string StreamIndexContent, string Uri)
-        {
-            bool result = false;
-            try
-            {
-                if (ListSubtitle == null)
-                    ListSubtitle = new Dictionary<string, SubtitleDescription>();
-                if (ListSubtitle != null)
-                {
-                    SubtitleDescription desc = new SubtitleDescription();
-                    desc.Name = Name;
-                    desc.SubType = SubType;
-                    desc.Language = Lang;
-                    desc.StreamIndexContent = StreamIndexContent;
-                    desc.SubtitleUri = Uri;
-                    desc.SubtitleSource = Windows.Media.Core.TimedTextSource.CreateFromUri(new System.Uri(Uri));
-                    ListSubtitle.Add(Name, desc);
-                    result = true;
-                }
-            }
-            catch(Exception)
-            {
-                result = false;
-            }
-            return result;
-        }
+
+
         public string UpdateManifest(string manifest)
         {
             bool bUpdateManifest = true;
@@ -250,14 +208,6 @@ namespace AudioVideoPlayer.Helpers
                 }
                 else if (StreamIndexTypeType == "text")
                 {
-                    string Subtype = GetManifestStreamIndexSubtype(loc);
-                    if ((Subtype != null) && ((Subtype.ToLower() == "capt") || (Subtype.ToLower() == "subt") || (Subtype.ToLower() == "")))
-                    {
-
-                        string Lang = GetManifestStreamIndexLanguage(loc);
-                        string Name = GetManifestStreamIndexName(loc);
-                        AddSubtitleDescription(Name, Subtype, Lang, loc, GetSubtitleUri(loc));
-                    }
                     stringTextBuilder.Append(loc);
                 }
                 else if (StreamIndexTypeType == "video")
@@ -296,8 +246,7 @@ namespace AudioVideoPlayer.Helpers
                         if ( (response.Content.Headers["Content-Type"].StartsWith("text/xml")) ||
                          (response.Content.Headers["Content-Type"].StartsWith("application/vnd.ms-sstr+xml")))
                         {
-                            // Clear Subtitle List
-                            ClearSubtitleDescription();
+
 
                             // Read and update manifest 
                             // Put Video Stream Index at the beginning of the manifest

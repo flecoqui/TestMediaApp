@@ -135,7 +135,7 @@
             <!--
             <MediaElement x:Name="mediaElement" AutoPlay="True" AreTransportControlsEnabled="False"   HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform"   />
               -->
-                <MediaPlayerElement x:Name="mediaPlayerElement" AutoPlay="True" AreTransportControlsEnabled="False"   HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Stretch="Uniform"  TabIndex="17" />
+                <MediaPlayerElement x:Name="mediaPlayerElement" AutoPlay="True" AreTransportControlsEnabled="false"   HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Stretch="Uniform"  TabIndex="17" />
             <Image x:Name="pictureElement"  Source="ms-appx:///Assets/Screen169.png" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="UniformToFill"></Image>
             
         </Grid>
