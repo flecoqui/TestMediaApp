@@ -1,0 +1,16 @@
+WEBVTT
+X-TIMESTAMP-MAP=MPEGTS:0,LOCAL:00:00:00.000
+
+00:00:10.000 --> 00:00:20.000
+Subtitles can't be rendered WebVTT
+TestMediaApp needs to be updated to convert the original subtitles
+into a format compliant with Windows 10 RS4
+http://github.com/flecoqui/TestMediaApp 
+ 
+
+00:00:30.000 --> 00:00:40.000
+Subtitles can't be rendered WebVTT
+TestMediaApp needs to be updated to convert the original subtitles
+into a format compliant with Windows 10 RS4
+http://github.com/flecoqui/TestMediaApp 
+
