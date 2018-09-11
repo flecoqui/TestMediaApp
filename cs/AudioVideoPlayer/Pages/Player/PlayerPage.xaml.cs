@@ -36,7 +36,7 @@ using System.Text.RegularExpressions;
 using Windows.ApplicationModel.Activation;
 using Windows.Storage.FileProperties;
 using Windows.Web.Http.Filters;
-using AudioVideoPlayer.Subtitle;
+using AudioVideoPlayer.Helpers.TTMLHelper;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -48,27 +48,8 @@ namespace AudioVideoPlayer.Pages.Player
         private ulong ReadDataIndex = 0;
         private ulong WriteDataIndex = 0;
 
-        public  static SubtitleTTMLStream Create()
-        {
-            SubtitleTTMLStream cdts = null;
-            try
-            {
-                cdts = new SubtitleTTMLStream();
 
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("Exception while creating SubtitleTTMLStream: " + ex.Message);
-            }
-            return cdts;
-        }
-        private SubtitleTTMLStream()
-        {
 
-            WriteDataIndex = 0;
-            ReadDataIndex = 0;
-            internalStream = new Windows.Storage.Streams.InMemoryRandomAccessStream();
-        }
 
         public ulong GetLength()
         {
@@ -259,6 +240,7 @@ namespace AudioVideoPlayer.Pages.Player
         private Microsoft.Media.AdaptiveStreaming.AdaptiveSourceManager smoothStreamingManager = null;
         // PlaybackItem used for the Subtitle
         Windows.Media.Playback.MediaPlaybackItem playbackItem = null;
+        SmoothSubtitleManager smoothSubtitleMgr = null;
         // Subtitle Dictionary
         //Dictionary<Windows.Media.Core.TimedTextSource, Uri> timedTextSourceMap;
         // Current Title if any
@@ -1229,7 +1211,7 @@ namespace AudioVideoPlayer.Pages.Player
         /// <summary>
         /// This method is called every second.
         /// </summary>
-        private async void Timer_Tick(object sender, object e)
+        private void Timer_Tick(object sender, object e)
         {
             if (CurrentDuration != TimeSpan.Zero)
             {
@@ -1264,7 +1246,7 @@ namespace AudioVideoPlayer.Pages.Player
                     }
                 }
             }
-            await SubtitleTick();
+            //SubtitleTick();
         }
 
         /// <summary>
@@ -3522,51 +3504,30 @@ namespace AudioVideoPlayer.Pages.Player
             return result;
         }
         ulong SubtitleTickCount = 0;
-        async System.Threading.Tasks.Task<bool> SubtitleTick()
+        bool SubtitleTick()
         {
             bool result = false;
             SubtitleTickCount++;
-            if (SubtitleTickCount > 10)
+            if (SubtitleTickCount > 5)
             {
-                if (ListSubtitle != null)
+                if ((smoothSubtitleMgr != null) && (smoothSubtitleMgr.SubtitleTrackList != null))
                 {
-                    foreach (var key in ListSubtitle.Keys.ToList())
+                    foreach (var key in smoothSubtitleMgr.SubtitleTrackList.Keys.ToList())
                     {
-                        if (ListSubtitle[key].SubtitleTrack != null)
+                        if (smoothSubtitleMgr.SubtitleTrackList[key].SubtitleTrack != null)
                         {
                             SubtitleTickCount = 0;
-                            ulong start = ListSubtitle[key].SubtitleIndex * 10000 + 1000;
-                            ulong end = ListSubtitle[key].SubtitleIndex * 10000 + 2000;
-
-                            string text = "Hello Lang: " + (string.IsNullOrEmpty(ListSubtitle[key].Language) ? "unk" : ListSubtitle[key].Language) + " Index: " + ListSubtitle[key].SubtitleIndex.ToString();
-                            AddSubtitleItem(ListSubtitle[key].SubtitleTrack, start, end, text);
-                            ListSubtitle[key].SubtitleIndex++;
+                            ulong start = smoothSubtitleMgr.SubtitleTrackList[key].SubtitleIndex * 10000 + 1000;
+                            ulong end = smoothSubtitleMgr.SubtitleTrackList[key].SubtitleIndex * 10000 + 2000;
+                            string subtext = "text1 ";
+                            for(ulong i = 0; i < smoothSubtitleMgr.SubtitleTrackList[key].SubtitleIndex; i++ )
+                            {
+                                subtext += "text2 ";
+                            }
+                            string text = "Hello Lang: " + (string.IsNullOrEmpty(smoothSubtitleMgr.SubtitleTrackList[key].Language) ? "unk" : smoothSubtitleMgr.SubtitleTrackList[key].Language) + " Index: " + smoothSubtitleMgr.SubtitleTrackList[key].SubtitleIndex.ToString() + " " + subtext;
+                            AddSubtitleItem(smoothSubtitleMgr.SubtitleTrackList[key].SubtitleTrack, start, end, text);
+                            smoothSubtitleMgr.SubtitleTrackList[key].SubtitleIndex++;
                             result = true;
-                        }
-                        if (ListSubtitle[key].SubtitleStream != null)
-                        {
-                            SubtitleTickCount = 0;
-                            ulong start = ListSubtitle[key].SubtitleIndex * 10000 + 1000;
-                            ulong end = ListSubtitle[key].SubtitleIndex * 10000 + 2000;
-
-                            string text = "Hello Lang: " + (string.IsNullOrEmpty(ListSubtitle[key].Language) ? "unk" : ListSubtitle[key].Language) + " Index: " + ListSubtitle[key].SubtitleIndex.ToString();
-                            //string text = "Hello Lang " + (string.IsNullOrEmpty(sub.Value.Language) ? "unk" : sub.Value.Language) ;
-                            await AddSubtitleItem(ListSubtitle[key].SubtitleStream, ListSubtitle[key].SubtitleIndex++, start, end, text);
-                            result = true;
-//                            AddSubtitleItem(ListSubtitle[key].Language, start, end, text);
-
-                            //if (playbackItem != null)
-                            //{
-                            //    int i = playbackItem.Source.ExternalTimedTextSources.IndexOf(ListSubtitle[key].SubtitleSource);
-                            //    if (i >= 0)
-                            //    {
-                            //        ListSubtitle[key].SubtitleSource.Resolved -= TimedTextSource_Resolved;
-                            //        var value = ListSubtitle[key];
-                            //        value.SubtitleSource = playbackItem.Source.ExternalTimedTextSources[i] = Windows.Media.Core.TimedTextSource.CreateFromStream(ListSubtitle[key].SubtitleStream, ListSubtitle[key].Language);
-                            //        ListSubtitle[key] = value;
-                            //        ListSubtitle[key].SubtitleSource.Resolved += TimedTextSource_Resolved;
-                            //    }
-                            //}
                         }
                     }
                    
@@ -3632,105 +3593,59 @@ namespace AudioVideoPlayer.Pages.Player
                 t.StartTime = TimeSpan.FromMilliseconds(start);
                 t.Duration = TimeSpan.FromMilliseconds(end - start);
                 Windows.Media.Core.TimedTextLine ttl = new Windows.Media.Core.TimedTextLine();
-                    ttl.Text =  Text;
-            //      Windows.Media.Core.TimedTextLine ttlb = new Windows.Media.Core.TimedTextLine();
-            //      ttlb.Text = "";
-        //         ttlb.Subformats = new List<Windows.Media.Core.TimedTextSubformat>();
-                Windows.Media.Core.TimedTextRegion r = new Windows.Media.Core.TimedTextRegion();
-                Windows.UI.Color bcolor = new Windows.UI.Color();
-                bcolor.A = 0;
-                bcolor.B = 0;
-                bcolor.G = 0;
-                bcolor.R = 0;
-
-                r.Background = bcolor;
-                r.DisplayAlignment = Windows.Media.Core.TimedTextDisplayAlignment.After;
-
-                Windows.Media.Core.TimedTextSize s = new Windows.Media.Core.TimedTextSize();
-                s.Unit = Windows.Media.Core.TimedTextUnit.Percentage;
-                s.Height = 88;
-                s.Width = 100;
-                r.Extent = s;
-
-                r.IsOverflowClipped = true;
+                ttl.Text = Text;
 
                 var ttd = new Windows.Media.Core.TimedTextDouble();
                 ttd.Unit = Windows.Media.Core.TimedTextUnit.Percentage;
                 ttd.Value = 100;
-                r.LineHeight = ttd;
 
-                r.Name = "";
+                Windows.Media.Core.TimedTextRegion region = new Windows.Media.Core.TimedTextRegion();
+                region.ScrollMode = Windows.Media.Core.TimedTextScrollMode.Rollup;
+                region.TextWrapping = Windows.Media.Core.TimedTextWrapping.Wrap;
+                region.WritingMode = Windows.Media.Core.TimedTextWritingMode.LeftRightTopBottom;
+                Windows.Media.Core.TimedTextPoint pos = new Windows.Media.Core.TimedTextPoint();
+                pos.Unit = Windows.Media.Core.TimedTextUnit.Percentage;
+                pos.X = 5;
+                pos.Y = 80;
+                region.Position = pos;
+                Windows.Media.Core.TimedTextSize sz = new Windows.Media.Core.TimedTextSize();
+                sz.Unit = Windows.Media.Core.TimedTextUnit.Percentage;
+                sz.Height = 20;
+                sz.Width = 90;
+                region.Extent = sz;
+                region.DisplayAlignment = Windows.Media.Core.TimedTextDisplayAlignment.Center;
 
+                t.CueRegion = region;
 
+                Windows.Media.Core.TimedTextStyle sty = new Windows.Media.Core.TimedTextStyle();
 
-                Windows.Media.Core.TimedTextPadding ttp = new Windows.Media.Core.TimedTextPadding();
-                ttp.After = 0;
-                ttp.Before = 0;
-                ttp.End = 0;
-                ttp.Start = 0;
-                ttp.Unit = Windows.Media.Core.TimedTextUnit.Pixels;
-                r.Padding = ttp;
+                Windows.UI.Color backColor = new Windows.UI.Color();
+                backColor.A = 0;
+                backColor.B = 255;
+                backColor.G = 255;
+                backColor.R = 255;
+                Windows.UI.Color foreColor = new Windows.UI.Color();
+                foreColor.A = 255;
+                foreColor.B = 255;
+                foreColor.G = 255;
+                foreColor.R = 255;
+                sty.Background = backColor;
 
-
-                r.Name = "";
-
-
-                Windows.Media.Core.TimedTextPoint p = new Windows.Media.Core.TimedTextPoint();
-                p.Unit = Windows.Media.Core.TimedTextUnit.Percentage;
-                p.X = 0;
-                p.Y = 0;
-                r.Position = p;
-
-                r.ScrollMode = Windows.Media.Core.TimedTextScrollMode.Popon;
-
-                r.TextWrapping = Windows.Media.Core.TimedTextWrapping.Wrap;
-
-                r.WritingMode = Windows.Media.Core.TimedTextWritingMode.LeftRightTopBottom;
-
-                r.ZIndex = 0;
-
-                t.CueRegion = r;
-
-                Windows.Media.Core.TimedTextStyle st = new Windows.Media.Core.TimedTextStyle();
-
-                st.Background = bcolor;
-                st.FlowDirection = Windows.Media.Core.TimedTextFlowDirection.LeftToRight;
-                st.FontFamily = "default";
-                st.FontSize = ttd;
-                st.FontStyle = Windows.Media.Core.TimedTextFontStyle.Normal;
-                st.FontWeight = Windows.Media.Core.TimedTextWeight.Normal;
-
-                Windows.UI.Color fcolor = new Windows.UI.Color();
-                bcolor.A = 255;
-                bcolor.B = 255;
-                bcolor.G = 255;
-                bcolor.R = 255;
-                st.Foreground = fcolor;
-
-                st.IsBackgroundAlwaysShown = false;
-                st.IsLineThroughEnabled = false;
-                st.IsOverlineEnabled = false;
-                st.IsUnderlineEnabled = false;
-                st.LineAlignment = Windows.Media.Core.TimedTextLineAlignment.Center;
-                st.Name = "";
-                Windows.UI.Color ocolor = new Windows.UI.Color();
-                ocolor.A = 255;
-                ocolor.B = 0;
-                ocolor.G = 0;
-                ocolor.R = 0;
-                st.OutlineColor = ocolor;
-
-                var ttdo = new Windows.Media.Core.TimedTextDouble();
-                ttdo.Unit = Windows.Media.Core.TimedTextUnit.Pixels;
-                ttdo.Value = 0;
-                st.OutlineRadius = ttdo;
-                st.OutlineThickness = ttdo;
-
-                t.CueStyle = st;
-
-                t.Id = "";
+                sty.FlowDirection = Windows.Media.Core.TimedTextFlowDirection.LeftToRight;
+                sty.FontFamily = "default";
+                sty.FontSize = ttd;
+                sty.FontStyle = Windows.Media.Core.TimedTextFontStyle.Normal;
+                sty.FontWeight = Windows.Media.Core.TimedTextWeight.Normal;
+                sty.Foreground = foreColor;
+                sty.IsBackgroundAlwaysShown = false;
+                sty.IsLineThroughEnabled = false;
+                sty.IsOverlineEnabled = false;
+                sty.LineAlignment = Windows.Media.Core.TimedTextLineAlignment.Center;
+                t.CueStyle = sty;
+                t.Id = "test";
 
                 t.Lines.Add(ttl);
+
                 try
                 {
                     track.AddCue(t);
@@ -3744,134 +3659,111 @@ namespace AudioVideoPlayer.Pages.Player
             return result;
         }
 
-        public Dictionary<string, SubtitleDescription> ListSubtitle;
+      //  public Dictionary<string, SubtitleDescription> ListSubtitle;
         public bool ClearSubtitleDescription()
         {
             bool result = true;
-            if (ListSubtitle != null)
-                ListSubtitle.Clear();
-            ListSubtitle = null;
+            if (smoothSubtitleMgr != null)
+                smoothSubtitleMgr = null;
             return result;
         }
-        public async System.Threading.Tasks.Task<bool> AddSubtitleDescription(string Name, string SubType, string Lang, string StreamIndexContent, string subtitleUri)
-        {
-            bool result = false;
-            try
-            {
+        //public bool AddSubtitleDescription(string Name, string SubType, string Lang, string StreamIndexContent, string subtitleUri)
+        //{
+        //    bool result = false;
+        //    try
+        //    {
 
-                if (ListSubtitle == null)
-                    ListSubtitle = new Dictionary<string, SubtitleDescription>();
-                if (ListSubtitle != null)
-                {
-                    SubtitleDescription desc = new SubtitleDescription();
-                    desc.Name = Name;
-                    desc.SubType = SubType;
-                    desc.Language = Lang;
-                    desc.StreamIndexContent = StreamIndexContent;
-                    desc.SubtitleUri = subtitleUri;
+        //        if (ListSubtitle == null)
+        //            ListSubtitle = new Dictionary<string, SubtitleDescription>();
+        //        if (ListSubtitle != null)
+        //        {
+        //            SubtitleDescription desc = new SubtitleDescription();
+        //            desc.Name = Name;
+        //            desc.SubType = SubType;
+        //            desc.Language = Lang;
+        //            desc.StreamIndexContent = StreamIndexContent;
+        //            desc.SubtitleUri = subtitleUri;
 
-                    if (desc.SubtitleTrack == null)
-                    {
-                        desc.SubtitleTrack = new Windows.Media.Core.TimedMetadataTrack(desc.Name, desc.Language, Windows.Media.Core.TimedMetadataKind.Caption);
-                        for (desc.SubtitleIndex = 0; desc.SubtitleIndex < 4;)
-                        {
-                            ulong start = desc.SubtitleIndex * 10000 + 1000;
-                            ulong end = desc.SubtitleIndex * 10000 + 2000;
-                            string text = "Hello 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890 Lang: " + (string.IsNullOrEmpty(desc.Language) ? "unk" : desc.Language) + " Index: " + desc.SubtitleIndex.ToString();
-                            AddSubtitleItem(desc.SubtitleTrack,  start, end, text);
-                            desc.SubtitleIndex++;
-                        }
+        //            if (desc.SubtitleTrack == null)
+        //            {
+        //                desc.SubtitleTrack = new Windows.Media.Core.TimedMetadataTrack(desc.Name, desc.Language, Windows.Media.Core.TimedMetadataKind.Caption);
+        //                desc.SubtitleIndex = 1;
+        //                for (desc.SubtitleIndex = 0; desc.SubtitleIndex < 0;)
+        //                {
+        //                    ulong start = desc.SubtitleIndex * 10000 + 1000;
+        //                    ulong end = desc.SubtitleIndex * 10000 + 2000;
+        //                    string text = "Hello 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890 Lang: " + (string.IsNullOrEmpty(desc.Language) ? "unk" : desc.Language) + " Index: " + desc.SubtitleIndex.ToString();
+        //                    AddSubtitleItem(desc.SubtitleTrack,  start, end, text);
+        //                    desc.SubtitleIndex++;
+        //                }
 
 
-                    }
-                    //if (desc.SubtitleStream == null)
-                    //    desc.SubtitleStream = SubtitleTTMLStream.Create();
-                    ////    desc.SubtitleStream = new Windows.Storage.Streams.InMemoryRandomAccessStream();
+        //            }
 
-                    if (desc.SubtitleStream != null)
-                    {
-                        for (desc.SubtitleIndex = 0; desc.SubtitleIndex < 4;)
-                        {
-                            ulong start = desc.SubtitleIndex * 10000 + 1000;
-                            ulong end = desc.SubtitleIndex * 10000 + 9000;
-                            string text = "Hello 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890 Lang: " + (string.IsNullOrEmpty(desc.Language) ? "unk" : desc.Language) + " Index: " + desc.SubtitleIndex.ToString();
-                            await AddSubtitleItem(desc.SubtitleStream, desc.SubtitleIndex++, start, end, text);
-                        }
+        //            ListSubtitle.Add(Name, desc);
+        //            result = true;                    
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        System.Diagnostics.Debug.Write("Exception will creating subtitle descriptor: " + ex.Message);
+        //        result = false;
+        //    }
+        //    return result;
+        //}
+        //public bool CreateSubtitleDescriptionFromSmoothManifest(string manifest)
+        //{
+        //    bool result = false;
+        //    string loc = string.Empty;
+        //    int Count = Helpers.SmoothHttpFilter.GetManifestStreamIndexCount(manifest);
+        //    int i = 0;
+        //    while (i < Count)
+        //    {
+        //        loc = Helpers.SmoothHttpFilter.GetManifestStreamIndex(manifest, i++);
+        //        string StreamIndexTypeType = Helpers.SmoothHttpFilter.GetManifestStreamIndexType(loc);
+        //        if (StreamIndexTypeType == "text")
+        //        {
+        //            string Subtype = Helpers.SmoothHttpFilter.GetManifestStreamIndexSubtype(loc);
+        //            if ((Subtype != null) && ((Subtype.ToLower() == "capt") || (Subtype.ToLower() == "subt") || (Subtype.ToLower() == "")))
+        //            {
 
-                        desc.SubtitleSource = Windows.Media.Core.TimedTextSource.CreateFromStream(desc.SubtitleStream, desc.Language);
+        //                string Lang = Helpers.SmoothHttpFilter.GetManifestStreamIndexLanguage(loc);
+        //                string Name = Helpers.SmoothHttpFilter.GetManifestStreamIndexName(loc);
+        //                AddSubtitleDescription(Name, Subtype, Lang, loc, Helpers.SmoothHttpFilter.GetSubtitleUri(loc));
+        //                result = true;
+        //            }
+        //        }
+        //    }
+        //    return result;
+        //}
+        //public async System.Threading.Tasks.Task<bool> CreateSubtitleDescription(string ManifestUri)
+        //{
+        //    try
+        //    {
+        //        Windows.Web.Http.HttpClient httpClient = new Windows.Web.Http.HttpClient();
 
-                        ////var file = Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri(subtitleUri)).AsTask().GetAwaiter().GetResult();
-                        ////var fileStream = file.OpenStreamForReadAsync().GetAwaiter().GetResult();
-                        ////fileStream.CopyTo(desc.SubtitleStream.AsStream());
-                        ////  desc.SubtitleSource = Windows.Media.Core.TimedTextSource.CreateFromStream(desc.SubtitleStream);
-                        ////  desc.SubtitleSource = Windows.Media.Core.TimedTextSource.CreateFromUri(new Uri(subtitleUri), Lang);
-                        desc.SubtitleSource.Resolved += TimedTextSource_Resolved;
-                    }
-                    ListSubtitle.Add(Name, desc);
-                    result = true;                    
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.Write("Exception will creating subtitle descriptor: " + ex.Message);
-                result = false;
-            }
-            return result;
-        }
-        public async System.Threading.Tasks.Task<bool> CreateSubtitleDescriptionFromSmoothManifest(string manifest)
-        {
-            bool result = false;
-            string loc = string.Empty;
-            int Count = Helpers.SmoothHttpFilter.GetManifestStreamIndexCount(manifest);
-            int i = 0;
-            while (i < Count)
-            {
-                loc = Helpers.SmoothHttpFilter.GetManifestStreamIndex(manifest, i++);
-                string StreamIndexTypeType = Helpers.SmoothHttpFilter.GetManifestStreamIndexType(loc);
-                if (StreamIndexTypeType == "text")
-                {
-                    string Subtype = Helpers.SmoothHttpFilter.GetManifestStreamIndexSubtype(loc);
-                    if ((Subtype != null) && ((Subtype.ToLower() == "capt") || (Subtype.ToLower() == "subt") || (Subtype.ToLower() == "")))
-                    {
-
-                        string Lang = Helpers.SmoothHttpFilter.GetManifestStreamIndexLanguage(loc);
-                        string Name = Helpers.SmoothHttpFilter.GetManifestStreamIndexName(loc);
-                        await AddSubtitleDescription(Name, Subtype, Lang, loc, Helpers.SmoothHttpFilter.GetSubtitleUri(loc));
-                        result = true;
-                    }
-                }
-            }
-            return result;
-        }
-        public async System.Threading.Tasks.Task<bool> CreateSubtitleDescription(string ManifestUri)
-        {
-            try
-            {
-                Windows.Web.Http.HttpClient httpClient = new Windows.Web.Http.HttpClient();
-
-                Windows.Web.Http.HttpRequestMessage request = new Windows.Web.Http.HttpRequestMessage(Windows.Web.Http.HttpMethod.Get, new Uri(ManifestUri));
-                SetHttpHeaders(httpHeaders, request.Headers);
-                Windows.Web.Http.HttpResponseMessage response = await httpClient.SendRequestAsync(request);
-                if (response.IsSuccessStatusCode)
-                {
-                    string contentType;
-                    if (response.Content.Headers.ContainsKey("Content-Type"))
-                    {
-                        contentType = response.Content.Headers["Content-Type"];
-                        string manifest = await response.Content.ReadAsStringAsync();
-                        return await CreateSubtitleDescriptionFromSmoothManifest(manifest);
-
-                    }
-                }
-                else
-                    LogMessage("DownloadRequested for manifest uri: " + Content.ToString() + " error: " + response.StatusCode.ToString());
-            }
-            catch (Exception e)
-            {
-                LogMessage("DownloadRequested for manifest uri: " + Content.ToString() + " exception: " + e.Message);
-            }
-            return false;
-        }
+        //        Windows.Web.Http.HttpRequestMessage request = new Windows.Web.Http.HttpRequestMessage(Windows.Web.Http.HttpMethod.Get, new Uri(ManifestUri));
+        //        SetHttpHeaders(httpHeaders, request.Headers);
+        //        Windows.Web.Http.HttpResponseMessage response = await httpClient.SendRequestAsync(request);
+        //        if (response.IsSuccessStatusCode)
+        //        {
+        //            string contentType;
+        //            if (response.Content.Headers.ContainsKey("Content-Type"))
+        //            {
+        //                contentType = response.Content.Headers["Content-Type"];
+        //                string manifest = await response.Content.ReadAsStringAsync();
+        //                return CreateSubtitleDescriptionFromSmoothManifest(manifest);
+        //            }
+        //        }
+        //        else
+        //            LogMessage("DownloadRequested for manifest uri: " + Content.ToString() + " error: " + response.StatusCode.ToString());
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        LogMessage("DownloadRequested for manifest uri: " + Content.ToString() + " exception: " + e.Message);
+        //    }
+        //    return false;
+        //}
         public bool ClearMediaPlaybackItem()
         {
             ClearSubtitleDescription();
@@ -3886,68 +3778,43 @@ namespace AudioVideoPlayer.Pages.Player
         public async System.Threading.Tasks.Task<bool> CreateMediaPlaybackItem(string sourceUri, Windows.Media.Core.MediaSource source)
         {
             ClearMediaPlaybackItem();
-            if(IsSmoothStreaming(sourceUri))
-                await CreateSubtitleDescription(sourceUri);
+            if (IsSmoothStreaming(sourceUri))
+            {
 
-
-
-
+                if(smoothSubtitleMgr == null)
+                    smoothSubtitleMgr = new SmoothSubtitleManager();
+                if(smoothSubtitleMgr != null)
+                {
+                    if(await smoothSubtitleMgr.LoadSmoothManifest(sourceUri))
+                    {
+                        if(smoothSubtitleMgr.SubtitleTrackList!=null)
+                        {
+                            foreach(var s in smoothSubtitleMgr.SubtitleTrackList)
+                            {
+                                LogMessage("TTML Subtitle track detected: " + s.Value.Name + " Language: " + s.Value.Language);
+                            }
+                            if(smoothSubtitleMgr.SubtitleTrackList.Count>0)
+                            {
+                                smoothSubtitleMgr.StartLoadingSubtitles();
+                            }
+                        }
+                    }
+                }
+                //await CreateSubtitleDescription(sourceUri);
+            }
             try
             {
                 playbackItem = new Windows.Media.Playback.MediaPlaybackItem(source);
                 if (playbackItem != null)
                 {
-                    if (ListSubtitle != null)
+                    if ((smoothSubtitleMgr != null)&&(smoothSubtitleMgr.SubtitleTrackList!=null))
                     {
-                        foreach (var sub in ListSubtitle)
+                        foreach (var sub in smoothSubtitleMgr.SubtitleTrackList)
                         {
-
-                            //if (sub.Value.SubtitleSource != null)
-                            //{
-                            // sub.Value.SubtitleSource.Resolved += TimedTextSource_Resolved;
-                            // Add the TimedTextSource to the MediaSource
-                            //
                             if (sub.Value.SubtitleTrack != null)
                             {
                                 source.ExternalTimedMetadataTracks.Add(sub.Value.SubtitleTrack);
                             }
-                            if (sub.Value.SubtitleSource != null)
-                            {
-                                //var tsource = Windows.Media.Core.TimedTextSource.CreateFromStream(sub.Value.SubtitleStream.AsRandomAccessStream());
-                                //tsource.Resolved += TimedTextSource_Resolved;
-                                //  var file = Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri(subtitleUri)).AsTask().GetAwaiter().GetResult();
-                                //  var fileStream = file.OpenStreamForReadAsync().GetAwaiter().GetResult();
-                                //      desc.SubtitleSource = Windows.Media.Core.TimedTextSource.CreateFromStream(fileStream.AsRandomAccessStream());
-                                // desc.SubtitleSource = Windows.Media.Core.TimedTextSource.CreateFromUri(new Uri(subtitleUri), Lang);
-                                //InMemoryRandomAccessStream str = new InMemoryRandomAccessStream();
-                                // var file = Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri(sub.Value.SubtitleUri)).AsTask().GetAwaiter().GetResult();
-                                // var fileStream = file.OpenStreamForReadAsync().GetAwaiter().GetResult();
-                                //SubtitleTTMLStream str = SubtitleTTMLStream.Create();
-                                // byte[] buffer = new byte[fileStream.Length];
-                                // fileStream.Read(buffer, 0, buffer.Length);
-                                // await str.WriteAsync(buffer.AsBuffer());
-                                //IBuffer buffer ;
-                                //Windows.Storage.Streams.Buffer buffer = Windows.Storage.Streams.
-                                //str.WriteAsync(buffer);
-                                //str.Position = 0;
-                                //var rstream = str.AsRandomAccessStream();
-                                //var fstream = fileStream.AsRandomAccessStream();
-                                // var tsource = Windows.Media.Core.TimedTextSource.CreateFromStream(str, sub.Value.Language);
-                                // var tsource = Windows.Media.Core.TimedTextSource.CreateFromUri(new Uri(sub.Value.SubtitleUri), sub.Value.Language);
-                                //tsource.Resolved += TimedTextSource_Resolved;
-                                //sub.Value.SubtitleSource.Resolved += TimedTextSource_Resolved;
-                                //source.ExternalTimedTextSources.Add(tsource);
-
-                                //    SubtitleStream = new MemoryStream();
-                                //AddSubtitleItem(SubtitleStream, 11000, 19000, "Hello 1");
-                                //AddSubtitleItem(SubtitleStream, 21000, 29000, "Hello 2");
-                                //SubtitleSource = Windows.Media.Core.TimedTextSource.CreateFromStream(SubtitleStream.AsRandomAccessStream());
-                                sub.Value.SubtitleSource.Resolved += TimedTextSource_Resolved;
-                                //LogMessage("*****************************************************************************");
-                                source.ExternalTimedTextSources.Add(sub.Value.SubtitleSource);
-                                //  source.ExternalTimedMetadataTracks.Add(sub.Value.SubtitleTrack);
-                            }
-                            //}
                         }
                     }
                     if ((playbackItem.TimedMetadataTracks != null) && (playbackItem.TimedMetadataTracks.LongCount() > 0))
@@ -3977,42 +3844,6 @@ namespace AudioVideoPlayer.Pages.Player
             return false;
         }
 
-        private void TimedTextSource_Resolved(Windows.Media.Core.TimedTextSource sender, Windows.Media.Core.TimedTextSourceResolveResultEventArgs args)
-        {
-            foreach (var sub in ListSubtitle)
-            {
-                if (sub.Value.SubtitleSource == sender)
-                {
-                    if (args.Error != null)
-                    {
-                        // Show that there was an error in your UI
-                        LogMessage("There was an error resolving track: " + sub.Value.SubtitleUri + " Error: " + args.Error.ToString());
-                        return;
-                    }
-                    args.Tracks[0].Label = sub.Value.Language;
-                    args.Tracks[0].CueEntered += PlayerPage_CueEntered;
-                    break;
-                }
-            }
-        }
-
-        private void PlayerPage_CueEntered(Windows.Media.Core.TimedMetadataTrack sender, Windows.Media.Core.MediaCueEventArgs args)
-        {
-            var c = args.Cue as Windows.Media.Core.TimedTextCue;
-            if(c!=null)
-            {
-                LogMessage("Cue: " + c.ToString());
-
-                foreach(var l in c.Lines)
-                {
-                    LogMessage("Cue text: " + l.Text.ToString());
-                    foreach (var sub in l.Subformats)
-                    {
-                        LogMessage("Cue subformat: " + sub.ToString());
-                    }
-                }
-            }
-        }
 
         /// <summary>
         /// SetAudioVideoUrl
