@@ -289,6 +289,11 @@ namespace AudioVideoPlayer.Pages.Player
             {
                 //   mediaPlayer.Stop();
                 mediaPlayer.Source = null;
+                if (smoothSubtitleMgr != null)
+                {
+                    smoothSubtitleMgr.StopLoadingSubtitles();
+                }
+
             }
             catch (Exception)
             {
@@ -585,8 +590,13 @@ namespace AudioVideoPlayer.Pages.Player
             try
             {
                 mediaPlayer.Source = null;
+                if (smoothSubtitleMgr != null)
+                {
+                    smoothSubtitleMgr.StopLoadingSubtitles();
+                }
+
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 LogMessage("Exception while stopping MediaPlayer:" + ex.Message);
             }
@@ -1629,6 +1639,8 @@ namespace AudioVideoPlayer.Pages.Player
                                      {
                                          //if (string.Equals(mediaUri.Text, CurrentMediaUrl))
                                          //{
+                                         fullscreenButton.IsEnabled = true;
+                                         fullwindowButton.IsEnabled = true;
                                          playPauseButton.IsEnabled = false;
                                          pausePlayButton.IsEnabled = true;
                                          stopButton.IsEnabled = true;
@@ -1636,6 +1648,8 @@ namespace AudioVideoPlayer.Pages.Player
                                      }
                                      else if (mediaPlayer.PlaybackSession.PlaybackState == Windows.Media.Playback.MediaPlaybackState.Paused)
                                      {
+                                         fullscreenButton.IsEnabled = true;
+                                         fullwindowButton.IsEnabled = true;
                                          playPauseButton.IsEnabled = true;
                                          stopButton.IsEnabled = true;
                                      }
@@ -1700,6 +1714,10 @@ namespace AudioVideoPlayer.Pages.Player
                     LogMessage("Stop " + CurrentMediaUrl.ToString());
                     //mediaPlayer.Stop();
                     mediaPlayer.Source = null;
+                    if (smoothSubtitleMgr != null)
+                    {
+                        smoothSubtitleMgr.StopLoadingSubtitles();
+                    }
                 }
             }
             catch (Exception ex)
@@ -1796,6 +1814,11 @@ namespace AudioVideoPlayer.Pages.Player
                 {
                  //   mediaPlayer.Stop();
                     mediaPlayer.Source = null;
+                    if (smoothSubtitleMgr != null)
+                    {
+                        smoothSubtitleMgr.StopLoadingSubtitles();
+                    }
+
                 }
                 catch (Exception)
                 {
@@ -1977,6 +2000,11 @@ namespace AudioVideoPlayer.Pages.Player
                 if (!string.Equals(CurrentMediaUrl, mediaUri.Text))
 //                    mediaPlayer.Stop();
                 mediaPlayer.Source = null;
+                if (smoothSubtitleMgr != null)
+                {
+                    smoothSubtitleMgr.StopLoadingSubtitles();
+                }
+
                 UpdateControls();
             }
 
@@ -3169,6 +3197,11 @@ namespace AudioVideoPlayer.Pages.Player
 
                 // Stop the current stream
                 mediaPlayer.Source = null;
+                if (smoothSubtitleMgr != null)
+                {
+                    smoothSubtitleMgr.StopLoadingSubtitles();
+                }
+
                 mediaPlayerElement.PosterSource = null;
                 mediaPlayer.AutoPlay = true;
                 CurrentMediaUrl = string.Empty;

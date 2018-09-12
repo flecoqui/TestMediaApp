@@ -288,7 +288,18 @@ namespace AudioVideoPlayer.Helpers.TTMLHelper
                 t.StartTime = TimeSpan.FromMilliseconds(start);
                 t.Duration = TimeSpan.FromMilliseconds(end - start);
                 Windows.Media.Core.TimedTextLine ttl = new Windows.Media.Core.TimedTextLine();
-                ttl.Text = Text;
+                ttl.Text = Text.Trim();
+                t.Lines.Add(ttl);
+
+
+                //char sep = '\n';
+                //string[] lines = Text.Split(sep);
+                //foreach(var line in lines)
+                //{
+                //    Windows.Media.Core.TimedTextLine ttl = new Windows.Media.Core.TimedTextLine();
+                //    ttl.Text = line;
+                //    t.Lines.Add(ttl);
+                //}
 
                 var ttd = new Windows.Media.Core.TimedTextDouble();
                 ttd.Unit = Windows.Media.Core.TimedTextUnit.Percentage;
@@ -301,11 +312,11 @@ namespace AudioVideoPlayer.Helpers.TTMLHelper
                 Windows.Media.Core.TimedTextPoint pos = new Windows.Media.Core.TimedTextPoint();
                 pos.Unit = Windows.Media.Core.TimedTextUnit.Percentage;
                 pos.X = 5;
-                pos.Y = 80;
+                pos.Y = 70;
                 region.Position = pos;
                 Windows.Media.Core.TimedTextSize sz = new Windows.Media.Core.TimedTextSize();
                 sz.Unit = Windows.Media.Core.TimedTextUnit.Percentage;
-                sz.Height = 20;
+                sz.Height = 30;
                 sz.Width = 90;
                 region.Extent = sz;
                 region.DisplayAlignment = Windows.Media.Core.TimedTextDisplayAlignment.Center;
@@ -339,7 +350,6 @@ namespace AudioVideoPlayer.Helpers.TTMLHelper
                 t.CueStyle = sty;
                 t.Id = "test";
 
-                t.Lines.Add(ttl);
 
                 try
                 {
