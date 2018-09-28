@@ -3818,7 +3818,7 @@ namespace AudioVideoPlayer.Pages.Player
                     smoothSubtitleMgr = new SmoothSubtitleManager();
                 if(smoothSubtitleMgr != null)
                 {
-                    if(await smoothSubtitleMgr.LoadSmoothManifest(sourceUri))
+                    if (await smoothSubtitleMgr.LoadSmoothManifest(sourceUri, (ulong)ViewModels.StaticSettingsViewModel.LiveOffset, 5000))
                     {
                         if(smoothSubtitleMgr.SubtitleTrackList!=null)
                         {
