@@ -367,7 +367,31 @@ namespace AudioVideoPlayer.ViewModels
             }
 
         }
+        private static ObservableCollection<Heos.HeosSpeaker> heosSpeakerList;
 
+        public static ObservableCollection<Heos.HeosSpeaker> HeosSpeakerList
+        {
+            get
+            {
+                var auto = Helpers.StorageHelper.RestoreStringFromFile(nameof(HeosSpeakerList));
+                //var auto = Helpers.SettingsHelper.ReadSettingsValue(nameof(DeviceList));
+                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                {
+                    heosSpeakerList = new ObservableCollection<Heos.HeosSpeaker>();
+                }
+                else
+                    heosSpeakerList = ObjectSerializer<ObservableCollection<Heos.HeosSpeaker>>.FromXml((string)auto);
+                return heosSpeakerList;
+            }
+            set
+            {
+                string serializeString = ObjectSerializer<ObservableCollection<Heos.HeosSpeaker>>.ToXml(value);
+                //Helpers.SettingsHelper.SaveSettingsValue(nameof(DeviceList), serializeString);
+                bool result = Helpers.StorageHelper.SaveStringIntoFile(nameof(HeosSpeakerList), serializeString);
+                heosSpeakerList = value;
+            }
+
+        }
 
         public static int IndexRemoteContent
         {

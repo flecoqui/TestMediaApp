@@ -332,6 +332,18 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
+        public ObservableCollection<Heos.HeosSpeaker> HeosSpeakerList
+        {
+            get
+            {
+                return StaticSettingsViewModel.HeosSpeakerList;
+            }
+            set
+            {
+                StaticSettingsViewModel.HeosSpeakerList = value;
+                NotifyPropertyChanged();
+            }
+        }
         public int IndexRemoteContent
         {
             get
