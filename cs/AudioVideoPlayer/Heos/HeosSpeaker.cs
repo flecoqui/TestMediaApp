@@ -38,29 +38,67 @@ namespace AudioVideoPlayer.Heos
     public class HeosSpeaker
     {
         public string Id { get; set; }
-        public string Name {get;set; }
-        public string IPAddress { get;set; }
-        public string Kind { get; set; }
-        // Anniversary issue
-
+        public string Location { get; set; }
+        public string Version { get; set; }
+        public string IpCache { get; set; }
+        public string Server { get; set; }
+        public string St { get; set; }
+        public string Usn { get; set; }
+        public string Ip { get; set; }
+        public string FriendlyName { get; set; }
+        public string Manufacturer { get; set; }
+        public string ModelName { get; set; }
+        public string ModelNumber { get; set; }
         public HeosSpeakerStatus Status { get; set; }
 
         public HeosSpeaker()
         {
             Id = string.Empty;
-            Name = string.Empty;
-            IPAddress = string.Empty;
-            Kind = string.Empty;
+            Location = string.Empty;
+            Version = string.Empty;
+            IpCache = string.Empty;
+            Server = string.Empty;
+            St = string.Empty;
+            Ip = string.Empty;
+            Usn = string.Empty;
+            FriendlyName = string.Empty;
+            Manufacturer = string.Empty;
+            ModelName = string.Empty;
+            ModelNumber = string.Empty;
             Status = HeosSpeakerStatus.Unknown;
         }
-        public HeosSpeaker(string id, bool isRemoteSytemDevice, string name, string ipAddress, string kind)
+        public HeosSpeaker(string id, string location, string version, string ipCache, string server,
+            string st, string usn, string ip, string friendlyName, string manufacturer, string modelName, string modelNumber)
         {
             Id = id;
-            Name = name;
-            IPAddress = ipAddress;
-            Kind = kind;
+            Location = location;
+            Version = version;
+            IpCache = ipCache;
+            Server = server;
+            St = st;
+            Usn = usn;
+            Ip = ip;
+            FriendlyName = friendlyName;
+            Manufacturer = manufacturer;
+            ModelName = modelName;
+            ModelNumber = modelNumber;
             Status = HeosSpeakerStatus.Unknown;
         }
+        public bool IsHeosDevice()
+        {
+            if(!string.IsNullOrEmpty(Server))
+            {
+                if(Server.IndexOf("Heos") > 0 )
+                    return  true ;
+            }
+            if (!string.IsNullOrEmpty(Version))
+            {
+                if (Version.IndexOf("HEOS") > 0)
+                    return true;
+            }
+            return false;
+        }
+
 
     }
 }

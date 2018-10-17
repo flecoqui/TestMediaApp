@@ -121,13 +121,13 @@
                             <TextBlock  Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="List of Speakers:"  HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource LabelTextBoldBlockStyle}"/>
                         <StackPanel Orientation="Horizontal">
                             <ComboBox  x:Name="comboDevice"  
-                           DisplayMemberPath="Name"
-                           ToolTipService.ToolTip="Selection of remote device"  
+                           DisplayMemberPath="FriendlyName"
+                           ToolTipService.ToolTip="Selection of HEOS Speaker"  
                            Margin="1,1,1,1"  
                            Width="166" 
                            HorizontalAlignment="Stretch" 
-                           SelectedValuePath="Name"
-                           ItemsSource="{x:Bind ViewModelLocator.Settings.DeviceList,Mode=OneWay}" 
+                           SelectedValuePath="FriendlyName"
+                           ItemsSource="{x:Bind ViewModelLocator.Settings.HeosSpeakerList,Mode=OneWay}" 
                            IsTabStop="True"
                            Loaded="comboDevice_Loaded"                                
                            SelectionChanged="comboDevice_SelectionChanged"  
@@ -138,9 +138,9 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Grid.Row="6" Grid.Column="0"   Text="Name:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
-                            <TextBox x:Name="DeviceName" Margin="5,0,0,0" Width="86" IsReadOnly="True" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="{x:Bind comboDevice.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Name',Mode=OneWay}"  />
+                            <TextBox x:Name="DeviceName" Margin="5,0,0,0" Width="86" IsReadOnly="True" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="{x:Bind comboDevice.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='FriendlyName',Mode=OneWay}"  />
                             <TextBlock Grid.Row="7" Grid.Column="0" Margin="5,0,0,0" Text="IP:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
-                            <TextBox x:Name="DeviceIPAddress" Margin="5,0,0,0" Width="125" IsReadOnly="True" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="{x:Bind comboDevice.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='IPAddress',Mode=OneWay}" />
+                            <TextBox x:Name="DeviceIPAddress" Margin="5,0,0,0" Width="125" IsReadOnly="True" Foreground="{ThemeResource ButtonForegroundThemeBrush}"  Text="{x:Bind comboDevice.SelectedItem,Converter={StaticResource ObjectPropertyToStringConverter},ConverterParameter='Ip',Mode=OneWay}" />
                         </StackPanel>
                     </StackPanel>
                 </Grid>

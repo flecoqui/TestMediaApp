@@ -47,51 +47,154 @@ namespace AudioVideoPlayer.Heos
         {
 
         }
-        public void ParseMessage(string message)
+        public async System.Threading.Tasks.Task<string> GetDeviceInformation(string url)
+        {
+            string result = string.Empty;
+            Uri contentUri = null;
+            try
+            {
+                contentUri = new Uri(url);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while creating uri for: " + url + " exception: " + ex.Message);
+                return result;
+            }
+
+            var client = new Windows.Web.Http.HttpClient();
+            try
+            {
+                Windows.Web.Http.HttpResponseMessage response = await client.GetAsync(contentUri, Windows.Web.Http.HttpCompletionOption.ResponseContentRead);
+                response.EnsureSuccessStatusCode();
+                result = await response.Content.ReadAsStringAsync();
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception: " + e.Message);
+            }
+
+            return result;
+        }
+        public string GetParameter(string content, string Name)
+        {
+            string result = string.Empty;
+            string open = "<" + Name + ">";
+            string close = "</" + Name + ">";
+            int posOpen = content.IndexOf(open);
+            if (posOpen > 0)
+            {
+                int posClose = content.IndexOf(close, posOpen);
+                if (posClose > 0)
+                {
+                    result = content.Substring(posOpen + open.Length, posClose - posOpen - open.Length);
+                }
+            }        
+            return result;
+        }
+        public async System.Threading.Tasks.Task<bool> ParseMessage(string message)
         {
             if (!string.IsNullOrEmpty(message))
             {
-                /*
-                string NTS = GetParameter("NTS", message);
-                if ((!string.IsNullOrEmpty(NTS)) && (NTS.Equals(cSSDP, StringComparison.OrdinalIgnoreCase)))
+                string[] sep = { "\r\n" };
+                string[] array = message.Split(sep, StringSplitOptions.RemoveEmptyEntries);
+                if(array!=null)
                 {
-                    string NT = GetParameter("NT", message);
-                    if (!string.IsNullOrEmpty(NT))
+                    string Id = string.Empty ;
+                    string Location = string.Empty;
+                    string Version = string.Empty;
+                    string IpCache = string.Empty;
+                    string Server = string.Empty;
+                    string St = string.Empty;
+                    string Usn = string.Empty;
+                    string Ip = string.Empty;
+                    string friendlyName = string.Empty;
+                    string manufacturer = string.Empty;
+                    string modelName = string.Empty;
+                    string modelNumber = string.Empty;
+
+                    for (int i = 0; i < array.Length;i++)
                     {
-                        if (string.Equals(NT, cSSDPMediaroomClient, StringComparison.OrdinalIgnoreCase) == true)
+                        if (array[i].StartsWith("LOCATION: "))
                         {
-                            string USN = GetParameter(cSSDPUSN, message);
-                            if (!string.IsNullOrEmpty(USN))
+                            Location = array[i].Substring(10);
+                            if(!string.IsNullOrEmpty(Location))
                             {
-                                string Location = GetParameter(cSSDPLOCATION, message);
-                                if (!string.IsNullOrEmpty(Location))
+                                if(Location.StartsWith("http://"))
                                 {
-                                    string DeviceName = GetParameter(cSSDPMediaroomDeviceName, message);
-                                    if (!string.IsNullOrEmpty(DeviceName))
+                                    int pos = Location.IndexOf(':',7);
+                                    if(pos>0)
                                     {
-                                        Device md = new Device();
-                                        string CID = GetParameter(cSSDPMediaroomDeviceId, message);
-                                        if (!string.IsNullOrEmpty(CID))
-                                            md.CompanionID = CID;
-                                        md.DeviceName = DeviceName;
-                                        md.USN = USN;
-                                        md.DeviceID = USN;
-                                        md.NT = NT;
-                                        md.NTS = NTS;
-                                        md.IPAddrAndPort = md.Location = Location;
-                                        md.pairingStatus = PairingStatus.Online;
-                                        await UpdateDeviceNetworkInformationIntoList(md);
+                                        Ip = Location.Substring(7, pos - 7);
+                                    }
+                                    string HEOSXmlContent = await GetDeviceInformation(Location);
+                                    if(!string.IsNullOrEmpty(HEOSXmlContent))
+                                    {
+                                        friendlyName = GetParameter(HEOSXmlContent, "friendlyName");
+                                        manufacturer = GetParameter(HEOSXmlContent, "manufacturer");
+                                        modelName = GetParameter(HEOSXmlContent, "modelName");
+                                        modelNumber = GetParameter(HEOSXmlContent, "modelNumber");
+                                    }
+                                }
+                            }
+                        }
+                        else if (array[i].StartsWith("VERSIONS.UPNP.HEOS.COM: "))
+                        {
+                            Version = array[i].Substring(24);
+                        }
+                        else if (array[i].StartsWith("IPCACHE.URL.UPNP.HEOS.COM: "))
+                        {
+                            IpCache = array[i].Substring(27);
+                        }
+                        else if (array[i].StartsWith("SERVER: "))
+                        {
+                            Server = array[i].Substring(8);
+                        }
+                        else if (array[i].StartsWith("ST: "))
+                        {
+                            St = array[i].Substring(4);
+                        }
+                        else if (array[i].StartsWith("USN: "))
+                        {
+                            Usn = array[i].Substring(5);
+                            if(!string.IsNullOrEmpty(Usn))
+                            {
+                                if(Usn.StartsWith("uuid:"))
+                                {
+                                    int pos = Usn.IndexOf(':', 5);
+                                    if(pos>0)
+                                    {
+                                        Id = Usn.Substring(6, pos - 6);
                                     }
                                 }
                             }
                         }
                     }
-                }*/
+                    if ((!string.IsNullOrEmpty(Id))&&
+                        (!string.IsNullOrEmpty(friendlyName)))
+                    {
+                        HeosSpeaker hs = new HeosSpeaker(Id, Location, Version, IpCache, Server, St, Usn, Ip, friendlyName, manufacturer, modelName, modelNumber);
+                        if (hs != null)
+                        {
+                            if (GetUniqueDeviceByID(Id) != null)
+                            {
+                                listHeosSpeakers[Id] = hs;
+                                OnHeosSpeakerUpdated(this, hs);
+                            }
+                            else
+                            {
 
+                                listHeosSpeakers.Add(Id, hs);
+                                OnHeosSpeakerAdded(this, hs);
+                            }
+                            return true;
+                        }
+                    }
+                }
             }
+            return false;
         }
 
-        void UDPMulticastMessageReceived(DatagramSocket socket, DatagramSocketMessageReceivedEventArgs eventArguments)
+        async void UDPMulticastMessageReceived(DatagramSocket socket, DatagramSocketMessageReceivedEventArgs eventArguments)
         {
             try
             {
@@ -104,7 +207,7 @@ namespace AudioVideoPlayer.Heos
                 }*/
                 uint stringLength = eventArguments.GetDataReader().UnconsumedBufferLength;
                 string message = eventArguments.GetDataReader().ReadString(stringLength);
-                ParseMessage(message);
+                await ParseMessage(message);
             }
             catch (Exception exception)
             {
@@ -162,13 +265,13 @@ namespace AudioVideoPlayer.Heos
 
         }
 
-        void UDPMessageReceived(DatagramSocket socket, DatagramSocketMessageReceivedEventArgs eventArguments)
+        async void UDPMessageReceived(DatagramSocket socket, DatagramSocketMessageReceivedEventArgs eventArguments)
         {
             try
             {
                 uint stringLength = eventArguments.GetDataReader().UnconsumedBufferLength;
                 string message = eventArguments.GetDataReader().ReadString(stringLength);
-                ParseMessage(message);
+                await ParseMessage(message);
             }
             catch (Exception exception)
             {
@@ -394,7 +497,23 @@ namespace AudioVideoPlayer.Heos
             HeosSpeaker device = null;
             foreach (var d in listHeosSpeakers)
             {
-                if (string.Equals(d.Value.Name, Name))
+                if (string.Equals(d.Value.FriendlyName, Name))
+                {
+                    if (device == null)
+                        device = d.Value;
+                    else
+                        // not unique
+                        return null;
+                }
+            }
+            return device;
+        }
+        protected HeosSpeaker GetUniqueDeviceByID(string id)
+        {
+            HeosSpeaker device = null;
+            foreach (var d in listHeosSpeakers)
+            {
+                if (string.Equals(d.Value.Id, id))
                 {
                     if (device == null)
                         device = d.Value;

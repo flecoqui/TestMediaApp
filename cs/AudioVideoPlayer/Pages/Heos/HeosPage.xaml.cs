@@ -128,6 +128,18 @@ namespace AudioVideoPlayer.Pages.Heos
             // Update playlist controls
             UpdateControls();
 
+            // Logs updated
+            logs.TextChanged += Logs_TextChanged;
+
+            // Select first item in the combo box to select multicast option
+            comboDevice.DataContext = ViewModels.StaticSettingsViewModel.HeosSpeakerList;
+            if (comboDevice.Items.Count > 0)
+            {
+                comboDevice.SelectedIndex = 0;
+                PageStatus = Status.DeviceSelected;
+            }
+            else
+                PageStatus = Status.NoDeviceSelected;
 
         }
 
@@ -436,13 +448,17 @@ namespace AudioVideoPlayer.Pages.Heos
                 if (heosSpeakerConnectionManager == null)
                 {
                     heosSpeakerConnectionManager = new AudioVideoPlayer.Heos.HeosSpeakerConnectionManager();
-                    if(heosSpeakerConnectionManager!=null)
+                    if (heosSpeakerConnectionManager != null)
+                    {
                         heosSpeakerConnectionManager.Initialize();
+                    }
                 }
                 if (heosSpeakerConnectionManager != null)
                 {
                     if (await heosSpeakerConnectionManager.StartDiscovery() == true)
                     {
+                        heosSpeakerConnectionManager.HeosSpeakerAdded += HeosSpeakerConnectionManager_HeosSpeakerAdded;
+                        heosSpeakerConnectionManager.HeosSpeakerUpdated += HeosSpeakerConnectionManager_HeosSpeakerUpdated;
                         result = true;
                     }
                 }
@@ -454,6 +470,86 @@ namespace AudioVideoPlayer.Pages.Heos
             return result;
         }
 
+        private void HeosSpeakerConnectionManager_HeosSpeakerUpdated(AudioVideoPlayer.Heos.HeosSpeakerConnectionManager sender, AudioVideoPlayer.Heos.HeosSpeaker args)
+        {
+           // LogMessage("Updated Device: " + args.FriendlyName + " IP: " + args.Ip);
+        }
+        bool IsSpeakerRegistered(string Id)
+        {
+            bool result = false;
+            foreach (var d in ViewModels.StaticSettingsViewModel.HeosSpeakerList)
+            {
+                if (d.Id == Id)
+                    return true;
+            }
+            return result;
+        }
+        void UpdateSelection(string Id)
+        {
+            int index = 0;
+            PageStatus = Status.NoDeviceSelected;
+            foreach (var item in comboDevice.Items)
+            {
+                if (item is AudioVideoPlayer.Heos.HeosSpeaker)
+                {
+                    AudioVideoPlayer.Heos.HeosSpeaker p = item as AudioVideoPlayer.Heos.HeosSpeaker;
+                    if (p != null)
+                    {
+                        if (string.Equals(p.Id, Id))
+                        {
+                            comboDevice.SelectedIndex = index;
+                            PageStatus = Status.DeviceSelected;
+                            return;
+                        }
+                    }
+                }
+                index++;
+            }
+            if (comboDevice.Items.Count > 0)
+            {
+                comboDevice.SelectedIndex = 0;
+                PageStatus = Status.DeviceSelected;
+            }
+            return;
+        }
+        private async void HeosSpeakerConnectionManager_HeosSpeakerAdded(AudioVideoPlayer.Heos.HeosSpeakerConnectionManager sender, AudioVideoPlayer.Heos.HeosSpeaker args)
+        {
+            if(args.IsHeosDevice())
+                LogMessage("Added HEOS Device: " + args.FriendlyName + " IP: " + args.Ip);
+            else
+                LogMessage("Added Device: " + args.FriendlyName + " IP: " + args.Ip);
+
+
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                ObservableCollection<AudioVideoPlayer.Heos.HeosSpeaker> speakerList = ViewModelLocator.Settings.HeosSpeakerList;
+                if (speakerList != null)
+                {
+                    AudioVideoPlayer.Heos.HeosSpeaker d = speakerList.FirstOrDefault(device => string.Equals(device.Id, args.Id));
+                    if (d == null)
+                    {
+                        LogMessage("Device: " + args.Id + " IP address: " + args.Ip + " added");
+                        speakerList.Add(new AudioVideoPlayer.Heos.HeosSpeaker(args.Id, args.Location, args.Version, args.IpCache, args.Server, args.St, args.Usn, args.Ip, args.FriendlyName, args.Manufacturer, args.ModelName, args.ModelNumber));
+                    }
+                    else
+                    {
+                        if ((!string.Equals(d.Ip, args.Ip) && (string.IsNullOrEmpty(d.Ip))))
+                        {
+                            args.Id = d.Id;
+                            speakerList.Remove(d);
+                            speakerList.Add(args);
+                        }
+                    }
+
+                    ViewModelLocator.Settings.HeosSpeakerList = speakerList;
+                    UpdateSelection(args.Id);
+                }
+            });
+
+//            if (!IsSpeakerRegistered(args.Id))
+//                ViewModels.StaticSettingsViewModel.HeosSpeakerList.Add(args);
+        }
+
         bool StopDiscovery()
         {
             bool result = false;
@@ -461,6 +557,8 @@ namespace AudioVideoPlayer.Pages.Heos
             {
                 if (heosSpeakerConnectionManager != null)
                 {
+                    heosSpeakerConnectionManager.HeosSpeakerAdded -= HeosSpeakerConnectionManager_HeosSpeakerAdded;
+                    heosSpeakerConnectionManager.HeosSpeakerUpdated -= HeosSpeakerConnectionManager_HeosSpeakerUpdated;
                     heosSpeakerConnectionManager.StopDiscovery();
                     heosSpeakerConnectionManager.Uninitialize();
                     heosSpeakerConnectionManager = null;
