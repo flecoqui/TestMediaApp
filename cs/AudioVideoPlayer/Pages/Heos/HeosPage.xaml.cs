@@ -378,25 +378,21 @@ namespace AudioVideoPlayer.Pages.Heos
         }
         private async void DiscoverDevice_Click(object sender, RoutedEventArgs e)
         {
-
-            if (heosSpeakerConnectionManager != null)
+            if ((heosSpeakerConnectionManager == null) || ((heosSpeakerConnectionManager != null) && (!heosSpeakerConnectionManager.IsDiscovering())))
             {
-                if (!heosSpeakerConnectionManager.IsDiscovering())
+                if(await StartDiscovery() == true)
                 {
-                    if (await heosSpeakerConnectionManager.StartDiscovery() == true)
-                    {
-                        LogMessage("Start Discovering Heos Speaker ...");
-                        DiscoverDeviceButton.Content = "\xE894";
-                    }
-                    else
-                        LogMessage("Error while starting Discovering Devices ...");
+                    LogMessage("Start Discovering Heos Speaker ...");
+                    DiscoverDeviceButton.Content = "\xE894";
                 }
                 else
-                {
-                    LogMessage("Stop Discovering Heos Speaker ...");
-                    heosSpeakerConnectionManager.StopDiscovery();
-                    DiscoverDeviceButton.Content = "\xE895";
-                }
+                    LogMessage("Error while starting Discovering Devices ...");
+            }
+            else
+            {
+                LogMessage("Stop Discovering Heos Speaker ...");
+                StopDiscovery();
+                DiscoverDeviceButton.Content = "\xE895";
             }
             UpdateControls();
         }
@@ -427,6 +423,56 @@ namespace AudioVideoPlayer.Pages.Heos
             UpdateControls();
         }
 
+        #endregion
+
+
+        #region
+
+        async System.Threading.Tasks.Task<bool> StartDiscovery()
+        {
+            bool result = false;
+            try
+            { 
+                if (heosSpeakerConnectionManager == null)
+                {
+                    heosSpeakerConnectionManager = new AudioVideoPlayer.Heos.HeosSpeakerConnectionManager();
+                    if(heosSpeakerConnectionManager!=null)
+                        heosSpeakerConnectionManager.Initialize();
+                }
+                if (heosSpeakerConnectionManager != null)
+                {
+                    if (await heosSpeakerConnectionManager.StartDiscovery() == true)
+                    {
+                        result = true;
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                System.Diagnostics.Debug.Write("Exception while starting HEOS discovery: " + ex.Message) ;
+            }
+            return result;
+        }
+
+        bool StopDiscovery()
+        {
+            bool result = false;
+            try
+            {
+                if (heosSpeakerConnectionManager != null)
+                {
+                    heosSpeakerConnectionManager.StopDiscovery();
+                    heosSpeakerConnectionManager.Uninitialize();
+                    heosSpeakerConnectionManager = null;
+                    result = true;
+                }
+            }
+            catch(Exception ex)
+            {
+                System.Diagnostics.Debug.Write("Exception while stopping HEOS discovery: " + ex.Message) ;
+            }
+            return result;
+        }
         #endregion
     }
 

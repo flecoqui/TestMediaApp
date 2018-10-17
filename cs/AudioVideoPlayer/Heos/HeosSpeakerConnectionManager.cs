@@ -21,6 +21,11 @@ using Windows.Networking.Connectivity;
 using Windows.System;
 using Windows.System.RemoteSystems;
 using CompanionService;
+using Windows.Networking;
+using Windows.Networking.Sockets;
+using Windows.Storage.Streams;
+using Windows.System.Threading;
+
 
 namespace AudioVideoPlayer.Heos
 {
@@ -28,29 +33,203 @@ namespace AudioVideoPlayer.Heos
 
     class HeosSpeakerConnectionManager
     {
+        const string cMulticastAddress = "239.255.255.250";
+        const string cPort = "1900";
 
+
+        public DatagramSocket mlistener;
+        public DatagramSocket mtransmitter;
 
         Dictionary<string, HeosSpeaker>  listHeosSpeakers;
+        ThreadPoolTimer DiscoveryTimer;
 
         public HeosSpeakerConnectionManager()
         {
+
         }
-        // Summary:
-        //     Initialize HeosSpeakerConnectionManager
-        public virtual async System.Threading.Tasks.Task<bool> Initialize()
+        public void ParseMessage(string message)
         {
-            
-            if (listHeosSpeakers == null)
-                listHeosSpeakers = new Dictionary<string, HeosSpeaker>();
-            { 
+            if (!string.IsNullOrEmpty(message))
+            {
+                /*
+                string NTS = GetParameter("NTS", message);
+                if ((!string.IsNullOrEmpty(NTS)) && (NTS.Equals(cSSDP, StringComparison.OrdinalIgnoreCase)))
+                {
+                    string NT = GetParameter("NT", message);
+                    if (!string.IsNullOrEmpty(NT))
+                    {
+                        if (string.Equals(NT, cSSDPMediaroomClient, StringComparison.OrdinalIgnoreCase) == true)
+                        {
+                            string USN = GetParameter(cSSDPUSN, message);
+                            if (!string.IsNullOrEmpty(USN))
+                            {
+                                string Location = GetParameter(cSSDPLOCATION, message);
+                                if (!string.IsNullOrEmpty(Location))
+                                {
+                                    string DeviceName = GetParameter(cSSDPMediaroomDeviceName, message);
+                                    if (!string.IsNullOrEmpty(DeviceName))
+                                    {
+                                        Device md = new Device();
+                                        string CID = GetParameter(cSSDPMediaroomDeviceId, message);
+                                        if (!string.IsNullOrEmpty(CID))
+                                            md.CompanionID = CID;
+                                        md.DeviceName = DeviceName;
+                                        md.USN = USN;
+                                        md.DeviceID = USN;
+                                        md.NT = NT;
+                                        md.NTS = NTS;
+                                        md.IPAddrAndPort = md.Location = Location;
+                                        md.pairingStatus = PairingStatus.Online;
+                                        await UpdateDeviceNetworkInformationIntoList(md);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }*/
+
+            }
+        }
+
+        void UDPMulticastMessageReceived(DatagramSocket socket, DatagramSocketMessageReceivedEventArgs eventArguments)
+        {
+            try
+            {
+                /*
+                using (var writer = new DataWriter(await socket.GetOutputStreamAsync(address, port)))
+                {
+                    writer.WriteBytes(info.ToByteArray());
+                    await writer.StoreAsync();
+                    await writer.FlushAsync();
+                }*/
+                uint stringLength = eventArguments.GetDataReader().UnconsumedBufferLength;
+                string message = eventArguments.GetDataReader().ReadString(stringLength);
+                ParseMessage(message);
+            }
+            catch (Exception exception)
+            {
+                SocketErrorStatus socketError = SocketError.GetStatus(exception.HResult);
+                if (socketError == SocketErrorStatus.ConnectionResetByPeer)
+                {
+                }
+                else if (socketError != SocketErrorStatus.Unknown)
+                {
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+        private async Task<bool> SendMulticast(string buffer)
+        {
+            try
+            {
+                HostName mcast = new HostName(cMulticastAddress);
+                DataWriter writer = new DataWriter(await mtransmitter.GetOutputStreamAsync(mcast, cPort));
+
+                if (writer != null)
+                {
+                    writer.WriteString(buffer);
+                    uint result = await writer.StoreAsync();
+                    bool bresult = await writer.FlushAsync();
+                    writer.DetachStream();
+                    writer.Dispose();
+                    return true;
+                }
+                /*
+                // Connect to the server (in our case the listener we created in previous step).
+                IOutputStream os = await mtransmitter.GetOutputStreamAsync(mcast, cPort);
+                if (os != null)
+                {                    
+                    mwriter.WriteString(buffer);
+                    uint result = await mwriter.StoreAsync();
+                    if (_reportResult != null) _reportResult("Sent Discovery Message: " + buffer);
+                    return true;
+                }*/
+
+            }
+            catch (Exception exception)
+            {
+                // If this is an unknown status it means that the error is fatal and retry will likely fail.
+                if (SocketError.GetStatus(exception.HResult) == SocketErrorStatus.Unknown)
+                {
+                    return false;
+                }
+                return false;
             }
             return false;
+
+        }
+
+        void UDPMessageReceived(DatagramSocket socket, DatagramSocketMessageReceivedEventArgs eventArguments)
+        {
+            try
+            {
+                uint stringLength = eventArguments.GetDataReader().UnconsumedBufferLength;
+                string message = eventArguments.GetDataReader().ReadString(stringLength);
+                ParseMessage(message);
+            }
+            catch (Exception exception)
+            {
+                SocketErrorStatus socketError = SocketError.GetStatus(exception.HResult);
+                if (socketError == SocketErrorStatus.ConnectionResetByPeer)
+                {
+                }
+                else if (socketError != SocketErrorStatus.Unknown)
+                {
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+
+        // Summary:
+        //     Initialize HeosSpeakerConnectionManager
+        public virtual bool Initialize()
+        {
+            bool result = false;
+            try
+            {
+                if (listHeosSpeakers == null)
+                    listHeosSpeakers = new Dictionary<string, HeosSpeaker>();
+                mlistener = new DatagramSocket();
+                mlistener.MessageReceived += UDPMulticastMessageReceived;
+
+                mtransmitter = new DatagramSocket();
+                mtransmitter.MessageReceived += UDPMessageReceived;
+                result = true;
+            }
+            catch(Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while initialising the HeosSpeakerConnectionManager: " + ex.Message);
+            }
+            return result;
         }
         // Summary:
         //     Uninitialize HeosSpeakerConnectionManager
         public virtual bool Uninitialize()
         {
+            try
+            { 
 
+                if (mlistener != null)
+                {
+                    mlistener.MessageReceived -= UDPMulticastMessageReceived;
+                    mlistener = null;
+                }
+                if (mtransmitter != null)
+                {
+                    mtransmitter.MessageReceived -= UDPMessageReceived;
+                    mtransmitter = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while Uninitialising the HeosSpeakerConnectionManager: " + ex.Message);
+            }
             return true;
         }
 
@@ -60,26 +239,36 @@ namespace AudioVideoPlayer.Heos
         //     Launch the Discovery Thread.
         public virtual async System.Threading.Tasks.Task<bool> StartDiscovery()
         {
-            // Verify access for Remote Systems. 
-            // Note: RequestAccessAsync needs to called from the UI thread.
+            bool bResult = false;
             try
             {
-                RemoteSystemAccessStatus accessStatus = await RemoteSystem.RequestAccessAsync();
+                bResult = await SendMulticast("M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:1900\r\nST:urn:schemas-upnp-org:device:MediaRenderer:1\r\nMAN:\"ssdp:discover\"\r\nMX:3\r\n\r\n");
 
-                if (accessStatus == RemoteSystemAccessStatus.Allowed)
+                TimeSpan period = TimeSpan.FromSeconds(5);
+                DiscoveryTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
                 {
-                    // Stop Discovery service if it was running
-                    StopDiscovery();
-                    // Clear the current list of devices
-                    if (listHeosSpeakers != null) listHeosSpeakers.Clear();
+                    await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+                        async () =>
+                        {
+                            await SendMulticast("M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:1900\r\nST:urn:schemas-upnp-org:device:MediaRenderer:1\r\nMAN:\"ssdp:discover\"\r\nMX:3\r\n\r\n");
 
+                        }); ;
+
+                },
+                period);
+                if ((bResult == true)&&(DiscoveryTimer!=null))
+                { 
+                    // Clear the current list of devices
+                    if (listHeosSpeakers != null)
+                            listHeosSpeakers.Clear();
                 }
+
             }
             catch(Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine("Exception while starting discovery: " + ex.Message);
             }
-            return false;
+            return bResult;
         }
         //
         // Summary:
@@ -88,6 +277,11 @@ namespace AudioVideoPlayer.Heos
         {
             try
             {
+                if (DiscoveryTimer != null)
+                {
+                    DiscoveryTimer.Cancel();
+                    DiscoveryTimer = null;
+                }
                 return true;
             }
             catch (Exception ex)
@@ -102,6 +296,8 @@ namespace AudioVideoPlayer.Heos
         //     Stop the Discovery Thread.
         public virtual bool IsDiscovering()
         {
+            if (DiscoveryTimer != null)
+                return true;
             return false;
         }
         protected virtual void OnHeosSpeakerAdded(HeosSpeakerConnectionManager m, HeosSpeaker d)
