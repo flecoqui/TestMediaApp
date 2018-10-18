@@ -135,6 +135,7 @@
                             </ComboBox>
                             <Button IsEnabled="true" x:Name="DiscoverDeviceButton"  Content="&#xE895;"  Style="{StaticResource CustomButtonStyle}"     ToolTipService.ToolTip="Start/Stop discovering devices" FontFamily="Segoe MDL2 Assets" IsTabStop="True"  Height="40" Width="40" Margin="1,1,1,1"  Click="DiscoverDevice_Click" />
                             <Button IsEnabled="true" x:Name="RemoveDeviceButton" Content="&#xE74D;"  Style="{StaticResource CustomButtonStyle}"  Height="40" Width="40" ToolTipService.ToolTip="Remove the current device" FontFamily="Segoe MDL2 Assets" IsTabStop="True"  Margin="1,1,1,1" Click="RemoveDevice_Click" />
+                            <Button IsEnabled="true" Content="&#xE768;" x:Name="playButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Play current content on selected Speaker"  FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Play_Click" TabIndex="10" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Grid.Row="6" Grid.Column="0"   Text="Name:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />

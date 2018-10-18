@@ -303,6 +303,8 @@ namespace AudioVideoPlayer.Heos
 
                 mtransmitter = new DatagramSocket();
                 mtransmitter.MessageReceived += UDPMessageReceived;
+
+
                 result = true;
             }
             catch(Exception ex)

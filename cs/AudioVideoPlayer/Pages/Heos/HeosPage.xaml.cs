@@ -434,7 +434,29 @@ namespace AudioVideoPlayer.Pages.Heos
 
             UpdateControls();
         }
+        private async void Play_Click(object sender, RoutedEventArgs e)
+        {
 
+            if (comboDevice.SelectedItem is AudioVideoPlayer.Heos.HeosSpeaker)
+            {
+                AudioVideoPlayer.Heos.HeosSpeaker hs = comboDevice.SelectedItem as AudioVideoPlayer.Heos.HeosSpeaker;
+                if(hs!=null)
+                {
+                    LogMessage("Play url " + mediaUri.Text + " on Speaker: " + hs.FriendlyName);
+                    bool result = await hs.PlayUrl(mediaUri.Text);
+                    if(result == true)
+                    {
+                        LogMessage("Play url " + mediaUri.Text + " on Speaker: " + hs.FriendlyName + " successful");
+                    }
+                    else
+                    {
+                        LogMessage("Play url " + mediaUri.Text + " on Speaker: " + hs.FriendlyName + " error");
+                    }
+                }
+            }
+
+            UpdateControls();
+        }
         #endregion
 
 
