@@ -434,7 +434,7 @@ namespace AudioVideoPlayer.Pages.Heos
 
             UpdateControls();
         }
-        private async void Play_Click(object sender, RoutedEventArgs e)
+        private async void AddToPlaylistAndPlay_Click(object sender, RoutedEventArgs e)
         {
 
             if (comboDevice.SelectedItem is AudioVideoPlayer.Heos.HeosSpeaker)
@@ -452,6 +452,142 @@ namespace AudioVideoPlayer.Pages.Heos
                     {
                         LogMessage("Play url " + mediaUri.Text + " on Speaker: " + hs.FriendlyName + " error");
                     }
+                }
+            }
+
+            UpdateControls();
+        }
+        private AudioVideoPlayer.Heos.HeosSpeaker GetCurrentSpeaker()
+        {
+            AudioVideoPlayer.Heos.HeosSpeaker hs = null;
+            if (comboDevice.SelectedItem is AudioVideoPlayer.Heos.HeosSpeaker)
+            {
+                hs = comboDevice.SelectedItem as AudioVideoPlayer.Heos.HeosSpeaker;
+            }
+            return hs;
+        }
+        private async void AddToPlaylist_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Play audio on speaker");
+            AudioVideoPlayer.Heos.HeosSpeaker hs = GetCurrentSpeaker();
+            if (hs != null)
+            {
+                LogMessage("Play url " + mediaUri.Text + " on Speaker: " + hs.FriendlyName);
+                bool result = await hs.PlayUrl(mediaUri.Text);
+                if (result == true)
+                {
+                    LogMessage("Play url " + mediaUri.Text + " on Speaker: " + hs.FriendlyName + " successful");
+                }
+                else
+                {
+                    LogMessage("Play url " + mediaUri.Text + " on Speaker: " + hs.FriendlyName + " error");
+                }
+            }
+            UpdateControls();
+        }
+        private void Play_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Play audio on speaker");
+            UpdateControls();
+        }
+        private void Stop_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Stop audio on speaker" );
+            UpdateControls();
+        }
+        private void Minus_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Step to previous content in the playlist on speaker");
+            UpdateControls();
+        }
+        private void Plus_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Step to next content in the playlist on speaker");
+            UpdateControls();
+        }
+        private void Mute_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Mute audio on speaker");
+            UpdateControls();
+        }
+        private void VolumeUp_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Volume Up on speaker");
+            UpdateControls();
+        }
+        private void VolumeDown_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Volume Down on speaker");
+            UpdateControls();
+        }
+        private async void DisplayPlaylist_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Display information about the current speaker");
+            AudioVideoPlayer.Heos.HeosSpeaker hs = GetCurrentSpeaker();
+            if (hs != null)
+            {
+
+
+                LogMessage("Get Volume Level on Speaker: " + hs.FriendlyName);
+                int level = await hs.GetPlayerVolume();
+                if (level >=0)
+                {
+                    LogMessage("Get Volume Level on Speaker: " + hs.FriendlyName + " value: " + level.ToString());
+                }
+                else
+                {
+                    LogMessage("Get Volume Level on Speaker: " + hs.FriendlyName + " error");
+                }
+                LogMessage("Get Mute on Speaker: " + hs.FriendlyName);
+                bool bmute = await hs.GetPlayerMute();
+                if (bmute == true)
+                {
+                    LogMessage("Get Mute on Speaker: " + hs.FriendlyName + " mute: on" );
+                }
+                else
+                {
+                    LogMessage("Get Mute on Speaker: " + hs.FriendlyName + " mute: off");
+                }
+
+                LogMessage("Get Player State on Speaker: " + hs.FriendlyName);
+                string state = await hs.GetPlayerState();
+                if (!string.IsNullOrEmpty(state))
+                {
+                    LogMessage("Get Player State on Speaker: " + hs.FriendlyName + " state: " + state);
+                }
+                else
+                {
+                    LogMessage("Get Player State on Speaker: " + hs.FriendlyName + " error");
+                }
+
+                LogMessage("Get Player Queue Count on Speaker: " + hs.FriendlyName);
+                int count = await hs.GetPlayerQueue();
+                if (count >= 0)
+                {
+                    LogMessage("Get Player Queue Count on Speaker: " + hs.FriendlyName + " count: " + count.ToString());
+                }
+                else
+                {
+                    LogMessage("Get Player Queue Count on Speaker: " + hs.FriendlyName + " error");
+                }
+            }
+            UpdateControls();
+        }
+        private async void ClearPlaylist_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Clear Playlist on speaker");
+            AudioVideoPlayer.Heos.HeosSpeaker hs = GetCurrentSpeaker();
+            if (hs != null)
+            {
+                LogMessage("Clear Queue on Speaker: " + hs.FriendlyName);
+                bool result = await hs.ClearPlayerQueue();
+                if (result == true)
+                {
+                    LogMessage("Clear Queue on Speaker: " + hs.FriendlyName + " successful");
+                }
+                else
+                {
+                    LogMessage("Clear Queue on Speaker: " + hs.FriendlyName + " error");
                 }
             }
 

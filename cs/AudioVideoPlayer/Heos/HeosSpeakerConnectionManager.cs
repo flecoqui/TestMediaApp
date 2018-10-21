@@ -446,22 +446,8 @@ namespace AudioVideoPlayer.Heos
             }
             return false;
         }
-        public virtual async System.Threading.Tasks.Task<bool> Send(HeosSpeaker cd, string Message)
-        {
-            if (cd != null)
-            {
 
-                //if (await CheckCompanionDeviceConnected(cd))
-                {
-                }
-            }
-            return false;
-        }
 
-        //
-        // Summary:
-        //     Raised when a Message is received from a Companion Device
-        public virtual event TypedEventHandler<HeosSpeaker, String> MessageReceived;
 
 
         public static bool IsIPv4Address(string s)
