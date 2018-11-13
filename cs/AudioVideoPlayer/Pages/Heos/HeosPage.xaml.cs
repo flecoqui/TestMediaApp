@@ -453,7 +453,27 @@ namespace AudioVideoPlayer.Pages.Heos
         }
         return result;
     }
-    private async void AddToPlaylistAndPlay_Click(object sender, RoutedEventArgs e)
+    /// <summary>
+    /// This method checks if the url is a music url 
+    /// </summary>
+    private string GetCodec(string url)
+    {
+        if (!string.IsNullOrEmpty(url))
+        {
+                if (url.ToLower().EndsWith(".mp3"))
+                    return "mp3";
+                if (url.ToLower().EndsWith(".mp4"))
+                    return "mp4";
+                if (url.ToLower().EndsWith(".aac"))
+                    return "mp4";
+                if (url.ToLower().EndsWith(".m4a"))
+                    return "mp4";
+                if (url.ToLower().EndsWith(".flac"))
+                    return "flac";
+        }
+        return "mp4";
+    }
+        private async void AddToPlaylistAndPlay_Click(object sender, RoutedEventArgs e)
         {
 
             if (comboDevice.SelectedItem is AudioVideoPlayer.DLNA.DLNADevice)
@@ -464,7 +484,7 @@ namespace AudioVideoPlayer.Pages.Heos
                     LogMessage("Play url " + mediaUri.Text + " on Speaker: " + hs.FriendlyName);
                     string AlbumArt = string.Empty;
                     string Title = string.Empty;
-                    string Codec = string.Empty;
+                    string Codec = GetCodec(mediaUri.Text);
 
                     bool result = await hs.PlayUrl(IsAudio(mediaUri.Text), mediaUri.Text, AlbumArt,Title,Codec);
                     if(result == true)
@@ -499,7 +519,7 @@ namespace AudioVideoPlayer.Pages.Heos
                     LogMessage("Play url " + mediaUri.Text + " on Speaker: " + hs.FriendlyName);
                     string AlbumArt = string.Empty;
                     string Title = string.Empty;
-                    string Codec = string.Empty;
+                    string Codec = GetCodec(mediaUri.Text);
 
                     bool result = await hs.AddUrl(IsAudio(mediaUri.Text), mediaUri.Text, AlbumArt, Title, Codec);
                     if (result == true)
@@ -775,6 +795,33 @@ namespace AudioVideoPlayer.Pages.Heos
             if (hs != null)
             {
 
+                bool result = await hs.GetMediaInfo();
+                if (result == true)
+                {
+                    LogMessage("GetMediaInfo for Device: " + hs.FriendlyName + " successful");
+                }
+                else
+                {
+                    LogMessage("GetMediaInfo for Device: " + hs.FriendlyName + " error");
+                }
+                result = await hs.GetPosition();
+                if (result == true)
+                {
+                    LogMessage("GetPosition for Device: " + hs.FriendlyName + " successful");
+                }
+                else
+                {
+                    LogMessage("GetPosition for Device: " + hs.FriendlyName + " error");
+                }
+                result = await hs.GetDeviceCapabilities();
+                if (result == true)
+                {
+                    LogMessage("GetDeviceCapabilities for Device: " + hs.FriendlyName + " successful");
+                }
+                else
+                {
+                    LogMessage("GetDeviceCapabilities for Device: " + hs.FriendlyName + " error");
+                }
 
                 LogMessage("Get Volume Level on Speaker: " + hs.FriendlyName);
                 int level = await hs.GetPlayerVolume();
@@ -818,6 +865,8 @@ namespace AudioVideoPlayer.Pages.Heos
                 {
                     LogMessage("Get Player Queue Count on Speaker: " + hs.FriendlyName + " error");
                 }
+
+
             }
             UpdateControls();
         }

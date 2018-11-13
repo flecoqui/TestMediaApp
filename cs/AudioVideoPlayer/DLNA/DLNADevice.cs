@@ -423,7 +423,7 @@ namespace AudioVideoPlayer.DLNA
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("User-Agent", "Microsoft-Windows/6.3 UPnP/1.0 Microsoft-DLNA DLNADOC/1.50");
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("FriendlyName.DLNA.ORG", AudioVideoPlayer.Information.SystemInformation.DeviceName);
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Content-Type", "text/xml; charset=\"utf-8\"");
-                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("SOAPAction", "\"urn:schemas-upnp-org:service:AVTransport:1#SetAVTransportURI\"");
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("SOAPAction", "\"urn:schemas-upnp-org:service:AVTransport:1#SetNextAVTransportURI\"");
                 // httpClient.DefaultRequestHeaders.Remove("Accept-Encoding");
 
 
@@ -494,7 +494,8 @@ namespace AudioVideoPlayer.DLNA
                     string Response = await response.Content.ReadAsStringAsync();
                     if (Response.Length > 0)
                     {
-                        result = true;
+                        if(Response.IndexOf("PlayResponse")>0)
+                            result = true;
                     }
                 }
             }
@@ -528,7 +529,7 @@ namespace AudioVideoPlayer.DLNA
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("User-Agent", "Microsoft-Windows/6.3 UPnP/1.0 Microsoft-DLNA DLNADOC/1.50");
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("FriendlyName.DLNA.ORG", AudioVideoPlayer.Information.SystemInformation.DeviceName);
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Content-Type", "text/xml; charset=\"utf-8\"");
-                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("SOAPAction", "\"urn:schemas-upnp-org:service:AVTransport:1#Play\"");
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("SOAPAction", "\"urn:schemas-upnp-org:service:AVTransport:1#Pause\"");
                 // httpClient.DefaultRequestHeaders.Remove("Accept-Encoding");
 
                 Windows.Web.Http.HttpStringContent httpContent = new Windows.Web.Http.HttpStringContent(sb.ToString());
@@ -544,7 +545,8 @@ namespace AudioVideoPlayer.DLNA
                     string Response = await response.Content.ReadAsStringAsync();
                     if (Response.Length > 0)
                     {
-                        result = true;
+                        if (Response.IndexOf("PauseResponse") > 0)
+                            result = true;
                     }
                 }
             }
@@ -577,7 +579,7 @@ namespace AudioVideoPlayer.DLNA
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("User-Agent", "Microsoft-Windows/6.3 UPnP/1.0 Microsoft-DLNA DLNADOC/1.50");
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("FriendlyName.DLNA.ORG", AudioVideoPlayer.Information.SystemInformation.DeviceName);
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Content-Type", "text/xml; charset=\"utf-8\"");
-                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("SOAPAction", "\"urn:schemas-upnp-org:service:AVTransport:1#Play\"");
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("SOAPAction", "\"urn:schemas-upnp-org:service:AVTransport:1#Stop\"");
                 // httpClient.DefaultRequestHeaders.Remove("Accept-Encoding");
 
                 Windows.Web.Http.HttpStringContent httpContent = new Windows.Web.Http.HttpStringContent(sb.ToString());
@@ -593,7 +595,8 @@ namespace AudioVideoPlayer.DLNA
                     string Response = await response.Content.ReadAsStringAsync();
                     if (Response.Length > 0)
                     {
-                        result = true;
+                        if (Response.IndexOf("StopResponse") > 0)
+                            result = true;
                     }
                 }
             }
@@ -626,7 +629,7 @@ namespace AudioVideoPlayer.DLNA
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("User-Agent", "Microsoft-Windows/6.3 UPnP/1.0 Microsoft-DLNA DLNADOC/1.50");
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("FriendlyName.DLNA.ORG", AudioVideoPlayer.Information.SystemInformation.DeviceName);
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Content-Type", "text/xml; charset=\"utf-8\"");
-                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("SOAPAction", "\"urn:schemas-upnp-org:service:AVTransport:1#Play\"");
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("SOAPAction", "\"urn:schemas-upnp-org:service:AVTransport:1#Next\"");
                 // httpClient.DefaultRequestHeaders.Remove("Accept-Encoding");
 
                 Windows.Web.Http.HttpStringContent httpContent = new Windows.Web.Http.HttpStringContent(sb.ToString());
@@ -642,7 +645,8 @@ namespace AudioVideoPlayer.DLNA
                     string Response = await response.Content.ReadAsStringAsync();
                     if (Response.Length > 0)
                     {
-                        result = true;
+                        if (Response.IndexOf("NextResponse") > 0)
+                            result = true;
                     }
                 }
             }
@@ -676,7 +680,7 @@ namespace AudioVideoPlayer.DLNA
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("User-Agent", "Microsoft-Windows/6.3 UPnP/1.0 Microsoft-DLNA DLNADOC/1.50");
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("FriendlyName.DLNA.ORG", AudioVideoPlayer.Information.SystemInformation.DeviceName);
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Content-Type", "text/xml; charset=\"utf-8\"");
-                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("SOAPAction", "\"urn:schemas-upnp-org:service:AVTransport:1#Play\"");
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("SOAPAction", "\"urn:schemas-upnp-org:service:AVTransport:1#Previous\"");
                 // httpClient.DefaultRequestHeaders.Remove("Accept-Encoding");
 
                 Windows.Web.Http.HttpStringContent httpContent = new Windows.Web.Http.HttpStringContent(sb.ToString());
@@ -692,7 +696,8 @@ namespace AudioVideoPlayer.DLNA
                     string Response = await response.Content.ReadAsStringAsync();
                     if (Response.Length > 0)
                     {
-                        result = true;
+                        if (Response.IndexOf("PreviousResponse") > 0)
+                            result = true;
                     }
                 }
             }
@@ -742,8 +747,70 @@ namespace AudioVideoPlayer.DLNA
                     string Response = await response.Content.ReadAsStringAsync();
                     if (!string.IsNullOrEmpty(Response))
                     {
-                        if(Response.IndexOf("u:GetPositionInfoResponse")>0)
-                         result = true;
+                        int Track = 0;
+                        TimeSpan Duration;
+                        TimeSpan Position;
+                        string Loc = DLNAService.GetXMLContent(Response, "Track");
+                        if(!string.IsNullOrEmpty(Loc))
+                            int.TryParse(Loc, out Track);
+                        Loc = DLNAService.GetXMLContent(Response, "TrackDuration");
+                        if (!string.IsNullOrEmpty(Loc))
+                            TimeSpan.TryParse(Loc, out Duration);
+                        string Uri = DLNAService.GetXMLContent(Response, "TrackURI");
+                        Loc = DLNAService.GetXMLContent(Response, "RelTime");
+                        if (!string.IsNullOrEmpty(Loc))
+                            TimeSpan.TryParse(Loc, out Position);
+                        result = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while sending PlayTo: " + ex.Message);
+                result = false;
+            }
+
+            return result;
+        }
+        private async System.Threading.Tasks.Task<bool> GetDeviceCapabilities(string ControlURL, int Index)
+        {
+            bool result = false;
+            try
+            {
+                StringBuilder sb = new StringBuilder(1024);
+
+                sb.Append(XMLHead);
+                sb.Append("<u:GetDeviceCapabilities xmlns:u=\"urn:schemas-upnp-org:service:AVTransport:1\"><InstanceID>");
+                sb.Append(Index.ToString());
+                sb.Append("</InstanceID></u:GetDeviceCapabilities>\r\n");
+                sb.Append(XMLFoot);
+
+                HttpClient httpClient = new HttpClient();
+
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Cache-Control", "no-cache");
+                // httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Connection", "Close");
+                // httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Pragma", "no-cache");
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("User-Agent", "Microsoft-Windows/6.3 UPnP/1.0 Microsoft-DLNA DLNADOC/1.50");
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("FriendlyName.DLNA.ORG", AudioVideoPlayer.Information.SystemInformation.DeviceName);
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Content-Type", "text/xml; charset=\"utf-8\"");
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("SOAPAction", "\"urn:schemas-upnp-org:service:AVTransport:1#GetDeviceCapabilities\"");
+                //httpClient.DefaultRequestHeaders.Remove("Accept-Encoding");
+
+                Windows.Web.Http.HttpStringContent httpContent = new Windows.Web.Http.HttpStringContent(sb.ToString());
+                httpContent.Headers.Remove("Content-Type");
+                httpContent.Headers.TryAppendWithoutValidation("Content-Type", "text/xml; charset=utf-8");
+                //httpContent.Headers.Remove("Accept-Encoding");
+
+                string prefix = GetHttpPrefix(this.Location);
+                if (!string.IsNullOrEmpty(prefix))
+                {
+                    Windows.Web.Http.HttpResponseMessage response = await httpClient.PostAsync(new Uri(prefix + ControlURL), httpContent);
+                    response.EnsureSuccessStatusCode();
+                    string Response = await response.Content.ReadAsStringAsync();
+                    if (!string.IsNullOrEmpty(Response))
+                    {
+
+                        result = true;
                     }
                 }
             }
@@ -776,7 +843,7 @@ namespace AudioVideoPlayer.DLNA
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("User-Agent", "Microsoft-Windows/6.3 UPnP/1.0 Microsoft-DLNA DLNADOC/1.50");
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("FriendlyName.DLNA.ORG", AudioVideoPlayer.Information.SystemInformation.DeviceName);
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Content-Type", "text/xml; charset=\"utf-8\"");
-                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("SOAPAction", "\"urn:schemas-upnp-org:service:AVTransport:1#GetPositionInfo\"");
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("SOAPAction", "\"urn:schemas-upnp-org:service:AVTransport:1#GetMediaInfo\"");
                 //httpClient.DefaultRequestHeaders.Remove("Accept-Encoding");
 
                 Windows.Web.Http.HttpStringContent httpContent = new Windows.Web.Http.HttpStringContent(sb.ToString());
@@ -792,8 +859,17 @@ namespace AudioVideoPlayer.DLNA
                     string Response = await response.Content.ReadAsStringAsync();
                     if (!string.IsNullOrEmpty(Response))
                     {
-                        if (Response.IndexOf("u:GetPositionInfoResponse") > 0)
-                            result = true;
+                        int NumberTrack = 0;
+                        TimeSpan Duration;
+                        string Loc = DLNAService.GetXMLContent(Response, "NrTracks");
+                        if (!string.IsNullOrEmpty(Loc))
+                            int.TryParse(Loc, out NumberTrack);
+                        Loc = DLNAService.GetXMLContent(Response, "MediaDuration");
+                        if (!string.IsNullOrEmpty(Loc))
+                            TimeSpan.TryParse(Loc, out Duration);
+                        string CurrentUri = DLNAService.GetXMLContent(Response, "CurrentURI");
+                        string NextUri = DLNAService.GetXMLContent(Response, "NextURI");
+                        result = true;
                     }
                 }
             }
@@ -859,8 +935,6 @@ namespace AudioVideoPlayer.DLNA
             if (ds != null)
             {
                 result = await PrepareNextPlayTo(ds.ControlURL, bAudioOnly, UrlToPlay, AlbumArtUrl, Title, codec, 0);
-                if (result == true)
-                    result = await Play(ds.ControlURL, 0);
             }
 
             return result;
@@ -915,7 +989,36 @@ namespace AudioVideoPlayer.DLNA
             }
             return result;
         }
-
+        public async System.Threading.Tasks.Task<bool> GetMediaInfo()
+        {
+            bool result = false;
+            DLNAService ds = await GetDLNAService();
+            if (ds != null)
+            {
+                result = await GetMediaInfo(ds.ControlURL, 0);
+            }
+            return result;
+        }
+        public async System.Threading.Tasks.Task<bool> GetDeviceCapabilities()
+        {
+            bool result = false;
+            DLNAService ds = await GetDLNAService();
+            if (ds != null)
+            {
+                result = await GetDeviceCapabilities(ds.ControlURL, 0);
+            }
+            return result;
+        }
+        public async System.Threading.Tasks.Task<bool> GetPosition()
+        {
+            bool result = false;
+            DLNAService ds = await GetDLNAService();
+            if (ds != null)
+            {
+                result = await GetPosition(ds.ControlURL, 0);
+            }
+            return result;
+        }
         public async System.Threading.Tasks.Task<string> GetPlayerState()
         {
             string result = string.Empty;
