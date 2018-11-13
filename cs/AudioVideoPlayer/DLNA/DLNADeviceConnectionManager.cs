@@ -27,11 +27,11 @@ using Windows.Storage.Streams;
 using Windows.System.Threading;
 
 
-namespace AudioVideoPlayer.Heos
+namespace AudioVideoPlayer.DLNA
 {
 
 
-    class HeosSpeakerConnectionManager
+    class DLNADeviceConnectionManager
     {
         const string cMulticastAddress = "239.255.255.250";
         const string cPort = "1900";
@@ -40,10 +40,10 @@ namespace AudioVideoPlayer.Heos
         public DatagramSocket mlistener;
         public DatagramSocket mtransmitter;
 
-        Dictionary<string, HeosSpeaker>  listHeosSpeakers;
+        Dictionary<string, DLNADevice>  listDLNADevices;
         ThreadPoolTimer DiscoveryTimer;
 
-        public HeosSpeakerConnectionManager()
+        public DLNADeviceConnectionManager()
         {
 
         }
@@ -172,19 +172,20 @@ namespace AudioVideoPlayer.Heos
                     if ((!string.IsNullOrEmpty(Id))&&
                         (!string.IsNullOrEmpty(friendlyName)))
                     {
-                        HeosSpeaker hs = new HeosSpeaker(Id, Location, Version, IpCache, Server, St, Usn, Ip, friendlyName, manufacturer, modelName, modelNumber);
+                        DLNADevice hs = new DLNADevice(Id, Location, Version, IpCache, Server, St, Usn, Ip, friendlyName, manufacturer, modelName, modelNumber);
                         if (hs != null)
                         {
+                            await hs.GetDNLAServices();
                             if (GetUniqueDeviceByID(Id) != null)
                             {
-                                listHeosSpeakers[Id] = hs;
-                                OnHeosSpeakerUpdated(this, hs);
+                                listDLNADevices[Id] = hs;
+                                OnDLNADeviceUpdated(this, hs);
                             }
                             else
                             {
 
-                                listHeosSpeakers.Add(Id, hs);
-                                OnHeosSpeakerAdded(this, hs);
+                                listDLNADevices.Add(Id, hs);
+                                OnDLNADeviceAdded(this, hs);
                             }
                             return true;
                         }
@@ -284,20 +285,20 @@ namespace AudioVideoPlayer.Heos
                 }
                 else
                 {
-                    throw;
+                    System.Diagnostics.Debug.WriteLine("Exception while receiving UDP packet:" + exception.Message);
                 }
             }
         }
 
         // Summary:
-        //     Initialize HeosSpeakerConnectionManager
+        //     Initialize DLNADeviceConnectionManager
         public virtual bool Initialize()
         {
             bool result = false;
             try
             {
-                if (listHeosSpeakers == null)
-                    listHeosSpeakers = new Dictionary<string, HeosSpeaker>();
+                if (listDLNADevices == null)
+                    listDLNADevices = new Dictionary<string, DLNADevice>();
                 mlistener = new DatagramSocket();
                 mlistener.MessageReceived += UDPMulticastMessageReceived;
 
@@ -309,12 +310,12 @@ namespace AudioVideoPlayer.Heos
             }
             catch(Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("Exception while initialising the HeosSpeakerConnectionManager: " + ex.Message);
+                System.Diagnostics.Debug.WriteLine("Exception while initialising the DLNADeviceConnectionManager: " + ex.Message);
             }
             return result;
         }
         // Summary:
-        //     Uninitialize HeosSpeakerConnectionManager
+        //     Uninitialize DLNADeviceConnectionManager
         public virtual bool Uninitialize()
         {
             try
@@ -333,7 +334,7 @@ namespace AudioVideoPlayer.Heos
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("Exception while Uninitialising the HeosSpeakerConnectionManager: " + ex.Message);
+                System.Diagnostics.Debug.WriteLine("Exception while Uninitialising the DLNADeviceConnectionManager: " + ex.Message);
             }
             return true;
         }
@@ -364,8 +365,8 @@ namespace AudioVideoPlayer.Heos
                 if ((bResult == true)&&(DiscoveryTimer!=null))
                 { 
                     // Clear the current list of devices
-                    if (listHeosSpeakers != null)
-                            listHeosSpeakers.Clear();
+                    if (listDLNADevices != null)
+                            listDLNADevices.Clear();
                 }
 
             }
@@ -405,44 +406,44 @@ namespace AudioVideoPlayer.Heos
                 return true;
             return false;
         }
-        protected virtual void OnHeosSpeakerAdded(HeosSpeakerConnectionManager m, HeosSpeaker d)
+        protected virtual void OnDLNADeviceAdded(DLNADeviceConnectionManager m, DLNADevice d)
         {
-            if (HeosSpeakerAdded != null)
-                HeosSpeakerAdded(m, d);
+            if (DLNADeviceAdded != null)
+                DLNADeviceAdded(m, d);
         }
         //
         // Summary:
         //     The event that is raised when a new Companion Device is discovered.
-        public event TypedEventHandler<HeosSpeakerConnectionManager, HeosSpeaker> HeosSpeakerAdded;
-        protected virtual void OnHeosSpeakerRemoved(HeosSpeakerConnectionManager m, HeosSpeaker d)
+        public event TypedEventHandler<DLNADeviceConnectionManager, DLNADevice> DLNADeviceAdded;
+        protected virtual void OnDLNADeviceRemoved(DLNADeviceConnectionManager m, DLNADevice d)
         {
-            if (HeosSpeakerRemoved != null)
-                HeosSpeakerRemoved(m, d);
+            if (DLNADeviceRemoved != null)
+                DLNADeviceRemoved(m, d);
         }
         //
         // Summary:
         //     The event that is raised when a previously discovered Companion Device
         //     is no longer visible.
-        public event TypedEventHandler<HeosSpeakerConnectionManager, HeosSpeaker> HeosSpeakerRemoved;
-        protected virtual void OnHeosSpeakerUpdated(HeosSpeakerConnectionManager m, HeosSpeaker d)
+        public event TypedEventHandler<DLNADeviceConnectionManager, DLNADevice> DLNADeviceRemoved;
+        protected virtual void OnDLNADeviceUpdated(DLNADeviceConnectionManager m, DLNADevice d)
         {
-            if (HeosSpeakerUpdated != null)
-                HeosSpeakerUpdated(m, d);
+            if (DLNADeviceUpdated != null)
+                DLNADeviceUpdated(m, d);
         }
         //
         // Summary:
         //     Raised when a previously discovered Companion Device changes from proximally
         //     connected to cloud connected, or vice versa.
-        public event TypedEventHandler<HeosSpeakerConnectionManager, HeosSpeaker> HeosSpeakerUpdated;
+        public event TypedEventHandler<DLNADeviceConnectionManager, DLNADevice> DLNADeviceUpdated;
 
 
         // Summary:
         //     Check if the device is connected (a ping have been successful)
-        public virtual bool IsHeosSpeakerConnected(HeosSpeaker cd)
+        public virtual bool IsDLNADeviceConnected(DLNADevice cd)
         {
-            if (listHeosSpeakers.ContainsKey(cd.Id))
+            if (listDLNADevices.ContainsKey(cd.Id))
             {
-                return (listHeosSpeakers[cd.Id].Status == HeosSpeakerStatus.Connected);
+                return (listDLNADevices[cd.Id].Status == DLNADeviceStatus.Connected);
             }
             return false;
         }
@@ -480,10 +481,10 @@ namespace AudioVideoPlayer.Heos
         #region private
 
 
-        protected HeosSpeaker GetUniqueDeviceByName(string Name)
+        protected DLNADevice GetUniqueDeviceByName(string Name)
         {
-            HeosSpeaker device = null;
-            foreach (var d in listHeosSpeakers)
+            DLNADevice device = null;
+            foreach (var d in listDLNADevices)
             {
                 if (string.Equals(d.Value.FriendlyName, Name))
                 {
@@ -496,10 +497,10 @@ namespace AudioVideoPlayer.Heos
             }
             return device;
         }
-        protected HeosSpeaker GetUniqueDeviceByID(string id)
+        protected DLNADevice GetUniqueDeviceByID(string id)
         {
-            HeosSpeaker device = null;
-            foreach (var d in listHeosSpeakers)
+            DLNADevice device = null;
+            foreach (var d in listDLNADevices)
             {
                 if (string.Equals(d.Value.Id, id))
                 {

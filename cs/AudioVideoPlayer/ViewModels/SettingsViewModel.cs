@@ -332,15 +332,15 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
-        public ObservableCollection<Heos.HeosSpeaker> HeosSpeakerList
+        public ObservableCollection<DLNA.DLNADevice> DLNADeviceList
         {
             get
             {
-                return StaticSettingsViewModel.HeosSpeakerList;
+                return StaticSettingsViewModel.DLNADeviceList;
             }
             set
             {
-                StaticSettingsViewModel.HeosSpeakerList = value;
+                StaticSettingsViewModel.DLNADeviceList = value;
                 NotifyPropertyChanged();
             }
         }

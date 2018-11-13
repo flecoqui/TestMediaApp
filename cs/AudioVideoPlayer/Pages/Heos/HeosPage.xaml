@@ -127,7 +127,7 @@
                            Width="166" 
                            HorizontalAlignment="Stretch" 
                            SelectedValuePath="FriendlyName"
-                           ItemsSource="{x:Bind ViewModelLocator.Settings.HeosSpeakerList,Mode=OneWay}" 
+                           ItemsSource="{x:Bind ViewModelLocator.Settings.DLNADeviceList,Mode=OneWay}" 
                            IsTabStop="True"
                            Loaded="comboDevice_Loaded"                                
                            SelectionChanged="comboDevice_SelectionChanged"  

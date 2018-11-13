@@ -367,28 +367,28 @@ namespace AudioVideoPlayer.ViewModels
             }
 
         }
-        private static ObservableCollection<Heos.HeosSpeaker> heosSpeakerList;
+        private static ObservableCollection<DLNA.DLNADevice> dLNADeviceList;
 
-        public static ObservableCollection<Heos.HeosSpeaker> HeosSpeakerList
+        public static ObservableCollection<DLNA.DLNADevice> DLNADeviceList
         {
             get
             {
-                var auto = Helpers.StorageHelper.RestoreStringFromFile(nameof(HeosSpeakerList));
+                var auto = Helpers.StorageHelper.RestoreStringFromFile(nameof(DLNADeviceList));
                 //var auto = Helpers.SettingsHelper.ReadSettingsValue(nameof(DeviceList));
                 if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
                 {
-                    heosSpeakerList = new ObservableCollection<Heos.HeosSpeaker>();
+                    dLNADeviceList = new ObservableCollection<DLNA.DLNADevice>();
                 }
                 else
-                    heosSpeakerList = ObjectSerializer<ObservableCollection<Heos.HeosSpeaker>>.FromXml((string)auto);
-                return heosSpeakerList;
+                    dLNADeviceList = ObjectSerializer<ObservableCollection<DLNA.DLNADevice>>.FromXml((string)auto);
+                return dLNADeviceList;
             }
             set
             {
-                string serializeString = ObjectSerializer<ObservableCollection<Heos.HeosSpeaker>>.ToXml(value);
+                string serializeString = ObjectSerializer<ObservableCollection<DLNA.DLNADevice>>.ToXml(value);
                 //Helpers.SettingsHelper.SaveSettingsValue(nameof(DeviceList), serializeString);
-                bool result = Helpers.StorageHelper.SaveStringIntoFile(nameof(HeosSpeakerList), serializeString);
-                heosSpeakerList = value;
+                bool result = Helpers.StorageHelper.SaveStringIntoFile(nameof(DLNADeviceList), serializeString);
+                dLNADeviceList = value;
             }
 
         }

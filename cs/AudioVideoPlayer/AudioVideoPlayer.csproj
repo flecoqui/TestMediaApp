@@ -145,6 +145,7 @@
     <Compile Include="Converters\StringVisibilityConverter.cs" />
     <Compile Include="Converters\WindowModeToBoolConverter.cs" />
     <Compile Include="DataModel\MediaDataSource.cs" />
+    <Compile Include="DLNA\DLNAService.cs" />
     <Compile Include="ExtendedSplash.xaml.cs">
       <DependentUpon>ExtendedSplash.xaml</DependentUpon>
     </Compile>
@@ -166,8 +167,8 @@
     <Compile Include="Helpers\TTMLHelper\SubtitleItem.cs" />
     <Compile Include="Helpers\TTMLHelper\SmoothSubtitleManager.cs" />
     <Compile Include="Helpers\TTMLHelper\XmlReaderExtensions.cs" />
-    <Compile Include="Heos\HeosSpeakerConnectionManager.cs" />
-    <Compile Include="Heos\HeosSpeaker.cs" />
+    <Compile Include="DLNA\DLNADeviceConnectionManager.cs" />
+    <Compile Include="DLNA\DLNADevice.cs" />
     <Compile Include="Information\SystemInformation.cs" />
     <Compile Include="Models\Device.cs" />
     <Compile Include="Models\MenuItem.cs" />
