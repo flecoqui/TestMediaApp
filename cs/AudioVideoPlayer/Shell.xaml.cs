@@ -151,7 +151,7 @@ namespace AudioVideoPlayer
                 listMenu.Add(new MenuItem { Icon = "\xE7AD;", Name = "CD Player", PageType = typeof(AudioVideoPlayer.Pages.CDPlayer.CDPlayerPage) } );
             listMenu.Add(new MenuItem { Icon = "\xE8FD;", Name = "Playlist", PageType = typeof(AudioVideoPlayer.Pages.Playlist.PlaylistPage) });
             listMenu.Add(new MenuItem { Icon = "\xE8EF;", Name = "Remote", PageType = typeof(AudioVideoPlayer.Pages.Remote.RemotePage) });
-            listMenu.Add(new MenuItem { Icon = "\xE767;", Name = "Heos", PageType = typeof(AudioVideoPlayer.Pages.Heos.HeosPage) });
+            listMenu.Add(new MenuItem { Icon = "\xE767;", Name = "DLNA", PageType = typeof(AudioVideoPlayer.Pages.DLNA.DLNAPage) });
             listMenu.Add(new MenuItem { Icon = "\xE713;", Name = "Settings", PageType = typeof(AudioVideoPlayer.Pages.Settings.SettingsPage) });
 
             hamburgerMenu.ItemsSource = listMenu;

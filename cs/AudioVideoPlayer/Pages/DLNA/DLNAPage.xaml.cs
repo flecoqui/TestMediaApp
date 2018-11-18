@@ -37,20 +37,26 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
-namespace AudioVideoPlayer.Pages.Heos
+namespace AudioVideoPlayer.Pages.DLNA
 {
 
 
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class HeosPage : Page
+    public sealed partial class DLNAPage : Page
     {
+        // Collection of smooth streaming urls 
+        private ObservableCollection<MediaItem> defaultViewModel = new ObservableCollection<MediaItem>();
+        string CurrentContentUrl;
+        string CurrentAlbumArtUrl;
+        string CurrentTitle;
+
 
         /// <summary>
-        /// HeosPage constructor 
+        /// DLNAPage constructor 
         /// </summary>
-        public HeosPage()
+        public DLNAPage()
         {
             this.InitializeComponent();
         }
@@ -109,6 +115,73 @@ namespace AudioVideoPlayer.Pages.Heos
                 }
             }
         }
+
+        /// <summary>
+        /// This method is called when the ComboStream selection changes 
+        /// </summary>
+        private void ComboStream_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (comboStream.SelectedItem != null)
+            {
+                MediaItem ms = comboStream.SelectedItem as MediaItem;
+                CurrentContentUrl = mediaUri.Text = ms.Content;
+                CurrentTitle = ms.Title;
+                CurrentAlbumArtUrl = ms.PosterContent;
+                UpdateControls();
+            }
+
+        }
+
+        // MediaDataGroup used to load the playlist
+        MediaDataGroup audio_video = null;
+        /// <summary>
+        /// Method LoadingData which loads the JSON playlist file
+        /// </summary>
+        bool IsDataLoaded()
+        {
+            if ((audio_video != null) && (audio_video.Items.Count > 0))
+                return true;
+            return false;
+        }
+        /// <summary>
+        /// Method LoadingData which loads the JSON playlist file
+        /// </summary>
+        async System.Threading.Tasks.Task<bool> LoadingData(string path)
+        {
+
+            string oldPath = MediaDataSource.MediaDataPath;
+
+            try
+            {
+                Shell.Current.DisplayWaitRing = true;
+                UpdateControls(true);
+
+                MediaDataSource.Clear();
+                LogMessage(string.IsNullOrEmpty(path) ? "Loading default playlist" : "Loading playlist :" + path);
+                audio_video = await MediaDataSource.GetGroupAsync(path, "audio_video_picture");
+                if ((audio_video != null) && (audio_video.Items.Count > 0))
+                {
+                    LogMessage("Loading playlist successful with " + audio_video.Items.Count.ToString() + " items");
+                    this.defaultViewModel = audio_video.Items;
+                    comboStream.DataContext = this.defaultViewModel;
+                    comboStream.SelectedIndex = 0;
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogMessage("Loading playlist failed: " + ex.Message);
+
+            }
+            finally
+            {
+                Shell.Current.DisplayWaitRing = false;
+                UpdateControls();
+
+            }
+            return false;
+        }
+
         /// <summary>
         /// Invoked when this page is about to be displayed in a Frame.
         /// </summary>
@@ -128,6 +201,8 @@ namespace AudioVideoPlayer.Pages.Heos
             // Update playlist controls
             UpdateControls();
 
+            // Combobox event
+            comboStream.SelectionChanged += ComboStream_SelectionChanged;
             // Logs updated
             logs.TextChanged += Logs_TextChanged;
 
@@ -152,10 +227,15 @@ namespace AudioVideoPlayer.Pages.Heos
             // Unregister Network
             UnregisterNetworkHelper();
 
+            // Combobox event
+            comboStream.SelectionChanged -= ComboStream_SelectionChanged;
+            // Logs event to refresh the TextBox
+            logs.TextChanged -= Logs_TextChanged;
+
 
         }
 
-        private void comboPlayList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void comboPlayList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
             if (comboPlayList.SelectedItem is Models.PlayList)
@@ -177,6 +257,7 @@ namespace AudioVideoPlayer.Pages.Heos
                         ViewModelLocator.Settings.CurrentMediaPath = string.Empty;
                         ViewModelLocator.Settings.CurrentMediaIndex = p.Index;
                     }
+                    await LoadingData(ViewModelLocator.Settings.CurrentPlayListPath);
                 }
             }
         }
@@ -352,7 +433,7 @@ namespace AudioVideoPlayer.Pages.Heos
 
 
         #region Heos
-        AudioVideoPlayer.DLNA.DLNADeviceConnectionManager heosSpeakerConnectionManager;
+        AudioVideoPlayer.DLNA.DLNADeviceConnectionManager DLNADeviceConnectionManager;
         enum Status
         {
             NoDeviceSelected = 0,
@@ -390,7 +471,7 @@ namespace AudioVideoPlayer.Pages.Heos
         }
         private async void DiscoverDevice_Click(object sender, RoutedEventArgs e)
         {
-            if ((heosSpeakerConnectionManager == null) || ((heosSpeakerConnectionManager != null) && (!heosSpeakerConnectionManager.IsDiscovering())))
+            if ((DLNADeviceConnectionManager == null) || ((DLNADeviceConnectionManager != null) && (!DLNADeviceConnectionManager.IsDiscovering())))
             {
                 if(await StartDiscovery() == true)
                 {
@@ -482,11 +563,14 @@ namespace AudioVideoPlayer.Pages.Heos
                 if(hs!=null)
                 {
                     LogMessage("Play url " + mediaUri.Text + " on Speaker: " + hs.FriendlyName);
-                    string AlbumArt = string.Empty;
-                    string Title = string.Empty;
                     string Codec = GetCodec(mediaUri.Text);
-
-                    bool result = await hs.PlayUrl(IsAudio(mediaUri.Text), mediaUri.Text, AlbumArt,Title,Codec);
+                    string CurrentUrl = mediaUri.Text;
+                    if (hs.IsSamsungDevice())
+                    {
+                        CurrentUrl = CurrentUrl.Replace("https://", "http://");
+                        CurrentAlbumArtUrl = CurrentAlbumArtUrl.Replace("https://", "http://");
+                    }
+                    bool result = await hs.PlayUrl(IsAudio(CurrentUrl), CurrentUrl, CurrentAlbumArtUrl, CurrentTitle,Codec);
                     if(result == true)
                     {
                         LogMessage("Play url " + mediaUri.Text + " on Speaker: " + hs.FriendlyName + " successful");
@@ -517,11 +601,15 @@ namespace AudioVideoPlayer.Pages.Heos
                 if (hs != null)
                 {
                     LogMessage("Play url " + mediaUri.Text + " on Speaker: " + hs.FriendlyName);
-                    string AlbumArt = string.Empty;
-                    string Title = string.Empty;
                     string Codec = GetCodec(mediaUri.Text);
-
-                    bool result = await hs.AddUrl(IsAudio(mediaUri.Text), mediaUri.Text, AlbumArt, Title, Codec);
+                    
+                    string CurrentUrl = mediaUri.Text;
+                    if (hs.IsSamsungDevice())
+                    {
+                        CurrentUrl = CurrentUrl.Replace("https://", "http://");
+                        CurrentAlbumArtUrl = CurrentAlbumArtUrl.Replace("https://", "http://");
+                    }
+                    bool result = await hs.AddUrl(IsAudio(CurrentUrl), CurrentUrl, CurrentAlbumArtUrl, CurrentTitle, Codec);
                     if (result == true)
                     {
                         LogMessage("Play url " + mediaUri.Text + " on Speaker: " + hs.FriendlyName + " successful");
@@ -795,34 +883,58 @@ namespace AudioVideoPlayer.Pages.Heos
             if (hs != null)
             {
 
-                bool result = await hs.GetMediaInfo();
-                if (result == true)
+                AudioVideoPlayer.DLNA.DLNAMediaInfo MediaInfo = await hs.GetMediaInfo();
+                if (MediaInfo != null)
                 {
-                    LogMessage("GetMediaInfo for Device: " + hs.FriendlyName + " successful");
+                    LogMessage("GetMediaInfo for Device: " + hs.FriendlyName + " successful \r\n  NumberTrack: " + MediaInfo.NrTrack.ToString() + "\r\n  Duration: " + MediaInfo.MediaDuration.ToString()
+                        + "\r\n  CurrentUri: " + MediaInfo.CurrentUri.ToString()
+                        + "\r\n  NextUri: " + MediaInfo.NextUri.ToString()
+                        +"\r\n  CurrentUriMetaData: " + MediaInfo.CurrentUriMetaData.ToString()
+                        + "\r\n  NextUriMetaData: " + MediaInfo.NextUriMetaData.ToString());
                 }
                 else
                 {
                     LogMessage("GetMediaInfo for Device: " + hs.FriendlyName + " error");
                 }
-                result = await hs.GetPosition();
-                if (result == true)
+                AudioVideoPlayer.DLNA.DLNAPositionInfo PositionInfo = await hs.GetPositionInfo();
+                if (PositionInfo != null)
                 {
-                    LogMessage("GetPosition for Device: " + hs.FriendlyName + " successful");
+                    LogMessage("GetPositionInfo for Device: " + hs.FriendlyName + " successful"
+                        + "\r\n  Track: " + PositionInfo.Track.ToString()
+                        + "\r\n  Duration: " + PositionInfo.TrackDuration.ToString()
+                        + "\r\n  Uri: " + PositionInfo.TrackUri.ToString()
+                        + "\r\n  RelTime: " + PositionInfo.RelTime.ToString()
+                        + "\r\n  AbsTime: " + PositionInfo.AbsTime.ToString()
+
+                        );
                 }
                 else
                 {
                     LogMessage("GetPosition for Device: " + hs.FriendlyName + " error");
                 }
-                result = await hs.GetDeviceCapabilities();
-                if (result == true)
+                AudioVideoPlayer.DLNA.DLNATransportInfo TransportInfo = await hs.GetTransportInfo();
+                if (TransportInfo != null)
                 {
-                    LogMessage("GetDeviceCapabilities for Device: " + hs.FriendlyName + " successful");
+                    LogMessage("GetTransportInfo for Device: " + hs.FriendlyName + " successful"
+                        + "\r\n  State: " + TransportInfo.CurrentTransportState.ToString()
+                        + "\r\n  Status: " + TransportInfo.CurrentTransportStatus.ToString()
+                        + "\r\n  Speed: " + TransportInfo.CurrentSpeed.ToString()
+                        );
+
                 }
                 else
                 {
-                    LogMessage("GetDeviceCapabilities for Device: " + hs.FriendlyName + " error");
+                    LogMessage("GetTransportInfo for Device: " + hs.FriendlyName + " error");
                 }
-
+                AudioVideoPlayer.DLNA.DLNATransportSettings TransportSettings  = await hs.GetTransportSettings();
+                if (TransportSettings != null)
+                {
+                    LogMessage("GetTransportSettings for Device: " + hs.FriendlyName + " successful \r\n  PlayMode: " + TransportSettings.PlayMode);
+                }
+                else
+                {
+                    LogMessage("GetTransportSettings for Device: " + hs.FriendlyName + " error");
+                }
                 LogMessage("Get Volume Level on Speaker: " + hs.FriendlyName);
                 int level = await hs.GetPlayerVolume();
                 if (level >=0)
@@ -900,32 +1012,32 @@ namespace AudioVideoPlayer.Pages.Heos
             bool result = false;
             try
             { 
-                if (heosSpeakerConnectionManager == null)
+                if (DLNADeviceConnectionManager == null)
                 {
-                    heosSpeakerConnectionManager = new AudioVideoPlayer.DLNA.DLNADeviceConnectionManager();
-                    if (heosSpeakerConnectionManager != null)
+                    DLNADeviceConnectionManager = new AudioVideoPlayer.DLNA.DLNADeviceConnectionManager();
+                    if (DLNADeviceConnectionManager != null)
                     {
-                        heosSpeakerConnectionManager.Initialize();
+                        DLNADeviceConnectionManager.Initialize();
                     }
                 }
-                if (heosSpeakerConnectionManager != null)
+                if (DLNADeviceConnectionManager != null)
                 {
-                    if (await heosSpeakerConnectionManager.StartDiscovery() == true)
+                    if (await DLNADeviceConnectionManager.StartDiscovery() == true)
                     {
-                        heosSpeakerConnectionManager.DLNADeviceAdded += HeosSpeakerConnectionManager_HeosSpeakerAdded;
-                        heosSpeakerConnectionManager.DLNADeviceUpdated += HeosSpeakerConnectionManager_HeosSpeakerUpdated;
+                        DLNADeviceConnectionManager.DLNADeviceAdded += DLNADeviceConnectionManager_DLNADeviceAdded;
+                        DLNADeviceConnectionManager.DLNADeviceUpdated += DLNADeviceConnectionManager_DLNADeviceUpdated;
                         result = true;
                     }
                 }
             }
             catch(Exception ex)
             {
-                System.Diagnostics.Debug.Write("Exception while starting HEOS discovery: " + ex.Message) ;
+                System.Diagnostics.Debug.Write("Exception while starting DLNA discovery: " + ex.Message) ;
             }
             return result;
         }
 
-        private void HeosSpeakerConnectionManager_HeosSpeakerUpdated(AudioVideoPlayer.DLNA.DLNADeviceConnectionManager sender, AudioVideoPlayer.DLNA.DLNADevice args)
+        private void DLNADeviceConnectionManager_DLNADeviceUpdated(AudioVideoPlayer.DLNA.DLNADeviceConnectionManager sender, AudioVideoPlayer.DLNA.DLNADevice args)
         {
            // LogMessage("Updated Device: " + args.FriendlyName + " IP: " + args.Ip);
         }
@@ -967,12 +1079,12 @@ namespace AudioVideoPlayer.Pages.Heos
             }
             return;
         }
-        private async void HeosSpeakerConnectionManager_HeosSpeakerAdded(AudioVideoPlayer.DLNA.DLNADeviceConnectionManager sender, AudioVideoPlayer.DLNA.DLNADevice args)
+        private async void DLNADeviceConnectionManager_DLNADeviceAdded(AudioVideoPlayer.DLNA.DLNADeviceConnectionManager sender, AudioVideoPlayer.DLNA.DLNADevice args)
         {
             if(args.IsHeosDevice())
-                LogMessage("Added HEOS Device: " + args.FriendlyName + " IP: " + args.Ip);
+                LogMessage("Added DLNA/HEOS Device: " + args.FriendlyName + " IP: " + args.Ip);
             else
-                LogMessage("Added Device: " + args.FriendlyName + " IP: " + args.Ip);
+                LogMessage("Added DLNA Device: " + args.FriendlyName + " IP: " + args.Ip);
 
 
             await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
@@ -1010,19 +1122,19 @@ namespace AudioVideoPlayer.Pages.Heos
             bool result = false;
             try
             {
-                if (heosSpeakerConnectionManager != null)
+                if (DLNADeviceConnectionManager != null)
                 {
-                    heosSpeakerConnectionManager.DLNADeviceAdded -= HeosSpeakerConnectionManager_HeosSpeakerAdded;
-                    heosSpeakerConnectionManager.DLNADeviceUpdated -= HeosSpeakerConnectionManager_HeosSpeakerUpdated;
-                    heosSpeakerConnectionManager.StopDiscovery();
-                    heosSpeakerConnectionManager.Uninitialize();
-                    heosSpeakerConnectionManager = null;
+                    DLNADeviceConnectionManager.DLNADeviceAdded -= DLNADeviceConnectionManager_DLNADeviceAdded;
+                    DLNADeviceConnectionManager.DLNADeviceUpdated -= DLNADeviceConnectionManager_DLNADeviceUpdated;
+                    DLNADeviceConnectionManager.StopDiscovery();
+                    DLNADeviceConnectionManager.Uninitialize();
+                    DLNADeviceConnectionManager = null;
                     result = true;
                 }
             }
             catch(Exception ex)
             {
-                System.Diagnostics.Debug.Write("Exception while stopping HEOS discovery: " + ex.Message) ;
+                System.Diagnostics.Debug.Write("Exception while stopping DLNA discovery: " + ex.Message) ;
             }
             return result;
         }

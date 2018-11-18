@@ -2634,6 +2634,23 @@ namespace AudioVideoPlayer.Pages.Player
             return result;
         }
         /// <summary>
+        /// This method checks if the url is a DASH url
+        /// </summary>
+        private bool IsDash(string url)
+        {
+            bool result = false;
+            if (!string.IsNullOrEmpty(url))
+            {
+                if (url.ToLower().Contains("/manifest(format=mpd") ||
+                    url.ToLower().Contains(".mpd")
+                    )
+                {
+                    result = true;
+                }
+            }
+            return result;
+        }
+        /// <summary>
         /// This method prepare the MediaElement to play any content (video, audio, pictures): SMOOTH, DASH, HLS, MP4, WMV, MPEG2-TS, JPG, PNG,...
         /// </summary>
         private async void PlayCurrentUrl()
@@ -3987,6 +4004,16 @@ namespace AudioVideoPlayer.Pages.Player
                     }
                     else
                     {
+                        // if DASH 
+                        if(IsDash(Content)&&!string.IsNullOrEmpty(PlayReadyLicenseUrl)&&PlayReadyLicenseUrl.ToLower().StartsWith("http"))
+                        {
+                            bool PRresult = await GetCachePlayReadyLicense(new Uri(PlayReadyLicenseUrl), PlayReadyChallengeCustomData, new Guid("d5840c1c-c4e9-4151-a3f0-9d12f4d2a8d5"));
+                            if (PRresult == true)
+                            {
+                                 LogMessage("PlayReady DASH ProActive license acquisition successful" );
+                            }
+                        }
+
                         // If DASH, HLS or SMOOTH (OS version >= RS4) content
                         // Create the AdaptiveMediaSource
                         Windows.Media.Streaming.Adaptive.AdaptiveMediaSourceCreationResult result = null;
@@ -4708,7 +4735,7 @@ namespace AudioVideoPlayer.Pages.Player
         /// </summary>
         private void AdaptiveMediaSource_DownloadFailed(Windows.Media.Streaming.Adaptive.AdaptiveMediaSource sender, Windows.Media.Streaming.Adaptive.AdaptiveMediaSourceDownloadFailedEventArgs args)
         {
-            LogMessage("DownloadRequested failed for uri: " + args.ResourceUri.ToString());
+                LogMessage("DownloadRequested failed for uri: " + args.ResourceUri.ToString());
         }
 
         /// <summary>
@@ -5029,6 +5056,116 @@ namespace AudioVideoPlayer.Pages.Player
                 return DateTime.MinValue;
             }
             return DateTime.MinValue;
+        }
+        /// <summary>
+        /// GetCachePlayReadyLicense
+        /// Return true if get the PlayReady license successfully 
+        /// </summary>
+        /// <param name="PlayReadyLicenseUri">PlayReady server Uri</param>
+        /// <param name="PlayReadyChallengeCustomData">PlayReady custom Data</param>
+        /// <param name="DefaultContentKeyId">Content KeyId</param>
+        /// <returns>true if license acquired</returns>
+        async System.Threading.Tasks.Task<bool> GetCachePlayReadyLicense(Uri PlayReadyLicenseUri, string PlayReadyChallengeCustomData, Guid DefaultContentKeyId)
+        {
+            bool bResult = false;
+            int AttemptCount = 2;
+            while ((AttemptCount-- > 0) && (bResult == false))
+            {
+
+                try
+                {
+                    Windows.Media.Protection.PlayReady.PlayReadyLicenseAcquisitionServiceRequest licenseRequest = new Windows.Media.Protection.PlayReady.PlayReadyLicenseAcquisitionServiceRequest();
+                    if (licenseRequest != null)
+                    {
+                        if (!string.IsNullOrEmpty(PlayReadyChallengeCustomData) && (PlayReadyChallengeCustomData!="null"))
+                        {
+                            // disable Base64String encoding
+                            //System.Text.UTF8Encoding encoding = new System.Text.UTF8Encoding();
+                            //byte[] b = encoding.GetBytes(PlayReadyChallengeCustomData);
+                            //licenseRequest.ChallengeCustomData = Convert.ToBase64String(b, 0, b.Length);
+                            licenseRequest.ChallengeCustomData = PlayReadyChallengeCustomData;
+                        }
+                        licenseRequest.ContentHeader = new Windows.Media.Protection.PlayReady.PlayReadyContentHeader(
+                                                    DefaultContentKeyId,
+                                                    string.Empty,
+                                                    Windows.Media.Protection.PlayReady.PlayReadyEncryptionAlgorithm.Aes128Ctr,
+                                                    PlayReadyLicenseUri,
+                                                    null,
+                                                    string.Empty,
+                                                    Guid.Empty);
+                        Windows.Media.Protection.PlayReady.PlayReadySoapMessage soapMessage = licenseRequest.GenerateManualEnablingChallenge();
+
+                        byte[] messageBytes = soapMessage.GetMessageBody();
+                        Windows.Web.Http.IHttpContent httpContent = new Windows.Web.Http.HttpBufferContent(messageBytes.AsBuffer());
+                        IPropertySet propertySetHeaders = soapMessage.MessageHeaders;
+
+                        foreach (string strHeaderName in propertySetHeaders.Keys)
+                        {
+                            string strHeaderValue = propertySetHeaders[strHeaderName].ToString();
+
+                            // The Add method throws an ArgumentException try to set protected headers like "Content-Type"
+                            // so set it via "ContentType" property
+                            if (strHeaderName.Equals("Content-Type", StringComparison.OrdinalIgnoreCase))
+                                httpContent.Headers.ContentType = Windows.Web.Http.Headers.HttpMediaTypeHeaderValue.Parse(strHeaderValue);
+                            else
+                                httpContent.Headers.TryAppendWithoutValidation(strHeaderName.ToString(), strHeaderValue);
+                        }
+
+                        // Add custom header for license acquisition
+                        SetHttpHeaders(httpHeaders, httpContent.Headers);
+                        Windows.Web.Http.Headers.HttpCredentialsHeaderValue Authorization = null;
+                        if ((httpHeaders != null) && (httpHeaders.ContainsKey("Authorization")))
+                        {
+
+                            string s = httpHeaders["Authorization"];
+                            if (s.StartsWith("bearer=", StringComparison.OrdinalIgnoreCase))
+                            {
+                                string Token = s.Substring(7);
+                                Authorization = new Windows.Web.Http.Headers.HttpCredentialsHeaderValue("Bearer", Token);
+                            }
+                        }
+                        CommonLicenseRequest licenseAcquision = new CommonLicenseRequest();
+                        Windows.Web.Http.IHttpContent responseHttpContent = await licenseAcquision.AcquireLicense(PlayReadyLicenseUri, Authorization, httpContent);
+
+                        if (responseHttpContent != null)
+                        {
+                            var buffer = await responseHttpContent.ReadAsBufferAsync();
+                            byte[] b = buffer.ToArray();
+                            string s = buffer.ToString();
+
+                            Exception exResult = licenseRequest.ProcessManualEnablingResponse(buffer.ToArray());
+                            if (exResult == null)
+                            {
+                                bResult = true;
+                            }
+                            else
+                                throw exResult;
+                        }
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    LogMessage("Exception while acquiring the PlayReady license: " + e.Message);
+                    bResult = false;
+                    System.Diagnostics.Debug.WriteLine("GetPlayReadyLicense Exception: " + e.Message);
+                    if (e.HResult == MSPR_E_NEEDS_INDIVIDUALIZATION)
+                    {
+                        System.Diagnostics.Debug.WriteLine("GetPlayReadyLicense Individualisation required ");
+                        if (await ProActiveIndivRequest() == true)
+                            // Let's try to get the license again
+                            System.Diagnostics.Debug.WriteLine("GetPlayReadyLicense Individualisation successfull");
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine("GetPlayReadyLicense Individualisation failed");
+                            break;
+                        }
+                    }
+                    else
+                        break;
+                }
+            }
+            return bResult;
         }
         #endregion
 

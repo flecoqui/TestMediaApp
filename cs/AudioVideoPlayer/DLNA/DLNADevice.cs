@@ -106,6 +106,20 @@ namespace AudioVideoPlayer.DLNA
             }
             return false;
         }
+        public bool IsSamsungDevice()
+        {
+            if (!string.IsNullOrEmpty(Server))
+            {
+                if (Server.IndexOf("Samsung") > 0)
+                    return true;
+            }
+            if (!string.IsNullOrEmpty(Version))
+            {
+                if (Version.IndexOf("Samsung") > 0)
+                    return true;
+            }
+            return false;
+        }
 
         public async System.Threading.Tasks.Task<List<DLNAService>> GetDNLAServices()
         {
@@ -709,10 +723,116 @@ namespace AudioVideoPlayer.DLNA
 
             return result;
         }
-
-        private async System.Threading.Tasks.Task<bool> GetPosition(string ControlURL, int Index)
+        private async System.Threading.Tasks.Task<DLNATransportSettings> GetTransportSettings(string ControlURL, int Index)
         {
-            bool result = false;
+            DLNATransportSettings result = null;
+            try
+            {
+                StringBuilder sb = new StringBuilder(1024);
+
+                sb.Append(XMLHead);
+                sb.Append("<u:GetTransportSettings xmlns:u=\"urn:schemas-upnp-org:service:AVTransport:1\"><InstanceID>");
+                sb.Append(Index.ToString());
+                sb.Append("</InstanceID></u:GetTransportSettings>\r\n");
+                sb.Append(XMLFoot);
+
+                HttpClient httpClient = new HttpClient();
+
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Cache-Control", "no-cache");
+                // httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Connection", "Close");
+                // httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Pragma", "no-cache");
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("User-Agent", "Microsoft-Windows/6.3 UPnP/1.0 Microsoft-DLNA DLNADOC/1.50");
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("FriendlyName.DLNA.ORG", AudioVideoPlayer.Information.SystemInformation.DeviceName);
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Content-Type", "text/xml; charset=\"utf-8\"");
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("SOAPAction", "\"urn:schemas-upnp-org:service:AVTransport:1#GetTransportSettings\"");
+                //httpClient.DefaultRequestHeaders.Remove("Accept-Encoding");
+
+                Windows.Web.Http.HttpStringContent httpContent = new Windows.Web.Http.HttpStringContent(sb.ToString());
+                httpContent.Headers.Remove("Content-Type");
+                httpContent.Headers.TryAppendWithoutValidation("Content-Type", "text/xml; charset=utf-8");
+                //httpContent.Headers.Remove("Accept-Encoding");
+
+                string prefix = GetHttpPrefix(this.Location);
+                if (!string.IsNullOrEmpty(prefix))
+                {
+                    Windows.Web.Http.HttpResponseMessage response = await httpClient.PostAsync(new Uri(prefix + ControlURL), httpContent);
+                    response.EnsureSuccessStatusCode();
+                    string Response = await response.Content.ReadAsStringAsync();
+                    if (!string.IsNullOrEmpty(Response))
+                    {
+                        result = new DLNATransportSettings();
+                        if(result != null)
+                            result.PlayMode = DLNAService.GetXMLContent(Response, "PlayMode");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while sending GetTransportSettings: " + ex.Message);
+                result = null;
+            }
+
+            return result;
+        }
+        private async System.Threading.Tasks.Task<DLNATransportInfo> GetTransportInfo(string ControlURL, int Index)
+        {
+            DLNATransportInfo result = null;
+            try
+            {
+                StringBuilder sb = new StringBuilder(1024);
+
+                sb.Append(XMLHead);
+                sb.Append("<u:GetTransportInfo xmlns:u=\"urn:schemas-upnp-org:service:AVTransport:1\"><InstanceID>");
+                sb.Append(Index.ToString());
+                sb.Append("</InstanceID></u:GetTransportInfo>\r\n");
+                sb.Append(XMLFoot);
+
+                HttpClient httpClient = new HttpClient();
+
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Cache-Control", "no-cache");
+                // httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Connection", "Close");
+                // httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Pragma", "no-cache");
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("User-Agent", "Microsoft-Windows/6.3 UPnP/1.0 Microsoft-DLNA DLNADOC/1.50");
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("FriendlyName.DLNA.ORG", AudioVideoPlayer.Information.SystemInformation.DeviceName);
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Content-Type", "text/xml; charset=\"utf-8\"");
+                httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("SOAPAction", "\"urn:schemas-upnp-org:service:AVTransport:1#GetTransportInfo\"");
+                //httpClient.DefaultRequestHeaders.Remove("Accept-Encoding");
+
+                Windows.Web.Http.HttpStringContent httpContent = new Windows.Web.Http.HttpStringContent(sb.ToString());
+                httpContent.Headers.Remove("Content-Type");
+                httpContent.Headers.TryAppendWithoutValidation("Content-Type", "text/xml; charset=utf-8");
+                //httpContent.Headers.Remove("Accept-Encoding");
+
+                string prefix = GetHttpPrefix(this.Location);
+                if (!string.IsNullOrEmpty(prefix))
+                {
+                    Windows.Web.Http.HttpResponseMessage response = await httpClient.PostAsync(new Uri(prefix + ControlURL), httpContent);
+                    response.EnsureSuccessStatusCode();
+                    string Response = await response.Content.ReadAsStringAsync();
+                    if (!string.IsNullOrEmpty(Response))
+                    {
+                        result = new DLNATransportInfo();
+                        if (result != null)
+                        {
+                            result.CurrentTransportState = DLNAService.GetXMLContent(Response, "CurrentTransportState");
+                            result.CurrentTransportStatus = DLNAService.GetXMLContent(Response, "CurrentTransportStatus");
+                            result.CurrentSpeed = DLNAService.GetXMLContent(Response, "CurrentSpeed");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while sending GetTransportInfo: " + ex.Message);
+                result = null;
+            }
+
+            return result;
+        }
+
+        private async System.Threading.Tasks.Task<DLNAPositionInfo> GetPositionInfo(string ControlURL, int Index)
+        {
+            DLNAPositionInfo result = null;
             try
             {
                 StringBuilder sb = new StringBuilder(1024);
@@ -747,27 +867,33 @@ namespace AudioVideoPlayer.DLNA
                     string Response = await response.Content.ReadAsStringAsync();
                     if (!string.IsNullOrEmpty(Response))
                     {
-                        int Track = 0;
-                        TimeSpan Duration;
-                        TimeSpan Position;
-                        string Loc = DLNAService.GetXMLContent(Response, "Track");
-                        if(!string.IsNullOrEmpty(Loc))
-                            int.TryParse(Loc, out Track);
-                        Loc = DLNAService.GetXMLContent(Response, "TrackDuration");
-                        if (!string.IsNullOrEmpty(Loc))
-                            TimeSpan.TryParse(Loc, out Duration);
-                        string Uri = DLNAService.GetXMLContent(Response, "TrackURI");
-                        Loc = DLNAService.GetXMLContent(Response, "RelTime");
-                        if (!string.IsNullOrEmpty(Loc))
-                            TimeSpan.TryParse(Loc, out Position);
-                        result = true;
+                        result = new DLNAPositionInfo();
+                        if (result != null)
+                        {
+                            int Track = 0;
+                            TimeSpan Duration;
+                            TimeSpan Position;
+                            string Loc = DLNAService.GetXMLContent(Response, "Track");
+                            if (!string.IsNullOrEmpty(Loc))
+                                int.TryParse(Loc, out Track);
+                            result.Track = Track;
+                            Loc = DLNAService.GetXMLContent(Response, "TrackDuration");
+                            if (!string.IsNullOrEmpty(Loc))
+                                TimeSpan.TryParse(Loc, out Duration);
+                            result.TrackDuration = Duration;
+                            result.TrackUri = DLNAService.GetXMLContent(Response, "TrackURI");
+                            Loc = DLNAService.GetXMLContent(Response, "RelTime");
+                            if (!string.IsNullOrEmpty(Loc))
+                                TimeSpan.TryParse(Loc, out Position);
+                            result.RelTime = Position;
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("Exception while sending PlayTo: " + ex.Message);
-                result = false;
+                System.Diagnostics.Debug.WriteLine("Exception while sending GetPositionInfo: " + ex.Message);
+                result = null;
             }
 
             return result;
@@ -822,9 +948,9 @@ namespace AudioVideoPlayer.DLNA
 
             return result;
         }
-        private async System.Threading.Tasks.Task<bool> GetMediaInfo(string ControlURL, int Index)
+        private async System.Threading.Tasks.Task<DLNAMediaInfo> GetMediaInfo(string ControlURL, int Index)
         {
-            bool result = false;
+            DLNAMediaInfo result = null;
             try
             {
                 StringBuilder sb = new StringBuilder(1024);
@@ -859,24 +985,31 @@ namespace AudioVideoPlayer.DLNA
                     string Response = await response.Content.ReadAsStringAsync();
                     if (!string.IsNullOrEmpty(Response))
                     {
-                        int NumberTrack = 0;
-                        TimeSpan Duration;
-                        string Loc = DLNAService.GetXMLContent(Response, "NrTracks");
-                        if (!string.IsNullOrEmpty(Loc))
-                            int.TryParse(Loc, out NumberTrack);
-                        Loc = DLNAService.GetXMLContent(Response, "MediaDuration");
-                        if (!string.IsNullOrEmpty(Loc))
-                            TimeSpan.TryParse(Loc, out Duration);
-                        string CurrentUri = DLNAService.GetXMLContent(Response, "CurrentURI");
-                        string NextUri = DLNAService.GetXMLContent(Response, "NextURI");
-                        result = true;
+                        result = new DLNAMediaInfo();
+                        if (result != null)
+                        {
+                            int NumberTrack = 0;
+                            TimeSpan Duration;
+                            string Loc = DLNAService.GetXMLContent(Response, "NrTracks");
+                            if (!string.IsNullOrEmpty(Loc))
+                                int.TryParse(Loc, out NumberTrack);
+                            result.NrTrack = NumberTrack;
+                            Loc = DLNAService.GetXMLContent(Response, "MediaDuration");
+                            if (!string.IsNullOrEmpty(Loc))
+                                TimeSpan.TryParse(Loc, out Duration);
+                            result.MediaDuration = Duration;
+                            result.CurrentUri = DLNAService.GetXMLContent(Response, "CurrentURI");
+                            result.NextUri = DLNAService.GetXMLContent(Response, "NextURI");
+                            result.CurrentUriMetaData = DLNAService.GetXMLContent(Response, "CurrentURIMetaData");
+                            result.NextUriMetaData = DLNAService.GetXMLContent(Response, "NextURIMetaData");
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("Exception while sending PlayTo: " + ex.Message);
-                result = false;
+                System.Diagnostics.Debug.WriteLine("Exception while sending GetMediaInfo: " + ex.Message);
+                result = null;
             }
 
             return result;
@@ -989,9 +1122,9 @@ namespace AudioVideoPlayer.DLNA
             }
             return result;
         }
-        public async System.Threading.Tasks.Task<bool> GetMediaInfo()
+        public async System.Threading.Tasks.Task<DLNAMediaInfo> GetMediaInfo()
         {
-            bool result = false;
+            DLNAMediaInfo result = null;
             DLNAService ds = await GetDLNAService();
             if (ds != null)
             {
@@ -1009,13 +1142,33 @@ namespace AudioVideoPlayer.DLNA
             }
             return result;
         }
-        public async System.Threading.Tasks.Task<bool> GetPosition()
+        public async System.Threading.Tasks.Task<DLNAPositionInfo> GetPositionInfo()
         {
-            bool result = false;
+            DLNAPositionInfo result = null;
             DLNAService ds = await GetDLNAService();
             if (ds != null)
             {
-                result = await GetPosition(ds.ControlURL, 0);
+                result = await GetPositionInfo(ds.ControlURL, 0);
+            }
+            return result;
+        }
+        public async System.Threading.Tasks.Task<DLNATransportInfo> GetTransportInfo()
+        {
+            DLNATransportInfo result = null;
+            DLNAService ds = await GetDLNAService();
+            if (ds != null)
+            {
+                result = await GetTransportInfo(ds.ControlURL, 0);
+            }
+            return result;
+        }
+        public async System.Threading.Tasks.Task<DLNATransportSettings> GetTransportSettings()
+        {
+            DLNATransportSettings result = null;
+            DLNAService ds = await GetDLNAService();
+            if (ds != null)
+            {
+                result = await GetTransportSettings(ds.ControlURL, 0);
             }
             return result;
         }
