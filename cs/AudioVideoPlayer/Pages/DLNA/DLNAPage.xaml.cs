@@ -185,7 +185,7 @@ namespace AudioVideoPlayer.Pages.DLNA
         /// <summary>
         /// Method LoadingData which loads the Device JSON playlist file
         /// </summary>
-        async System.Threading.Tasks.Task<bool> LoadingDevicePlaylist(string path)
+        async System.Threading.Tasks.Task<bool> LoadingDevicePlaylist(string name, string path)
         {
             try
             {
@@ -195,11 +195,17 @@ namespace AudioVideoPlayer.Pages.DLNA
                 MediaDataSource.Clear();
                 LogMessage(string.IsNullOrEmpty(path) ? "Loading default Device playlist" : "Loading Device playlist :" + path);
                 DefaultDevicePlaylist = await MediaDataSource.GetGroupAsync(path, "audio_video_picture");
-                if ((DefaultDevicePlaylist != null) && (DefaultDevicePlaylist.Items.Count > 0))
+                if (DefaultDevicePlaylist == null)
+                {
+                    await Helpers.MediaHelper.CreateEmptyPlaylist(name, path);
+                    DefaultDevicePlaylist = await MediaDataSource.GetGroupAsync(path, "audio_video_picture");
+                }
+                if (DefaultDevicePlaylist != null) 
                 {
                     LogMessage("Loading Device playlist successful with " + DefaultDevicePlaylist.Items.Count.ToString() + " items");
                     comboDeviceStream.DataContext = DefaultDevicePlaylist.Items;
-                    comboDeviceStream.SelectedIndex = 0;
+                    if(DefaultDevicePlaylist.Items.Count > 0)
+                        comboDeviceStream.SelectedIndex = 0;
                     return true;
                 }
             }
@@ -239,6 +245,9 @@ namespace AudioVideoPlayer.Pages.DLNA
             comboStream.SelectionChanged += ComboStream_SelectionChanged;
             // Logs updated
             logs.TextChanged += Logs_TextChanged;
+
+            if (comboDeviceInput.Items.Count > 0)
+                comboDeviceInput.SelectedIndex = 0;
 
             // Select first item in the combo box to select multicast option
             comboDevice.DataContext = ViewModels.StaticSettingsViewModel.DLNADeviceList;
@@ -476,7 +485,7 @@ namespace AudioVideoPlayer.Pages.DLNA
         }
 
         Status PageStatus = Status.DeviceSelected;
-        private void comboDevice_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void comboDevice_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
             
@@ -484,7 +493,15 @@ namespace AudioVideoPlayer.Pages.DLNA
             {
                 AudioVideoPlayer.DLNA.DLNADevice p = (AudioVideoPlayer.DLNA.DLNADevice)comboDevice.SelectedItem;
                 if (p != null)
+                {
+                    string name = p.FriendlyName.Replace(' ','_') + "_" + p.Ip ;
+                    string path = await Helpers.MediaHelper.GetPlaylistPath(name);
+                    await LoadingDevicePlaylist(name, path);
+                    if (comboDeviceInput.Items.Count > 0)
+                        comboDeviceInput.SelectedIndex = 0;
+
                     PageStatus = Status.DeviceSelected;
+                }
                 else
                     PageStatus = Status.NoDeviceSelected;
             }
@@ -596,6 +613,17 @@ namespace AudioVideoPlayer.Pages.DLNA
                 AudioVideoPlayer.DLNA.DLNADevice hs = comboDevice.SelectedItem as AudioVideoPlayer.DLNA.DLNADevice;
                 if(hs!=null)
                 {
+                    MediaItem item = comboStream.SelectedItem as AudioVideoPlayer.DataModel.MediaItem;
+                    if (item != null)
+                    {
+                        DefaultDevicePlaylist.Items.Add(item);
+                        comboDeviceStream.DataContext = DefaultDevicePlaylist.Items;
+                        if(DefaultDevicePlaylist.Items.Count>0)
+                            comboDeviceStream.SelectedIndex = 0;
+                        string name = hs.FriendlyName.Replace(' ', '_') + "_" + hs.Ip;
+                        string path = await Helpers.MediaHelper.GetPlaylistPath(name);
+                        await Helpers.MediaHelper.SavePlaylist(name, path, DefaultDevicePlaylist.Items);
+                    }
                     LogMessage("Play url " + mediaUri.Text + " on Speaker: " + hs.FriendlyName);
                     string Codec = GetCodec(mediaUri.Text);
                     string CurrentUrl = mediaUri.Text;
@@ -634,6 +662,19 @@ namespace AudioVideoPlayer.Pages.DLNA
                 AudioVideoPlayer.DLNA.DLNADevice hs = comboDevice.SelectedItem as AudioVideoPlayer.DLNA.DLNADevice;
                 if (hs != null)
                 {
+                    MediaItem item = comboStream.SelectedItem as AudioVideoPlayer.DataModel.MediaItem;
+                    if (item != null)
+                    {
+                        DefaultDevicePlaylist.Items.Add(item);
+                        comboDeviceStream.DataContext = DefaultDevicePlaylist.Items;
+                        if (DefaultDevicePlaylist.Items.Count > 0)
+                            comboDeviceStream.SelectedIndex = 0;
+
+                        string name = hs.FriendlyName.Replace(' ', '_') + "_" + hs.Ip;
+                        string path = await Helpers.MediaHelper.GetPlaylistPath(name);
+                        await Helpers.MediaHelper.SavePlaylist(name, path, DefaultDevicePlaylist.Items);
+                    }
+
                     LogMessage("Play url " + mediaUri.Text + " on Speaker: " + hs.FriendlyName);
                     string Codec = GetCodec(mediaUri.Text);
                     

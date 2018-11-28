@@ -22,6 +22,7 @@ using Windows.Storage.Streams;
 using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
+using System.Collections.ObjectModel;
 
 namespace AudioVideoPlayer.Helpers
 {
@@ -141,6 +142,35 @@ namespace AudioVideoPlayer.Helpers
                                 name = fileName + "_" + index.ToString() + (string.IsNullOrEmpty(ext) ? "" : ext);
                                 index++;
                             }
+                            return System.IO.Path.Combine(folder.Path, name);
+                        }
+                    }
+                }
+            }
+            catch (Exception Ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while creating file " + filePath + " : " + Ex.Message);
+            }
+            return null;
+
+        }
+        public static async System.Threading.Tasks.Task<string> GetPlaylistPath(string filePath)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                    if (!string.IsNullOrEmpty(fileName))
+                    {
+
+                        string ext = ".tma";
+                        Windows.Storage.StorageFile f = null;
+                        string name = fileName + ext;
+
+                        StorageFolder folder = await GetPlaylistsFolder();
+                        if (folder != null)
+                        {
                             return System.IO.Path.Combine(folder.Path, name);
                         }
                     }
@@ -483,7 +513,93 @@ namespace AudioVideoPlayer.Helpers
             }
             return counter;
         }
+        public static async System.Threading.Tasks.Task<int> CreateEmptyPlaylist(string PlaylistName, string outputFile)
+        {
+            try
+            {
+                int counter = 0;
+                Windows.Storage.StorageFile File = await CreateFile(outputFile);
+                if (File != null)
+                {
+                    Stream stream = await File.OpenStreamForWriteAsync();
+                    if (stream != null)
+                    {
+                        string header = headerStart + PlaylistName + headerEnd;
 
+                        AppendText(stream, header);
+                        AppendText(stream, footer);
+                        stream.Flush();
+                        System.Diagnostics.Debug.WriteLine(counter.ToString() + " files discovered on local storage\n");
+                        return counter;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while discovering media file on local hard drive:" + ex.Message);
+            }
+            return -1;
+        }
+        public static async System.Threading.Tasks.Task<int> SavePlaylist(string PlaylistName, string outputFile, ObservableCollection<DataModel.MediaItem> list)
+        {
+            try
+            {
+                int counter = 0;
+                Windows.Storage.StorageFile File = await CreateFile(outputFile);
+                if (File != null)
+                {
+                    Stream stream = await File.OpenStreamForWriteAsync();
+                    if (stream != null)
+                    {
+                        int SlideShowPeriod = 10;
+                        string header = headerStart + PlaylistName + headerEnd;
+                        string ext = string.Empty;
+                        AppendText(stream, header);
+                        foreach(var item in list)
+                        {
+                            if (counter == 0)
+                            {
+                                string s = "{";
+                                ext = GetExtension(item.Content);
+                                if (IsPictureFile(ext))
+                                    s += string.Format(pictureItem, counter.ToString(), item.Title, item.Content, item.PosterContent, SlideShowPeriod.ToString());
+                                else if (IsMusicFile(ext))
+                                    s += string.Format(musicItem, counter.ToString(), item.Title, item.Content, item.PosterContent);
+                                else
+                                    s += string.Format(videoItem, counter.ToString(), item.Title, item.Content, item.PosterContent);
+                                s += "}";
+
+                                AppendText(stream, s);
+                            }
+                            else
+                            {
+                                string s = ",\r\n";
+                                s += "{";
+                                ext = GetExtension(item.Content);
+                                if (IsPictureFile(ext))
+                                    s += string.Format(pictureItem, counter.ToString(), item.Title, item.Content, item.PosterContent, SlideShowPeriod.ToString());
+                                else if (IsMusicFile(ext))
+                                    s += string.Format(musicItem, counter.ToString(), item.Title, item.Content, item.PosterContent);
+                                else
+                                    s += string.Format(videoItem, counter.ToString(), item.Title, item.Content, item.PosterContent);
+                                s += "}";
+                                AppendText(stream, s);
+                            }
+                            counter++;
+                        }
+                        AppendText(stream, footer);
+                        stream.Flush();
+                        System.Diagnostics.Debug.WriteLine(counter.ToString() + " files discovered on local storage\n");
+                        return counter;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while discovering media file on local hard drive:" + ex.Message);
+            }
+            return -1;
+        }
         public static async System.Threading.Tasks.Task<int> CreateLocalPlaylist(string PlaylistName, string folderName, string extensions, bool bCreateThumbnails , int SlideShowPeriod , string outputFile )
         {
             try
