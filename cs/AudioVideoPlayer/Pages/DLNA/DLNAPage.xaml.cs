@@ -131,15 +131,16 @@ namespace AudioVideoPlayer.Pages.DLNA
             }
 
         }
-
+        // MediaDataGroup used to load the Device playlist
+        MediaDataGroup DefaultDevicePlaylist = null;
         // MediaDataGroup used to load the playlist
-        MediaDataGroup audio_video = null;
+        MediaDataGroup DefaultPlaylist = null;
         /// <summary>
         /// Method LoadingData which loads the JSON playlist file
         /// </summary>
         bool IsDataLoaded()
         {
-            if ((audio_video != null) && (audio_video.Items.Count > 0))
+            if ((DefaultPlaylist != null) && (DefaultPlaylist.Items.Count > 0))
                 return true;
             return false;
         }
@@ -158,11 +159,11 @@ namespace AudioVideoPlayer.Pages.DLNA
 
                 MediaDataSource.Clear();
                 LogMessage(string.IsNullOrEmpty(path) ? "Loading default playlist" : "Loading playlist :" + path);
-                audio_video = await MediaDataSource.GetGroupAsync(path, "audio_video_picture");
-                if ((audio_video != null) && (audio_video.Items.Count > 0))
+                DefaultPlaylist = await MediaDataSource.GetGroupAsync(path, "audio_video_picture");
+                if ((DefaultPlaylist != null) && (DefaultPlaylist.Items.Count > 0))
                 {
-                    LogMessage("Loading playlist successful with " + audio_video.Items.Count.ToString() + " items");
-                    this.defaultViewModel = audio_video.Items;
+                    LogMessage("Loading playlist successful with " + DefaultPlaylist.Items.Count.ToString() + " items");
+                    this.defaultViewModel = DefaultPlaylist.Items;
                     comboStream.DataContext = this.defaultViewModel;
                     comboStream.SelectedIndex = 0;
                     return true;
@@ -181,7 +182,40 @@ namespace AudioVideoPlayer.Pages.DLNA
             }
             return false;
         }
+        /// <summary>
+        /// Method LoadingData which loads the Device JSON playlist file
+        /// </summary>
+        async System.Threading.Tasks.Task<bool> LoadingDevicePlaylist(string path)
+        {
+            try
+            {
+                Shell.Current.DisplayWaitRing = true;
+                UpdateControls(true);
 
+                MediaDataSource.Clear();
+                LogMessage(string.IsNullOrEmpty(path) ? "Loading default Device playlist" : "Loading Device playlist :" + path);
+                DefaultDevicePlaylist = await MediaDataSource.GetGroupAsync(path, "audio_video_picture");
+                if ((DefaultDevicePlaylist != null) && (DefaultDevicePlaylist.Items.Count > 0))
+                {
+                    LogMessage("Loading Device playlist successful with " + DefaultDevicePlaylist.Items.Count.ToString() + " items");
+                    comboDeviceStream.DataContext = DefaultDevicePlaylist.Items;
+                    comboDeviceStream.SelectedIndex = 0;
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogMessage("Loading Device playlist failed: " + ex.Message);
+
+            }
+            finally
+            {
+                Shell.Current.DisplayWaitRing = false;
+                UpdateControls();
+
+            }
+            return false;
+        }
         /// <summary>
         /// Invoked when this page is about to be displayed in a Frame.
         /// </summary>
@@ -475,7 +509,7 @@ namespace AudioVideoPlayer.Pages.DLNA
             {
                 if(await StartDiscovery() == true)
                 {
-                    LogMessage("Start Discovering Heos Speaker ...");
+                    LogMessage("Start Discovering DLNA/UPNP Devices ...");
                     DiscoverDeviceButton.Content = "\xE894";
                 }
                 else
@@ -483,7 +517,7 @@ namespace AudioVideoPlayer.Pages.DLNA
             }
             else
             {
-                LogMessage("Stop Discovering Heos Speaker ...");
+                LogMessage("Stop Discovering DLNA/UPNP Devices ...");
                 StopDiscovery();
                 DiscoverDeviceButton.Content = "\xE895";
             }

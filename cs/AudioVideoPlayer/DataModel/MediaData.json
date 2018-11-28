@@ -291,6 +291,34 @@
           "BackgroundAudio": false
         },
         {
+          "UniqueId": "video_dash_ms_http_1",
+          "Comment": "#1",
+          "Title": "DASH Microsoft PlayReady VOD sample ",
+          "ImagePath": "ms-appx:///Assets/DASH.png",
+          "Description": "DASH Microsoft PlayReady VOD sample over HTTP",
+          "Content": "http://profficialsite.origin.mediaservices.windows.net/c51358ea-9a5e-4322-8951-897d640fdfd7/tearsofsteel_4k.ism/manifest(format=mpd-time-csf)",
+          "PosterContent": "",
+          "Start": "0",
+          "Duration": "0",
+          "PlayReadyUrl": "http://playready.directtaps.net/pr/svc/rightsmanager.asmx?PlayRight=1&UseSimpleNonPersistentLicense=1",
+          "PlayReadyCustomData": "null",
+          "BackgroundAudio": false
+        },
+        {
+          "UniqueId": "video_dash_ms_http_2",
+          "Comment": "#1",
+          "Title": "DASH Microsoft PlayReady LIVE sample ",
+          "ImagePath": "ms-appx:///Assets/DASH.png",
+          "Description": "DASH Microsoft PlayReady LIVE sample over HTTP",
+          "Content": "http://profficialsite.origin.mediaservices.windows.net/9cc5e871-68ec-42c2-9fc7-fda95521f17d/dayoneplayready.ism/manifest(format=mpd-time-csf)",
+          "PosterContent": "",
+          "Start": "0",
+          "Duration": "0",
+          "PlayReadyUrl": "http://playready.directtaps.net/pr/svc/rightsmanager.asmx?PlayRight=1&UseSimpleNonPersistentLicense=1",
+          "PlayReadyCustomData": "null",
+          "BackgroundAudio": false
+        },
+        {
           "UniqueId": "video_wmv_http_1",
           "Comment": "#1",
           "Title": "WMV Video over HTTP 1",

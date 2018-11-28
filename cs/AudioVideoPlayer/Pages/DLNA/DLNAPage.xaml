@@ -153,10 +153,47 @@
                         <StackPanel Orientation="Horizontal">
                             <Button IsEnabled="True" Content="&#xE768;" x:Name="playButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Play the current content"  FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Play_Click" TabIndex="10" />
                             <Button IsEnabled="True" Content="&#xE71A;" x:Name="stopButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Stop the current content"   FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Stop_Click"/>
+                            <TextBlock Margin="5,0,0,0" Text="Device Playlist:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <ComboBox  x:Name="comboDeviceStream" Width="300"  
+                                       ToolTipService.ToolTip="Playlist associated with the current Device"    
+                                       HorizontalAlignment="Stretch" 
+                                       ItemsSource="{Binding}" 
+                                       IsTabStop="True"  
+                                       TabIndex="0">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal"   >
+                                            <TextBlock Text="{Binding Title}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
                             <Button IsEnabled="True" Content="&#xE74F;" x:Name="muteButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Mute the audio" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Mute_Click" TabIndex="6"/>
                             <Button IsEnabled="True" Content="&#xE767;" x:Name="volumeUpButton"   Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Volume up" FontFamily="Segoe MDL2 Assets" FontSize="20" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="VolumeUp_Click" TabIndex="7" />
                             <Button IsEnabled="True" Content="&#xE767;" x:Name="volumeDownButton"    Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Volume down"  FontFamily="Segoe MDL2 Assets" FontSize="10" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="VolumeDown_Click" TabIndex="8"/>
+                            <TextBlock Margin="5,0,0,0" Text="Inputs:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
                         </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Button IsEnabled="True" Content="&#xE772;" x:Name="inputButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Select the input for the current Device" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Mute_Click" TabIndex="6"/>
+                            <ComboBox  x:Name="comboDeviceInput" Width="252"  
+                                       ToolTipService.ToolTip="Select the device input"    
+                                       HorizontalAlignment="Stretch" 
+                                       ItemsSource="{x:Bind ViewModelLocator.Settings.DeviceInputList,Mode=OneWay}" 
+                                       SelectedValuePath="Name"
+                                       IsTabStop="True"  
+                                       TabIndex="0">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal"   >
+                                            <TextBlock Text="{Binding Title}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>                        </StackPanel>
                     </StackPanel>
                 </Grid>
             </StackPanel>

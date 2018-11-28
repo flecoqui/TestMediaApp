@@ -20,13 +20,13 @@ using AudioVideoPlayer.DataModel;
 
 namespace AudioVideoPlayer.Models
 {
-    public class PlayList 
+    public class PlayList
     {
         public async static System.Threading.Tasks.Task<Models.PlayList> GetNewPlaylist(string path)
         {
             MediaDataSource.Clear();
             MediaDataGroup audio_video = await MediaDataSource.GetGroupAsync(path, "audio_video_picture");
-            if (audio_video != null) 
+            if (audio_video != null)
             {
                 Models.PlayList playlist = new Models.PlayList(path, audio_video.Title);
                 if (playlist != null)
@@ -96,4 +96,5 @@ namespace AudioVideoPlayer.Models
 
 
     }
+
 }

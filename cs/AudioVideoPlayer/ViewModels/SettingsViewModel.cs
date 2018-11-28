@@ -393,6 +393,14 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
+        public ObservableCollection<Models.DeviceInputList> DeviceInputList
+        {
+            get
+            {
+                return StaticSettingsViewModel.DeviceInputList;
+            }
+
+        }
         public string CurrentPlayListPath
         {
             get

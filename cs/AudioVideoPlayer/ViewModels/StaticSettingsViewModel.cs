@@ -667,7 +667,59 @@ namespace AudioVideoPlayer.ViewModels
             }
         }
 
+        // DeviceInputList Settings
+        private static ObservableCollection<Models.DeviceInputList> deviceInputList;
 
+        public static ObservableCollection<Models.DeviceInputList> DeviceInputList
+        {
+            get
+            {
+
+                if (deviceInputList == null) 
+                {
+
+                    deviceInputList = new ObservableCollection<Models.DeviceInputList>();
+                    if (deviceInputList != null)
+                    {
+                        
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux_in_1"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux_in_2"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux_in_3"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux_in_4"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux1"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux2"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux3"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux4"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux5"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux6"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux7"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/line_in_1"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/line_in_2"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/line_in_3"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/line_in_4"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/coax_in_1"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/coax_in_2"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/optical_in_1"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/optical_in_2"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/hdmi_in_1"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/hdmi_arc_1"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/cable_sat"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/dvd"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/bluray"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/game"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/mediaplayer"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/cd"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/tuner"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/hdradio"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/tvaudio"));
+                        deviceInputList.Add(new Models.DeviceInputList("inputs/phono"));
+                    }
+                }
+
+                return deviceInputList;
+            }
+
+        }
         // Playlist Settings
         private static ObservableCollection<Models.PlayList> playListList;
         private static string currentPlayListPath;

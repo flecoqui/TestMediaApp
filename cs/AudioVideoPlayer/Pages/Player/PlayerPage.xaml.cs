@@ -4599,8 +4599,17 @@ namespace AudioVideoPlayer.Pages.Player
 
         private async void AdaptiveMediaSource_DownloadRequested(Windows.Media.Streaming.Adaptive.AdaptiveMediaSource sender, Windows.Media.Streaming.Adaptive.AdaptiveMediaSourceDownloadRequestedEventArgs args)
         {
-            if(LogDownload)
-                LogMessage("DownloadRequested for uri: " + args.ResourceUri.ToString() + " type: " + args.ResourceType.ToString());
+            if (LogDownload)
+            {
+                string Extension = string.Empty;
+                if (args.Position != null)
+                    Extension += " Position: " + args.Position.ToString();
+                if (args.ResourceByteRangeOffset != null)
+                    Extension += " Offset: " + args.ResourceByteRangeOffset.ToString();
+                if (args.ResourceByteRangeLength!=null)
+                    Extension += " Length: "  + args.ResourceByteRangeLength.ToString();
+                LogMessage("DownloadRequested for uri: " + args.ResourceUri.ToString() + " type: " + args.ResourceType.ToString() + Extension);
+            }
 
             //
             // If the requested resource is a WEBVTT file
