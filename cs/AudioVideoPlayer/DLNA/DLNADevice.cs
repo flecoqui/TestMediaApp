@@ -57,6 +57,7 @@ namespace AudioVideoPlayer.DLNA
         public DLNADeviceStatus Status { get; set; }
         public string PlayerId { get; set; }
 
+        private DateTime LastConnectionTime = DateTime.MinValue;
         public List<DLNAService> ListDLNAServices { get; set; }
 
         public DLNADevice()
@@ -151,6 +152,21 @@ namespace AudioVideoPlayer.DLNA
             }
 
             return result;
+        }
+        public async System.Threading.Tasks.Task<bool> IsConnected()
+        {
+            DateTime d = DateTime.Now;
+            if((d-LastConnectionTime).TotalSeconds>3)
+            {
+                string s = await GetLocationContent();
+                if(!string.IsNullOrEmpty(s))
+                {
+                    LastConnectionTime = d;
+                    return true;
+                }
+                return false;
+            }
+            return true;
         }
         private async System.Threading.Tasks.Task<string> SendTelnetCommand(string cmd)
         {

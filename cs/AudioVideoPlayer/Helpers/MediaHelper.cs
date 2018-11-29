@@ -164,8 +164,7 @@ namespace AudioVideoPlayer.Helpers
                     if (!string.IsNullOrEmpty(fileName))
                     {
 
-                        string ext = ".tma";
-                        Windows.Storage.StorageFile f = null;
+                        string ext = ".tma";                        
                         string name = fileName + ext;
 
                         StorageFolder folder = await GetPlaylistsFolder();

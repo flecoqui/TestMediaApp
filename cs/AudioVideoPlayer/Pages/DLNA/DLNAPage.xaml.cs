@@ -74,9 +74,121 @@ namespace AudioVideoPlayer.Pages.DLNA
         {
 
             await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
-                 () =>
+                 async () =>
                  {
+                        comboPlayList.IsEnabled = true;
+                        comboStream.IsEnabled = true;
+                        mediaUri.IsEnabled = true;
+                        if((comboDevice.Items.Count>0) && (bDisable == false))
+                        {
+                            comboDevice.IsEnabled = true;
+                            if (comboDevice.SelectedItem is AudioVideoPlayer.DLNA.DLNADevice)
+                            {
+                                AudioVideoPlayer.DLNA.DLNADevice dd = comboDevice.SelectedItem as AudioVideoPlayer.DLNA.DLNADevice;
+                                if(dd!=null)
+                                {
+                                    comboDevice.IsEnabled = true;
+                                    DeviceName.IsEnabled = true;
+                                    DeviceIPAddress.IsEnabled = true;
+                                    
+                                    displayPlaylistButton.IsEnabled = true;
+                                    if(await dd.IsConnected())
+                                    {
+                                        removePlaylistButton.IsEnabled = true;
+                                        addToPlaylistAndPlayButton.IsEnabled = true;
+                                        addToPlaylistButton.IsEnabled = true;
 
+                                        if(comboDeviceStream.Items.Count>0)
+                                        {
+                                            comboDeviceStream.IsEnabled = true;
+                                            minusButton.IsEnabled = true;
+                                            plusButton.IsEnabled = true;
+                                            playButton.IsEnabled = true;
+                                            stopButton.IsEnabled = true;
+                                        }
+                                        else
+                                        {
+                                            comboDeviceStream.IsEnabled = false;
+                                            minusButton.IsEnabled = false;
+                                            plusButton.IsEnabled = false;
+                                            playButton.IsEnabled = false;
+                                            stopButton.IsEnabled = false;
+                                        }
+                                        if(dd.IsHeosDevice())
+                                        {
+                                            muteButton.IsEnabled = true;
+                                            volumeUpButton.IsEnabled = true;
+                                            volumeDownButton.IsEnabled = true;
+                                            if(comboDeviceInput.Items.Count>0)
+                                            {
+                                                comboDeviceInput.IsEnabled = true;
+                                                inputButton.IsEnabled = true;
+                                            }
+                                            else
+                                            {
+                                                comboDeviceInput.IsEnabled = false;
+                                                inputButton.IsEnabled = false;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            muteButton.IsEnabled = false;
+                                            volumeUpButton.IsEnabled = false;
+                                            volumeDownButton.IsEnabled = false;
+                                            comboDeviceInput.IsEnabled = false;
+                                            inputButton.IsEnabled = false;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        removePlaylistButton.IsEnabled = false;
+                                        addToPlaylistAndPlayButton.IsEnabled = false;
+                                        addToPlaylistButton.IsEnabled = false;
+
+                                        comboDeviceStream.IsEnabled = false;
+                                        minusButton.IsEnabled = false;
+                                        plusButton.IsEnabled = false;
+                                        playButton.IsEnabled = false;
+                                        stopButton.IsEnabled = false;
+
+                                        muteButton.IsEnabled = false;
+                                        volumeUpButton.IsEnabled = false;
+                                        volumeDownButton.IsEnabled = false;
+
+                                        comboDeviceInput.IsEnabled = false;
+                                        inputButton.IsEnabled = false;
+
+                                    }
+
+
+                                }
+
+                            }
+                        }
+                        else
+                        {
+                            comboDevice.IsEnabled = false;
+                            DeviceName.IsEnabled = false;
+                            DeviceIPAddress.IsEnabled = false;
+
+                            displayPlaylistButton.IsEnabled = false;
+                            removePlaylistButton.IsEnabled = false;
+                            addToPlaylistAndPlayButton.IsEnabled = false;
+                            addToPlaylistButton.IsEnabled = false;
+
+                            comboDeviceStream.IsEnabled = false;
+                            minusButton.IsEnabled = false;
+                            plusButton.IsEnabled = false;
+                            playButton.IsEnabled = false;
+                            stopButton.IsEnabled = false;
+
+                            muteButton.IsEnabled = false;
+                            volumeUpButton.IsEnabled = false;
+                            volumeDownButton.IsEnabled = false;
+
+                            comboDeviceInput.IsEnabled = false;
+                            inputButton.IsEnabled = false;
+                        }
 
                  });
         }
@@ -238,8 +350,7 @@ namespace AudioVideoPlayer.Pages.DLNA
             // Register Network
             RegisterNetworkHelper();
 
-            // Update playlist controls
-            UpdateControls();
+
 
             // Combobox event
             comboStream.SelectionChanged += ComboStream_SelectionChanged;
@@ -254,10 +365,12 @@ namespace AudioVideoPlayer.Pages.DLNA
             if (comboDevice.Items.Count > 0)
             {
                 comboDevice.SelectedIndex = 0;
-                PageStatus = Status.DeviceSelected;
             }
-            else
-                PageStatus = Status.NoDeviceSelected;
+
+            // Update playlist controls
+            // first disable the controls
+            UpdateControls(true);
+            UpdateControls();
 
         }
 
@@ -484,7 +597,7 @@ namespace AudioVideoPlayer.Pages.DLNA
             AddingDevice
         }
 
-        Status PageStatus = Status.DeviceSelected;
+
         private async void comboDevice_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
@@ -500,10 +613,7 @@ namespace AudioVideoPlayer.Pages.DLNA
                     if (comboDeviceInput.Items.Count > 0)
                         comboDeviceInput.SelectedIndex = 0;
 
-                    PageStatus = Status.DeviceSelected;
                 }
-                else
-                    PageStatus = Status.NoDeviceSelected;
             }
             UpdateControls();
 
@@ -513,11 +623,8 @@ namespace AudioVideoPlayer.Pages.DLNA
             RemoveDeviceButton.IsEnabled = false;
             if (comboDevice.Items.Count > 0)
             {
-                PageStatus = Status.DeviceSelected;
                 comboDevice.SelectedIndex = 0;
             }
-            else
-                PageStatus = Status.NoDeviceSelected;
             UpdateControls();
         }
         private async void DiscoverDevice_Click(object sender, RoutedEventArgs e)
@@ -553,13 +660,7 @@ namespace AudioVideoPlayer.Pages.DLNA
                 ViewModelLocator.Settings.DLNADeviceList = pll;
                 if (comboDevice.Items.Count > 0)
                 {
-
-                    PageStatus = Status.DeviceSelected;
                     comboDevice.SelectedIndex = 0;
-                }
-                else
-                {
-                    PageStatus = Status.NoDeviceSelected;
                 }
 
             }
@@ -1129,7 +1230,6 @@ namespace AudioVideoPlayer.Pages.DLNA
         void UpdateSelection(string Id)
         {
             int index = 0;
-            PageStatus = Status.NoDeviceSelected;
             foreach (var item in comboDevice.Items)
             {
                 if (item is AudioVideoPlayer.DLNA.DLNADevice)
@@ -1140,7 +1240,6 @@ namespace AudioVideoPlayer.Pages.DLNA
                         if (string.Equals(p.Id, Id))
                         {
                             comboDevice.SelectedIndex = index;
-                            PageStatus = Status.DeviceSelected;
                             return;
                         }
                     }
@@ -1150,7 +1249,6 @@ namespace AudioVideoPlayer.Pages.DLNA
             if (comboDevice.Items.Count > 0)
             {
                 comboDevice.SelectedIndex = 0;
-                PageStatus = Status.DeviceSelected;
             }
             return;
         }
