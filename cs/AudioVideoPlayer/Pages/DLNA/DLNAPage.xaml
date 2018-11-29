@@ -193,7 +193,7 @@
                                     </DataTemplate>
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
-                            <Button IsEnabled="True" Content="&#xE772;" x:Name="inputButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Select the input for the current Device" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Mute_Click" TabIndex="6"/>
+                            <Button IsEnabled="True" Content="&#xE772;" x:Name="inputButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Select the input for the current Device" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Input_Click" TabIndex="6"/>
                         </StackPanel>
                     </StackPanel>
                 </Grid>

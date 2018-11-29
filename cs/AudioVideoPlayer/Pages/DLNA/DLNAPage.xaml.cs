@@ -991,6 +991,25 @@ namespace AudioVideoPlayer.Pages.DLNA
             */
             UpdateControls();
         }
+        private async void Input_Click(object sender, RoutedEventArgs e)
+        {
+            LogMessage("Select audio input");
+            AudioVideoPlayer.DLNA.DLNADevice hs = GetCurrentSpeaker();
+            if (hs != null)
+            {
+                Models.DeviceInput di = comboDeviceInput.SelectedItem as Models.DeviceInput;
+                if(di!=null)
+                {
+                    LogMessage("Select audio input " + di.Name + " on Speaker: " + hs.FriendlyName);
+                    bool result = await hs.PlayInput(di.Name);
+                    if (result==true)
+                        LogMessage("Select audio input " + di.Name + " on Speaker: " + hs.FriendlyName + " successful" );
+                    else
+                        LogMessage("Select audio input " + di.Name + " on Speaker: " + hs.FriendlyName + " error");
+                }
+            }
+            UpdateControls();
+        }
         private async void Mute_Click(object sender, RoutedEventArgs e)
         {
             LogMessage("Mute audio on speaker");

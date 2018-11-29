@@ -1077,6 +1077,21 @@ namespace AudioVideoPlayer.DLNA
             */
             return result;
         }
+        public async System.Threading.Tasks.Task<bool> PlayInput(string Input)
+        {
+            bool result = false;
+            if (string.IsNullOrEmpty(PlayerId))
+                await GetPlayerId();
+            if (!string.IsNullOrEmpty(PlayerId))
+            {
+                string response = await SendTelnetCommand("heos://browse/play_input?pid=" + PlayerId + "&input=" + Input);
+                if (IsCommandSuccessful("browse/play_input", response))
+                {
+                    result = true;
+                }
+            }
+            return result;
+        }
         public async System.Threading.Tasks.Task<bool> AddUrl(bool bAudioOnly, string UrlToPlay, string AlbumArtUrl, string Title, string codec)
         {
             bool result = false;

@@ -668,9 +668,9 @@ namespace AudioVideoPlayer.ViewModels
         }
 
         // DeviceInputList Settings
-        private static ObservableCollection<Models.DeviceInputList> deviceInputList;
+        private static ObservableCollection<Models.DeviceInput> deviceInputList;
 
-        public static ObservableCollection<Models.DeviceInputList> DeviceInputList
+        public static ObservableCollection<Models.DeviceInput> DeviceInputList
         {
             get
             {
@@ -678,41 +678,41 @@ namespace AudioVideoPlayer.ViewModels
                 if (deviceInputList == null) 
                 {
 
-                    deviceInputList = new ObservableCollection<Models.DeviceInputList>();
+                    deviceInputList = new ObservableCollection<Models.DeviceInput>();
                     if (deviceInputList != null)
                     {
                         
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux_in_1"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux_in_2"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux_in_3"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux_in_4"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux1"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux2"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux3"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux4"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux5"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux6"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/aux7"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/line_in_1"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/line_in_2"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/line_in_3"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/line_in_4"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/coax_in_1"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/coax_in_2"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/optical_in_1"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/optical_in_2"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/hdmi_in_1"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/hdmi_arc_1"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/cable_sat"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/dvd"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/bluray"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/game"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/mediaplayer"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/cd"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/tuner"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/hdradio"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/tvaudio"));
-                        deviceInputList.Add(new Models.DeviceInputList("inputs/phono"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/aux_in_1"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/aux_in_2"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/aux_in_3"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/aux_in_4"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/aux1"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/aux2"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/aux3"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/aux4"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/aux5"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/aux6"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/aux7"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/line_in_1"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/line_in_2"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/line_in_3"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/line_in_4"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/coax_in_1"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/coax_in_2"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/optical_in_1"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/optical_in_2"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/hdmi_in_1"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/hdmi_arc_1"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/cable_sat"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/dvd"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/bluray"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/game"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/mediaplayer"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/cd"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/tuner"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/hdradio"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/tvaudio"));
+                        deviceInputList.Add(new Models.DeviceInput("inputs/phono"));
                     }
                 }
 

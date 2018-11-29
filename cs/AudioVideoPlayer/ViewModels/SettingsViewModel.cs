@@ -393,7 +393,7 @@ namespace AudioVideoPlayer.ViewModels
                 NotifyPropertyChanged();
             }
         }
-        public ObservableCollection<Models.DeviceInputList> DeviceInputList
+        public ObservableCollection<Models.DeviceInput> DeviceInputList
         {
             get
             {
