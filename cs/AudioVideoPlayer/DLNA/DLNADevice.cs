@@ -97,12 +97,12 @@ namespace AudioVideoPlayer.DLNA
         {
             if(!string.IsNullOrEmpty(Server))
             {
-                if(Server.IndexOf("Heos") > 0 )
+                if(Server.IndexOf("Heos") >= 0 )
                     return  true ;
             }
             if (!string.IsNullOrEmpty(Version))
             {
-                if (Version.IndexOf("HEOS") > 0)
+                if (Version.IndexOf("HEOS") >= 0)
                     return true;
             }
             return false;
@@ -111,12 +111,12 @@ namespace AudioVideoPlayer.DLNA
         {
             if (!string.IsNullOrEmpty(Server))
             {
-                if (Server.IndexOf("Samsung") > 0)
+                if (Server.IndexOf("Samsung") >= 0)
                     return true;
             }
             if (!string.IsNullOrEmpty(Version))
             {
-                if (Version.IndexOf("Samsung") > 0)
+                if (Version.IndexOf("Samsung") >= 0)
                     return true;
             }
             return false;
@@ -1092,7 +1092,7 @@ namespace AudioVideoPlayer.DLNA
             }
             return result;
         }
-        public async System.Threading.Tasks.Task<bool> AddUrl(bool bAudioOnly, string UrlToPlay, string AlbumArtUrl, string Title, string codec)
+        public async System.Threading.Tasks.Task<bool> AddNextUrl(bool bAudioOnly, string UrlToPlay, string AlbumArtUrl, string Title, string codec)
         {
             bool result = false;
             DLNAService ds = await GetDLNAService();
@@ -1163,6 +1163,34 @@ namespace AudioVideoPlayer.DLNA
             }
             return result;
         }
+        public async System.Threading.Tasks.Task<bool> IsContentReady()
+        {
+            DLNAMediaInfo result = null;
+            DLNAService ds = await GetDLNAService();
+            if (ds != null)
+            {
+                result = await GetMediaInfo(ds.ControlURL, 0);
+                if(result!=null)
+                {
+                    if (!string.IsNullOrEmpty(result.CurrentUri))
+                        return true;
+                }
+            }
+            return false;
+        }
+        public async System.Threading.Tasks.Task<string> GetContentUrl()
+        {
+
+            DLNAMediaInfo result = null;
+            DLNAService ds = await GetDLNAService();
+            if (ds != null)
+            {
+                result = await GetMediaInfo(ds.ControlURL, 0);
+                if (result != null)
+                    return result.CurrentUri;
+            }
+            return string.Empty;
+        }
         public async System.Threading.Tasks.Task<bool> GetDeviceCapabilities()
         {
             bool result = false;
@@ -1192,6 +1220,45 @@ namespace AudioVideoPlayer.DLNA
                 result = await GetTransportInfo(ds.ControlURL, 0);
             }
             return result;
+        }
+        public async System.Threading.Tasks.Task<bool> IsPlaying()
+        {
+            DLNATransportInfo result = null;
+            DLNAService ds = await GetDLNAService();
+            if (ds != null)
+            {
+                result = await GetTransportInfo(ds.ControlURL, 0);
+                if (result != null)
+                    if (result.CurrentTransportState.ToString() == "PLAYING")
+                        return true;
+            }
+            return false;
+        }
+        public async System.Threading.Tasks.Task<bool> IsPaused()
+        {
+            DLNATransportInfo result = null;
+            DLNAService ds = await GetDLNAService();
+            if (ds != null)
+            {
+                result = await GetTransportInfo(ds.ControlURL, 0);
+                if (result != null)
+                    if (result.CurrentTransportState.ToString() == "PAUSED_PLAYBACK")
+                        return true;
+            }
+            return false;
+        }
+        public async System.Threading.Tasks.Task<bool> IsStopped()
+        {
+            DLNATransportInfo result = null;
+            DLNAService ds = await GetDLNAService();
+            if (ds != null)
+            {
+                result = await GetTransportInfo(ds.ControlURL, 0);
+                if (result != null)
+                    if (result.CurrentTransportState.ToString() == "STOPPED")
+                        return true;
+            }
+            return false;
         }
         public async System.Threading.Tasks.Task<DLNATransportSettings> GetTransportSettings()
         {
