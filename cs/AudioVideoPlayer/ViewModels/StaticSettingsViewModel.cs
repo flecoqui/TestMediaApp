@@ -373,14 +373,26 @@ namespace AudioVideoPlayer.ViewModels
         {
             get
             {
-                var auto = Helpers.StorageHelper.RestoreStringFromFile(nameof(DLNADeviceList));
-                //var auto = Helpers.SettingsHelper.ReadSettingsValue(nameof(DeviceList));
-                if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                try
                 {
-                    dLNADeviceList = new ObservableCollection<DLNA.DLNADevice>();
+                    var auto = Helpers.StorageHelper.RestoreStringFromFile(nameof(DLNADeviceList));
+                    //var auto = Helpers.SettingsHelper.ReadSettingsValue(nameof(DeviceList));
+                    if ((auto == null) || (string.IsNullOrEmpty(auto.ToString())))
+                    {
+                        dLNADeviceList = new ObservableCollection<DLNA.DLNADevice>();
+                    }
+                    else
+                    {
+                        dLNADeviceList = ObjectSerializer<ObservableCollection<DLNA.DLNADevice>>.FromXml((string)auto);
+                    }
                 }
-                else
-                    dLNADeviceList = ObjectSerializer<ObservableCollection<DLNA.DLNADevice>>.FromXml((string)auto);
+                catch(Exception)
+                {
+
+                }
+                if(dLNADeviceList == null)
+                    dLNADeviceList = new ObservableCollection<DLNA.DLNADevice>();
+
                 return dLNADeviceList;
             }
             set

@@ -24,6 +24,23 @@ namespace AudioVideoPlayer.DataModel
     /// </summary>
     public class MediaItem
     {
+        public MediaItem()
+
+        {
+            this.UniqueId = string.Empty;
+            this.Comment = string.Empty;
+            this.Title = string.Empty;
+            this.Description = string.Empty;
+            this.ImagePath = string.Empty;
+            this.Content = string.Empty;
+            this.PosterContent = string.Empty;
+            this.Start = 0;
+            this.Duration = 0;
+            this.HttpHeaders = string.Empty;
+            this.PlayReadyUrl = string.Empty;
+            this.PlayReadyCustomData = string.Empty;
+            this.BackgroundAudio = false;
+        }
         public MediaItem(String uniqueId, 
                               String comment,
                               String title,
@@ -53,19 +70,19 @@ namespace AudioVideoPlayer.DataModel
             this.PlayReadyCustomData = playReadyCustomData;
             this.BackgroundAudio = backgroundAudio;
         }
-        public string UniqueId { get; private set; }
-        public string Comment { get; private set; }
-        public string Title { get; private set; }
-        public string Description { get; private set; }
-        public string ImagePath { get; private set; }
-        public string Content { get; private set; }
-        public string PosterContent { get; private set; }
-        public long Start { get; private set; }
-        public long Duration { get; private set; }
-        public string HttpHeaders { get; private set; }
-        public string PlayReadyUrl { get; private set; }
-        public string PlayReadyCustomData { get; private set; }
-        public bool BackgroundAudio { get; private set; }
+        public string UniqueId { get;  set; }
+        public string Comment { get;  set; }
+        public string Title { get;  set; }
+        public string Description { get;  set; }
+        public string ImagePath { get;  set; }
+        public string Content { get;  set; }
+        public string PosterContent { get;  set; }
+        public long Start { get;  set; }
+        public long Duration { get;  set; }
+        public string HttpHeaders { get;  set; }
+        public string PlayReadyUrl { get;  set; }
+        public string PlayReadyCustomData { get;  set; }
+        public bool BackgroundAudio { get;  set; }
         public override string ToString()
         {
             return this.Title;
@@ -77,6 +94,16 @@ namespace AudioVideoPlayer.DataModel
     /// </summary>
     public class MediaDataGroup
     {
+        public MediaDataGroup()
+        {
+            this.UniqueId = "audio_video_picture";
+            DateTime now = DateTime.Now;
+            this.Title = "MediaPlaylist_" + now.ToString() ;
+            this.Category = "MediaPlaylist";
+            this.Description = "MediaPlaylist";
+            this.ImagePath = "ms-appx:///Assets/AudioVideo.png";
+            this.Items = new ObservableCollection<MediaItem>();
+        }
         public MediaDataGroup(String uniqueId,
                                String title,
                                String category,
@@ -91,12 +118,12 @@ namespace AudioVideoPlayer.DataModel
             this.Items = new ObservableCollection<MediaItem>();
         }
 
-        public string UniqueId { get; private set; }
-        public string Title { get; private set; }
-        public string Category { get; private set; }
-        public string Description { get; private set; }
-        public string ImagePath { get; private set; }
-        public ObservableCollection<MediaItem> Items { get; private set; }
+        public string UniqueId { get;  set; }
+        public string Title { get;  set; }
+        public string Category { get;  set; }
+        public string Description { get;  set; }
+        public string ImagePath { get;  set; }
+        public ObservableCollection<MediaItem> Items { get;  set; }
 
         public override string ToString()
         {

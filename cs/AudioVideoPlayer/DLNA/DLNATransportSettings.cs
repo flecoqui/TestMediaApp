@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AudioVideoPlayer.DLNA
 {
-    public class DLNATransportSettings
+    public class DLNAMediaTransportSettings
     {
         public string PlayMode { get; set; }
     }

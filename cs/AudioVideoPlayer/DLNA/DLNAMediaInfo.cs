@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AudioVideoPlayer.DLNA
 {
-    public class DLNAMediaInfo
+    public class DLNAMediaInformation
     {
         public int  NrTrack { get; set; }
         public TimeSpan MediaDuration { get; set; }

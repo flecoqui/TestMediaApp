@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace AudioVideoPlayer.DLNA
 {
-    public class DLNATransportInfo
+    public class DLNAMediaTransportInformation
     {
         public string CurrentTransportState { get; set; }
         public string CurrentTransportStatus { get; set; }
-        public string CurrentSpeed { get; set; }
+        public int CurrentSpeed { get; set; }
     }
 }

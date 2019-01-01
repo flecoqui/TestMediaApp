@@ -152,8 +152,6 @@
                             <Button IsEnabled="true" Content="&#xE893;" x:Name="plusButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Step to the previous content in the playlist" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Plus_Click"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <Button IsEnabled="True" Content="&#xE768;" x:Name="playPauseButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Play the current content"  FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="PlayPause_Click" TabIndex="10" />
-                            <Button IsEnabled="True" Content="&#xE71A;" x:Name="stopButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Stop the current content"   FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Stop_Click"/>
                             <TextBlock Margin="5,0,0,0" Text="Device Playlist:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
@@ -171,6 +169,16 @@
                                     </DataTemplate>
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Button IsEnabled="True" Content="&#xE768;" x:Name="playPauseButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Play the current content"  FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="PlayPause_Click" TabIndex="10" />
+                            <Button IsEnabled="True" Content="&#xE71A;" x:Name="stopButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Stop the current content"   FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Stop_Click"/>
+                            <Button IsEnabled="True" Content="&#xE8B1;" x:Name="shuffleButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Select Shuffle mode"   FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Shuffle_Click"/>
+                            <Button IsEnabled="True" Content="&#xE8EE;" x:Name="repeatButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Select repeat one or repeat all mode"   FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Repeat_Click"/>
+                            <TextBlock x:Name="TrackTime"  Text="00:00:00" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
+                            <TextBlock Text="/" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
+                            <TextBlock x:Name="TrackDuration" Text="00:00:00" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
+
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <Button IsEnabled="True" Content="&#xE74F;" x:Name="muteButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Mute the audio" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Mute_Click" TabIndex="6"/>
