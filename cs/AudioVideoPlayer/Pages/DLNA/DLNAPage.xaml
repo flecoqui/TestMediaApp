@@ -208,12 +208,14 @@
                                 </StackPanel>
                             </StackPanel>
                             <StackPanel Orientation="Vertical">
-                                <TextBlock Margin="5,0,0,0" x:Name="title" Text="Title" Width="164" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left"  Style="{StaticResource LabelTextBoldBlockStyle}" />
-                                <Image x:Name="albumArt"   Width="140" Height="140"  Source="ms-appx:///Assets/Music.png" ></Image>
+                                <ScrollViewer  x:Name="titleScrollViewer"  Loaded="titleScrollViewer_Loaded" Unloaded="titleScrollViewer_Unloaded" VerticalScrollBarVisibility="Hidden"  HorizontalScrollBarVisibility="Hidden" Padding="5,0" Width="130" VerticalScrollMode="Disabled" HorizontalScrollMode="Disabled">
+                                    <TextBlock x:Name="title" Text="Title"  Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left"  Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Center" />
+                                </ScrollViewer>
+                                <Image x:Name="albumArt"   Width="120" Height="120"  Source="ms-appx:///Assets/Music.png" ></Image>
                             </StackPanel>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock x:Name="TrackTime" Margin="170,0,0,0"  Text="00:00:00" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
+                            <TextBlock x:Name="TrackTime" Margin="166,0,0,0"  Text="00:00:00" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
                             <TextBlock Text="/" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
                             <TextBlock x:Name="TrackDuration" Text="00:00:00" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
                         </StackPanel>

@@ -116,7 +116,7 @@ namespace AudioVideoPlayer.Pages.DLNA
                                                      stopButton.IsEnabled = false;
                                                 else
                                                     stopButton.IsEnabled = true;
-                                         }
+                                            }
                                      }
                                      else
                                         {
@@ -750,35 +750,51 @@ namespace AudioVideoPlayer.Pages.DLNA
 
                     if (await p.IsConnected())
                     {
-                        string url = await p.GetContentUrl();
-                        if(!string.IsNullOrEmpty(url))
+                        // Display Album Art and Title
+                        AudioVideoPlayer.DLNA.DLNAMediaInformation info = await p.GetMediaInformation();
+                        if (info != null)
                         {
-                            if(url.StartsWith("https"))
-                                url = url.Replace("https", "");
-                            else if(url.StartsWith("http"))
-                                url = url.Replace("http", "");
-                            int index = 0;
-                            int j = 0;
-                            foreach (var i in comboDeviceStream.Items)
-                            {
-                                MediaItem m = i as MediaItem;
-                                if(m!=null)
-                                {
-                                    if (m.Content.IndexOf(url) > 0)
-                                    {
-                                        index = j;
-                                        break;
-                                    }
-                                }
-                                j++;
-                            }
-                            if (comboDeviceStream.Items.Count > 0)
-                            {
-                                comboDeviceStream.SelectedIndex = index;
-                            }
-
+                            SelectCurrentMediaItem(info.CurrentUri);
+                            await DisplayAlbumArt(AudioVideoPlayer.DLNA.DLNADevice.GetTitleFromMetadataString(info.CurrentUriMetaData),
+                                                        AudioVideoPlayer.DLNA.DLNADevice.GetAlbumArtUriFromMetadataString(info.CurrentUriMetaData));
                         }
+                        // Display Time and Duration
+                        AudioVideoPlayer.DLNA.DLNAMediaPosition posinfo = await p.GetMediaPosition();
+                        if (posinfo != null)
+                        {
+                            TrackDuration.Text = posinfo.TrackDuration.ToString(@"hh\:mm\:ss");
+                            TrackTime.Text = posinfo.RelTime.ToString(@"hh\:mm\:ss");
+                        }
+                        else
+                        {
+                            TrackDuration.Text = @"00:00:00";
+                            TrackTime.Text = @"00:00:00";
+                        }
+
+                        // Display Play Mode
+                        AudioVideoPlayer.DLNA.DLNAMediaTransportSettings trsettings = await p.GetTransportSettings();
+                        if (trsettings != null)
+                            DisplayPlayModeButtons(trsettings.PlayMode);
+
+                        // Display Player State
+                        AudioVideoPlayer.DLNA.DLNAMediaTransportInformation trinfo = await p.GetTransportInformation();
+                        if (trinfo != null)
+                            DisplayPlayerButtons(trinfo);
+
                     }
+                    else
+                    {
+                        // Display Album Art and Title
+                        await DisplayAlbumArt(string.Empty, string.Empty);
+                        // Display Time and Duration
+                        TrackDuration.Text = @"00:00:00";
+                        TrackTime.Text = @"00:00:00";
+                        // Display Play Mode
+                        DisplayPlayModeButtons(AudioVideoPlayer.DLNA.DLNADevice.PLAY_MODE_NORMAL);
+                        // Display Player State
+                        DisplayPlayerButtons(null);
+                    }
+
                     if (comboDeviceInput.Items.Count > 0)
                     {
                         comboDeviceInput.SelectedIndex = 0;
@@ -787,6 +803,39 @@ namespace AudioVideoPlayer.Pages.DLNA
             }
             UpdateControls();
 
+        }
+        private async void DLNA_DeviceMediaInformationUpdated(AudioVideoPlayer.DLNA.DLNADevice sender, AudioVideoPlayer.DLNA.DLNAMediaInformation args)
+        {
+            LogMessage("Media Information updated for device: " + sender.GetUniqueName() + " Title: " + AudioVideoPlayer.DLNA.DLNADevice.GetTitleFromMetadataString(args.CurrentUriMetaData) + " AlbumArtUri: " + AudioVideoPlayer.DLNA.DLNADevice.GetAlbumArtUriFromMetadataString(args.CurrentUriMetaData) + " Uri: " + args.CurrentUri);
+
+
+            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
+            {
+                await DisplayAlbumArt(AudioVideoPlayer.DLNA.DLNADevice.GetTitleFromMetadataString(args.CurrentUriMetaData),
+                    AudioVideoPlayer.DLNA.DLNADevice.GetAlbumArtUriFromMetadataString(args.CurrentUriMetaData));
+                SelectCurrentMediaItem(args.CurrentUri);
+            });
+
+        }
+        private async void DLNA_DeviceMediaPositionUpdated(AudioVideoPlayer.DLNA.DLNADevice sender, AudioVideoPlayer.DLNA.DLNAMediaPosition args)
+        {
+            //LogMessage("Media Position updated: " + sender.GetUniqueName());
+            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                TrackDuration.Text = args.TrackDuration.ToString(@"hh\:mm\:ss");
+                TrackTime.Text = args.RelTime.ToString(@"hh\:mm\:ss");
+            });
+
+        }
+        private async void DLNA_DeviceMediaTransportSettingsUpdated(AudioVideoPlayer.DLNA.DLNADevice sender, AudioVideoPlayer.DLNA.DLNAMediaTransportSettings args)
+        {
+            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                if (args != null)
+                {
+                    DisplayPlayModeButtons(args.PlayMode);
+                }
+            });
         }
 
         private async void DLNA_DeviceMediaTransportInformationUpdated(AudioVideoPlayer.DLNA.DLNADevice sender, AudioVideoPlayer.DLNA.DLNAMediaTransportInformation args)
@@ -817,6 +866,38 @@ namespace AudioVideoPlayer.Pages.DLNA
             {
                 shuffleButton.Content = "\xEC57";
                 repeatButton.Content = "\xE8EE";
+            }
+
+        }
+        void DisplayPlayerButtons(AudioVideoPlayer.DLNA.DLNAMediaTransportInformation trinfo)
+        {
+            if(trinfo!=null)
+            {
+                if (trinfo.CurrentTransportState == AudioVideoPlayer.DLNA.DLNADevice.TRANSPORT_STATE_PLAYING)
+                {
+                    playPauseButton.Content = "\xE769";
+                    stopButton.IsEnabled = true;
+                }
+                else
+                {
+                    playPauseButton.Content = "\xE768";
+                    if (trinfo.CurrentTransportState == AudioVideoPlayer.DLNA.DLNADevice.TRANSPORT_STATE_STOPPED)
+                        stopButton.IsEnabled = false;
+                    else
+                        stopButton.IsEnabled = true;
+                }
+                if (trinfo.CurrentTransportStatus != AudioVideoPlayer.DLNA.DLNADevice.TRANSPORT_STATUS_OK)
+                {
+                    // Error
+                    stopButton.IsEnabled = false;
+                    playPauseButton.IsEnabled = false;
+                }
+            }
+            else
+            {
+                // Error
+                stopButton.IsEnabled = false;
+                playPauseButton.IsEnabled = false;
             }
 
         }
@@ -867,15 +948,31 @@ namespace AudioVideoPlayer.Pages.DLNA
                 }
             }
         }
-        private async void DLNA_DeviceMediaTransportSettingsUpdated(AudioVideoPlayer.DLNA.DLNADevice sender, AudioVideoPlayer.DLNA.DLNAMediaTransportSettings args)
+        private void SelectCurrentMediaItem(string url)
         {
-            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            if (url.StartsWith("https"))
+                url = url.Replace("https", "");
+            else if (url.StartsWith("http"))
+                url = url.Replace("http", "");
+            int index = 0;
+            int j = 0;
+            foreach (var i in comboDeviceStream.Items)
             {
-                if (args != null)
+                MediaItem m = i as MediaItem;
+                if (m != null)
                 {
-                    DisplayPlayModeButtons(args.PlayMode);
+                    if (m.Content.IndexOf(url) > 0)
+                    {
+                        index = j;
+                        break;
+                    }
                 }
-            });
+                j++;
+            }
+            if (comboDeviceStream.Items.Count > 0)
+            {
+                comboDeviceStream.SelectedIndex = index;
+            }
         }
         private async System.Threading.Tasks.Task<bool> SetDefaultPoster()
         {
@@ -899,6 +996,8 @@ namespace AudioVideoPlayer.Pages.DLNA
             }
             return false;
 
+
+
         }
         /// <summary>
         /// Set the source for the picture : windows and fullscreen 
@@ -909,40 +1008,36 @@ namespace AudioVideoPlayer.Pages.DLNA
             albumArt.Source = b;
         }
 
-        private async void DLNA_DeviceMediaInformationUpdated(AudioVideoPlayer.DLNA.DLNADevice sender, AudioVideoPlayer.DLNA.DLNAMediaInformation args)
+        async System.Threading.Tasks.Task<bool> DisplayAlbumArt(string stitle, string albumArtUrl)
         {
-            LogMessage("Media Information updated for device: " + sender.GetUniqueName() + " Title: " + AudioVideoPlayer.DLNA.DLNADevice.GetTitleFromMetadataString(args.CurrentUriMetaData) + " AlbumArtUri: " + AudioVideoPlayer.DLNA.DLNADevice.GetAlbumArtUriFromMetadataString(args.CurrentUriMetaData) + " Uri: " + args.CurrentUri);
-
-
-            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
+            try
             {
-                try
+                title.Text = @".                          " + stitle + @"                          .";
+
+                int j = 0;
+                int index = -1;
+                foreach (var i in comboDeviceStream.Items)
                 {
-                    title.Text = AudioVideoPlayer.DLNA.DLNADevice.GetTitleFromMetadataString(args.CurrentUriMetaData);
-                    
-                    int j = 0;
-                    int index = -1;
-                    foreach (var i in comboDeviceStream.Items)
+                    MediaItem m = i as MediaItem;
+                    if (m != null)
                     {
-                        MediaItem m = i as MediaItem;
-                        if (m != null)
+                        if (m.Title == stitle)
                         {
-                            if (m.Title == title.Text)
-                            {
-                                index = j;
-                                break;
-                            }
+                            index = j;
+                            break;
                         }
-                        j++;
                     }
-                    if(index >= 0)
-                        comboDeviceStream.SelectedIndex = index;
+                    j++;
+                }
+                if (index >= 0)
+                    comboDeviceStream.SelectedIndex = index;
 
-
+                if (!string.IsNullOrEmpty(albumArtUrl))
+                {
                     using (var client = new Windows.Web.Http.HttpClient())
                     {
 
-                        var response = await client.GetAsync(new Uri(AudioVideoPlayer.DLNA.DLNADevice.GetAlbumArtUriFromMetadataString(args.CurrentUriMetaData)));
+                        var response = await client.GetAsync(new Uri(AudioVideoPlayer.DLNA.DLNADevice.GetAlbumArtUriFromMetadataString(albumArtUrl)));
                         var b = new Windows.UI.Xaml.Media.Imaging.BitmapImage();
                         if (response != null && response.StatusCode == Windows.Web.Http.HttpStatusCode.Ok)
                         {
@@ -954,33 +1049,20 @@ namespace AudioVideoPlayer.Pages.DLNA
                                     memStream.Position = 0;
                                     b.SetSource(memStream.AsRandomAccessStream());
                                     SetPictureSource(b);
-                                    return ;
+                                    return true;
                                 }
                             }
                         }
-                        else
-                        {
-                            await SetDefaultPoster();
-                            return ;
-                        }
                     }
                 }
-                catch (Exception e)
-                {
-                    System.Diagnostics.Debug.WriteLine("Exception: " + e.Message);
-                }
-            });
-
-        }
-        private async void DLNA_DeviceMediaPositionUpdated(AudioVideoPlayer.DLNA.DLNADevice sender, AudioVideoPlayer.DLNA.DLNAMediaPosition args)
-        {
-            //LogMessage("Media Position updated: " + sender.GetUniqueName());
-            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                await SetDefaultPoster();
+                return true;
+            }
+            catch (Exception e)
             {
-                TrackDuration.Text = args.TrackDuration.ToString();
-                TrackTime.Text = args.RelTime.ToString();
-            });
-
+                System.Diagnostics.Debug.WriteLine("Exception: " + e.Message);
+            }
+            return true;
         }
         private void comboDevice_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
@@ -1288,7 +1370,6 @@ namespace AudioVideoPlayer.Pages.DLNA
         }
         private async void Play_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Play current content audio on device");
             if (comboDevice.SelectedItem is AudioVideoPlayer.DLNA.DLNADevice)
             {
                 AudioVideoPlayer.DLNA.DLNADevice dd = comboDevice.SelectedItem as AudioVideoPlayer.DLNA.DLNADevice;
@@ -1297,37 +1378,15 @@ namespace AudioVideoPlayer.Pages.DLNA
                     MediaItem item1 = comboDeviceStream.SelectedItem as AudioVideoPlayer.DataModel.MediaItem;
                     if (item1 != null)
                     {
-                        //int index = comboDeviceStream.SelectedIndex;
-                        //GetNextITem
-                        //if (index < 0)
-                        //    index = 0;                     
-                        //if (++index >= comboDeviceStream.Items.Count)
-                        //    index = 0;
-                        //MediaItem item2 = comboDeviceStream.Items[index] as AudioVideoPlayer.DataModel.MediaItem;
-                        //if (item2!=null)
-                        //{
-                            await UpdatePlaylist(dd, item1, null);
-                      //  }
+                        bool result = await UpdatePlaylist(dd, item1, null);
+                        if(result == true)
+                            LogMessage("Play current content " + item1.Title   + " on device");
+                        else
+                            LogMessage("Error while playing current content " + item1.Title + " on device");
+
                     }
                 }
             }
-
-            /*
-            AudioVideoPlayer.DLNA.DLNADevice hs = GetCurrentSpeaker();
-            if (hs != null)
-            {
-                LogMessage("Play player on Device: " + hs.FriendlyName);
-                bool result = await hs.PlayerSetState("play");
-                if (result == true)
-                {
-                    LogMessage("Play player on Device: " + hs.FriendlyName + " successful");
-                }
-                else
-                {
-                    LogMessage("Play player on Device: " + hs.FriendlyName + " error");
-                }
-            }
-            */
             UpdateControls();
         }
         private async void PlayPause_Click(object sender, RoutedEventArgs e)
@@ -1839,6 +1898,45 @@ namespace AudioVideoPlayer.Pages.DLNA
                 System.Diagnostics.Debug.Write("Exception while stopping DLNA discovery: " + ex.Message) ;
             }
             return result;
+        }
+        #endregion
+
+        #region autoscroll
+        DispatcherTimer timer;
+        double offset = 0;
+        private void titleScrollViewer_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (timer == null)
+                timer = new DispatcherTimer();
+            offset = 5;
+            
+            timer.Tick += (ss, ee) =>
+            {
+                if (timer.Interval.Ticks == 1000)
+                {
+                    //each time set the offset to scrollviewer.HorizontalOffset + 5
+                    //titleScrollViewer.ScrollToHorizontalOffset(titleScrollViewer.HorizontalOffset + 1);
+                    titleScrollViewer.ChangeView(offset++, titleScrollViewer.VerticalOffset, titleScrollViewer.ZoomFactor);
+                    //if the scrollviewer scrolls to the end, scroll it back to the start.
+                    if (offset >= titleScrollViewer.ScrollableWidth-5)
+                    {
+                        //string s = title.Text;
+                        //title.Text = string.Empty;
+                        offset = 5;
+                        //titleScrollViewer.ScrollToHorizontalOffset(0);
+                        titleScrollViewer.ChangeView(offset, titleScrollViewer.VerticalOffset, titleScrollViewer.ZoomFactor,true);
+                        
+                        //title.Text = s;
+                    }
+                }
+            };
+            timer.Interval = new TimeSpan(1000);
+            timer.Start();
+        }
+
+        private void titleScrollViewer_Unloaded(object sender, RoutedEventArgs e)
+        {
+            timer.Stop();
         }
         #endregion
     }

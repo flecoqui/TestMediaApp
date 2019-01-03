@@ -504,9 +504,9 @@ namespace AudioVideoPlayer.DLNA
 
                 }
                 */
-
+                return true;
             }
-            return true;
+            return false;
         }
         public bool StartMonitoringDevice()
         {

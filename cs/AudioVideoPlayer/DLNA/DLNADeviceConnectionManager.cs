@@ -25,7 +25,8 @@ using Windows.Networking;
 using Windows.Networking.Sockets;
 using Windows.Storage.Streams;
 using Windows.System.Threading;
-
+using System.Net.Http.Headers;
+using Windows.Web.Http.Filters;
 
 namespace AudioVideoPlayer.DLNA
 {
@@ -61,7 +62,11 @@ namespace AudioVideoPlayer.DLNA
                 return result;
             }
 
-            var client = new Windows.Web.Http.HttpClient();
+            HttpBaseProtocolFilter RootFilter = new HttpBaseProtocolFilter();
+
+            RootFilter.CacheControl.ReadBehavior = Windows.Web.Http.Filters.HttpCacheReadBehavior.MostRecent;
+            RootFilter.CacheControl.WriteBehavior = Windows.Web.Http.Filters.HttpCacheWriteBehavior.NoCache;
+            var client = new Windows.Web.Http.HttpClient(RootFilter);
             try
             {
                 Windows.Web.Http.HttpResponseMessage response = await client.GetAsync(contentUri, Windows.Web.Http.HttpCompletionOption.ResponseContentRead);
