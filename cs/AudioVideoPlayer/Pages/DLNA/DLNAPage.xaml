@@ -63,7 +63,7 @@
         </VisualStateManager.VisualStateGroups>
 
 
-        <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="5,5,5,5" >
+        <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -170,39 +170,52 @@
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <Button IsEnabled="True" Content="&#xE768;" x:Name="playPauseButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Play the current content"  FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="PlayPause_Click" TabIndex="10" />
-                            <Button IsEnabled="True" Content="&#xE71A;" x:Name="stopButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Stop the current content"   FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Stop_Click"/>
-                            <Button IsEnabled="True" Content="&#xE8B1;" x:Name="shuffleButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Select Shuffle mode"   FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Shuffle_Click"/>
-                            <Button IsEnabled="True" Content="&#xE8EE;" x:Name="repeatButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Select repeat one or repeat all mode"   FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Repeat_Click"/>
-                            <TextBlock x:Name="TrackTime"  Text="00:00:00" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
-                            <TextBlock Text="/" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
-                            <TextBlock x:Name="TrackDuration" Text="00:00:00" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
 
-                        </StackPanel>
                         <StackPanel Orientation="Horizontal">
+                        <StackPanel Orientation="Vertical">
+                                <StackPanel Orientation="Horizontal">
+                                    <Button IsEnabled="True" Content="&#xE768;" x:Name="playPauseButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Play the current content"  FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="PlayPause_Click" TabIndex="10" />
+                                    <Button IsEnabled="True" Content="&#xE71A;" x:Name="stopButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Stop the current content"   FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Stop_Click"/>
+                                    <Button IsEnabled="True" Content="&#xE8B1;" x:Name="shuffleButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Select Shuffle mode"   FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Shuffle_Click"/>
+                                    <Button IsEnabled="True" Content="&#xE8EE;" x:Name="repeatButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Select repeat one or repeat all mode"   FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Repeat_Click"/>
+
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
                             <Button IsEnabled="True" Content="&#xE74F;" x:Name="muteButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Mute the audio" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Mute_Click" TabIndex="6"/>
                             <Button IsEnabled="True" Content="&#xE767;" x:Name="volumeUpButton"   Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Volume up" FontFamily="Segoe MDL2 Assets" FontSize="20" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="VolumeUp_Click" TabIndex="7" />
                             <Button IsEnabled="True" Content="&#xE767;" x:Name="volumeDownButton"    Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Volume down"  FontFamily="Segoe MDL2 Assets" FontSize="10" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="VolumeDown_Click" TabIndex="8"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Margin="5,0,0,0" Text="Inputs:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
-                            <ComboBox  x:Name="comboDeviceInput" Width="202"  
+                        </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <ComboBox  x:Name="comboDeviceInput" Width="126"  
                                        ToolTipService.ToolTip="Select the device input"    
                                        HorizontalAlignment="Stretch" 
                                        ItemsSource="{x:Bind ViewModelLocator.Settings.DeviceInputList,Mode=OneWay}" 
                                        SelectedValuePath="Name"
                                        IsTabStop="True"  
                                        TabIndex="0" VerticalAlignment="Center">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal"   >
-                                            <TextBlock Text="{Binding Name}" />
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
-                            <Button IsEnabled="True" Content="&#xE772;" x:Name="inputButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Select the input for the current Device" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Input_Click" TabIndex="6"/>
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal"   >
+                                                    <TextBlock Text="{Binding Name}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                    <Button IsEnabled="True" Content="&#xE772;" x:Name="inputButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Select the input for the current Device" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Input_Click" TabIndex="6"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Margin="5,0,0,0" x:Name="title" Text="Title" Width="164" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left"  Style="{StaticResource LabelTextBoldBlockStyle}" />
+                                <Image x:Name="albumArt"   Width="140" Height="140"  Source="ms-appx:///Assets/Music.png" ></Image>
+                            </StackPanel>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="TrackTime" Margin="170,0,0,0"  Text="00:00:00" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
+                            <TextBlock Text="/" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
+                            <TextBlock x:Name="TrackDuration" Text="00:00:00" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
                         </StackPanel>
                     </StackPanel>
                 </Grid>

@@ -61,13 +61,7 @@ namespace AudioVideoPlayer.Pages.DLNA
         {
             this.InitializeComponent();
         }
-        Windows.UI.Xaml.Controls.Button hamburgerMenuButton
-        {
-            get
-            {
-                return Shell.Current.GetHamburgerMenu().GetHamburgerMenuButton();
-            }
-        }
+
         /// <summary>
         /// UpdateControls Method which update the controls on the page  
         /// </summary>
@@ -883,10 +877,100 @@ namespace AudioVideoPlayer.Pages.DLNA
                 }
             });
         }
+        private async System.Threading.Tasks.Task<bool> SetDefaultPoster()
+        {
+            var uri = new System.Uri("ms-appx:///Assets/Music.png");
+            Windows.Storage.StorageFile file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(uri);
+            if (file != null)
+            {
+                using (var fileStream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read))
+                {
+                    if (fileStream != null)
+                    {
+                        Windows.UI.Xaml.Media.Imaging.BitmapImage b = new Windows.UI.Xaml.Media.Imaging.BitmapImage();
+                        if (b != null)
+                        {
+                            b.SetSource(fileStream);
+                            SetPictureSource(b);
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
 
-        private void DLNA_DeviceMediaInformationUpdated(AudioVideoPlayer.DLNA.DLNADevice sender, AudioVideoPlayer.DLNA.DLNAMediaInformation args)
+        }
+        /// <summary>
+        /// Set the source for the picture : windows and fullscreen 
+        /// </summary>
+        void SetPictureSource(Windows.UI.Xaml.Media.Imaging.BitmapImage b)
+        {
+            // Set picture source for windows element
+            albumArt.Source = b;
+        }
+
+        private async void DLNA_DeviceMediaInformationUpdated(AudioVideoPlayer.DLNA.DLNADevice sender, AudioVideoPlayer.DLNA.DLNAMediaInformation args)
         {
             LogMessage("Media Information updated for device: " + sender.GetUniqueName() + " Title: " + AudioVideoPlayer.DLNA.DLNADevice.GetTitleFromMetadataString(args.CurrentUriMetaData) + " AlbumArtUri: " + AudioVideoPlayer.DLNA.DLNADevice.GetAlbumArtUriFromMetadataString(args.CurrentUriMetaData) + " Uri: " + args.CurrentUri);
+
+
+            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
+            {
+                try
+                {
+                    title.Text = AudioVideoPlayer.DLNA.DLNADevice.GetTitleFromMetadataString(args.CurrentUriMetaData);
+                    
+                    int j = 0;
+                    int index = -1;
+                    foreach (var i in comboDeviceStream.Items)
+                    {
+                        MediaItem m = i as MediaItem;
+                        if (m != null)
+                        {
+                            if (m.Title == title.Text)
+                            {
+                                index = j;
+                                break;
+                            }
+                        }
+                        j++;
+                    }
+                    if(index >= 0)
+                        comboDeviceStream.SelectedIndex = index;
+
+
+                    using (var client = new Windows.Web.Http.HttpClient())
+                    {
+
+                        var response = await client.GetAsync(new Uri(AudioVideoPlayer.DLNA.DLNADevice.GetAlbumArtUriFromMetadataString(args.CurrentUriMetaData)));
+                        var b = new Windows.UI.Xaml.Media.Imaging.BitmapImage();
+                        if (response != null && response.StatusCode == Windows.Web.Http.HttpStatusCode.Ok)
+                        {
+                            using (var stream = await response.Content.ReadAsInputStreamAsync())
+                            {
+                                using (var memStream = new MemoryStream())
+                                {
+                                    await stream.AsStreamForRead().CopyToAsync(memStream);
+                                    memStream.Position = 0;
+                                    b.SetSource(memStream.AsRandomAccessStream());
+                                    SetPictureSource(b);
+                                    return ;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            await SetDefaultPoster();
+                            return ;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    System.Diagnostics.Debug.WriteLine("Exception: " + e.Message);
+                }
+            });
+
         }
         private async void DLNA_DeviceMediaPositionUpdated(AudioVideoPlayer.DLNA.DLNADevice sender, AudioVideoPlayer.DLNA.DLNAMediaPosition args)
         {
@@ -1213,16 +1297,17 @@ namespace AudioVideoPlayer.Pages.DLNA
                     MediaItem item1 = comboDeviceStream.SelectedItem as AudioVideoPlayer.DataModel.MediaItem;
                     if (item1 != null)
                     {
-                        int index = comboDeviceStream.SelectedIndex;
-                        if (index < 0)
-                            index = 0;                     
-                        if (++index >= comboDeviceStream.Items.Count)
-                            index = 0;
-                        MediaItem item2 = comboDeviceStream.Items[index] as AudioVideoPlayer.DataModel.MediaItem;
-                        if (item2!=null)
-                        {
-                            await UpdatePlaylist(dd, item1, item2);
-                        }
+                        //int index = comboDeviceStream.SelectedIndex;
+                        //GetNextITem
+                        //if (index < 0)
+                        //    index = 0;                     
+                        //if (++index >= comboDeviceStream.Items.Count)
+                        //    index = 0;
+                        //MediaItem item2 = comboDeviceStream.Items[index] as AudioVideoPlayer.DataModel.MediaItem;
+                        //if (item2!=null)
+                        //{
+                            await UpdatePlaylist(dd, item1, null);
+                      //  }
                     }
                 }
             }
