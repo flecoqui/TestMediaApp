@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using Windows.Web.Http;
 using AudioVideoPlayer.DataModel;
 using Windows.Foundation;
+using Windows.Web.Http.Filters;
 
 namespace AudioVideoPlayer.DLNA
 {
@@ -270,15 +271,19 @@ namespace AudioVideoPlayer.DLNA
         /// <summary>
         /// Method SaveData which loads the Device JSON playlist file
         /// </summary>
-        public async System.Threading.Tasks.Task<bool> SaveDevicePlaylist()
+        public async System.Threading.Tasks.Task<bool> SaveDevicePlaylist(string Path)
         {
             try
             {
                 string name = GetUniqueName();
                 if (string.IsNullOrEmpty(name))
                     return false;
-                string path = await Helpers.MediaHelper.GetPlaylistPath(name);
-                if(await Helpers.MediaHelper.SavePlaylist(name, path, this.ListMediaItem.Items)>=0)
+                string path = string.Empty;
+                if (string.IsNullOrEmpty(Path))
+                    path = await Helpers.MediaHelper.GetPlaylistPath(name);
+                else
+                    path = Path;
+                if (await Helpers.MediaHelper.SavePlaylist(name, path, this.ListMediaItem.Items)>=0)
                     return true;
             }
             catch (Exception)
@@ -825,10 +830,20 @@ namespace AudioVideoPlayer.DLNA
             string result = string.Empty;
             try
             {
-                var client = new HttpClient();
-                if (client != null)
+                int timeout = 1000;
+                using (var cts = new CancellationTokenSource(timeout))
                 {
-                    result = await client.GetStringAsync(new Uri(this.Location));
+                    cts.CancelAfter(timeout);
+
+                    HttpBaseProtocolFilter RootFilter = new HttpBaseProtocolFilter();
+
+                    RootFilter.CacheControl.ReadBehavior = Windows.Web.Http.Filters.HttpCacheReadBehavior.MostRecent;
+                    RootFilter.CacheControl.WriteBehavior = Windows.Web.Http.Filters.HttpCacheWriteBehavior.NoCache;
+                    var client = new HttpClient(RootFilter);
+                    if (client != null)
+                    {
+                        result = await client.GetStringAsync(new Uri(this.Location)).AsTask(cts.Token);
+                    }
                 }
             }
             catch (Exception)
