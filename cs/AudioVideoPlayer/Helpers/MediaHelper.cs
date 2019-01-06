@@ -712,7 +712,7 @@ namespace AudioVideoPlayer.Helpers
                                     string s = url.Substring(pos + 1);
                                     if (s.IndexOf('/') < 0)
                                     {
-                                        string excapeString = Uri.EscapeUriString(url);
+                                        string excapeString = EncodeUri(url);
                                         if (!string.IsNullOrEmpty(excapeString))
                                         {
                                             excapeString = excapeString.Replace("\'", "%27");
@@ -799,7 +799,7 @@ namespace AudioVideoPlayer.Helpers
                                             string title = GetUriFileName(unescapeuri);
                                             if (!string.IsNullOrEmpty(title))
                                             {
-                                                string uri = Uri.EscapeUriString(unescapeuri);
+                                                string uri = EncodeUri(unescapeuri);
                                                 uri = uri.Replace("\'", "%27");
 
                                                 if (counter == 0)
@@ -874,7 +874,17 @@ namespace AudioVideoPlayer.Helpers
             return -1;
         }
 
-
+        private static string EncodeUri(string input)
+        {
+        //    string result1 = System.Net.WebUtility.HtmlEncode(input);
+        //    string result1 = Uri.EscapeUriString(input);
+            string result2 = Uri.EscapeDataString(input);
+            result2 = result2.Replace("%3A", ":");
+            result2 = result2.Replace("%2F", "/");
+       //     if (result1 != result2)
+       //         return result1;
+            return result2;
+        }
         public static async System.Threading.Tasks.Task<int> ProcessCloudFolder(bool bFirst, string PlaylistName,CloudBlobContainer container, CloudBlobDirectory directory, Stream stream, string extensions, bool bCreateThumbnails, int SlideShowPeriod)
         {
             int counter = 0;
@@ -907,7 +917,7 @@ namespace AudioVideoPlayer.Helpers
                                 string title = GetUriFileName(unescapeuri);
                                 if (!string.IsNullOrEmpty(title))
                                 {
-                                    string uri = Uri.EscapeUriString(unescapeuri);
+                                    string uri = EncodeUri(unescapeuri);
                                     uri = uri.Replace("\'", "%27");
 
                                     if (bFirst == true)

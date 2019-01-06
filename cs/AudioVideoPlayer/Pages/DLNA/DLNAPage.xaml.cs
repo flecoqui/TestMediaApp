@@ -69,155 +69,145 @@ namespace AudioVideoPlayer.Pages.DLNA
         {
 
             await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
-                 async () =>
-                 {
-                        comboPlayList.IsEnabled = true;
-                        comboStream.IsEnabled = true;
-                        mediaUri.IsEnabled = true;
-                        if((comboDevice.Items.Count>0) && (bDisable == false))
+            async () =>
+            {
+                comboPlayList.IsEnabled = true;
+                comboStream.IsEnabled = true;
+                mediaUri.IsEnabled = true;
+                if((comboDevice.Items.Count>0) && (bDisable == false))
+                {
+                    comboDevice.IsEnabled = true;
+                    if (comboDevice.SelectedItem is AudioVideoPlayer.DLNA.DLNADevice)
+                    {
+                        AudioVideoPlayer.DLNA.DLNADevice dd = comboDevice.SelectedItem as AudioVideoPlayer.DLNA.DLNADevice;
+                        if(dd!=null)
                         {
+                            RemoveDeviceButton.IsEnabled = true;
                             comboDevice.IsEnabled = true;
-                            if (comboDevice.SelectedItem is AudioVideoPlayer.DLNA.DLNADevice)
-                            {
-                                AudioVideoPlayer.DLNA.DLNADevice dd = comboDevice.SelectedItem as AudioVideoPlayer.DLNA.DLNADevice;
-                                if(dd!=null)
-                                {
-                                    RemoveDeviceButton.IsEnabled = true;
-                                    comboDevice.IsEnabled = true;
-                                    DeviceName.IsEnabled = true;
-                                    DeviceIPAddress.IsEnabled = true;
+                            DeviceName.IsEnabled = true;
+                            DeviceIPAddress.IsEnabled = true;
                                     
-                                 testConnectionWithDeviceButton.IsEnabled = true;
+                            testConnectionWithDeviceButton.IsEnabled = true;
 
 
-                                 if (await dd.IsConnected())
+                            if (await dd.IsConnected())
+                            {
+                                importPlaylistButton.IsEnabled = true;
+                                exportPlaylistButton.IsEnabled = true;
+                                removePlaylistButton.IsEnabled = true;
+                                insertToPlaylistButton.IsEnabled = true;
+                                addToPlaylistButton.IsEnabled = true;
+
+                                if (comboDeviceStream.Items.Count>0)
+                                {
+                                    comboDeviceStream.IsEnabled = true;
+                                    minusButton.IsEnabled = true;
+                                    plusButton.IsEnabled = true;
+                                    playButton.IsEnabled = true;
+                                    shuffleButton.IsEnabled = true;
+                                    repeatButton.IsEnabled = true;
+                                    // Display Player State
+                                    AudioVideoPlayer.DLNA.DLNAMediaTransportInformation trinfo = await dd.GetTransportInformation();
+                                    if (trinfo != null)
+                                        DisplayPlayerButtons(trinfo);
+                                }
+                                else
+                                {
+                                    comboDeviceStream.IsEnabled = false;
+                                    minusButton.IsEnabled = false;
+                                    plusButton.IsEnabled = false;
+                                    playButton.IsEnabled = false;
+                                    shuffleButton.IsEnabled = false;
+                                    repeatButton.IsEnabled = false;
+                                    playPauseButton.IsEnabled = false;
+                                    stopButton.IsEnabled = false;
+                                }
+                                if(dd.IsHeosDevice())
+                                {
+                                    muteButton.IsEnabled = true;
+                                    volumeUpButton.IsEnabled = true;
+                                    volumeDownButton.IsEnabled = true;
+                                    if(comboDeviceInput.Items.Count>0)
                                     {
-                                     importPlaylistButton.IsEnabled = true;
-                                     exportPlaylistButton.IsEnabled = true;
-                                     removePlaylistButton.IsEnabled = true;
-                                        insertToPlaylistButton.IsEnabled = true;
-                                        addToPlaylistButton.IsEnabled = true;
-
-                                     if (comboDeviceStream.Items.Count>0)
-                                        {
-                                            comboDeviceStream.IsEnabled = true;
-                                            minusButton.IsEnabled = true;
-                                            plusButton.IsEnabled = true;
-                                            playButton.IsEnabled = true;
-                                            if (await dd.IsContentReady())
-                                                playPauseButton.IsEnabled = true;
-                                            else
-                                                playPauseButton.IsEnabled = false;
-                                            if (await dd.IsPlaying())
-                                            {
-                                                 playPauseButton.Content = "\xE769";
-                                                 stopButton.IsEnabled = true;
-                                            }
-                                            else 
-                                            {
-                                                playPauseButton.Content = "\xE768";
-                                                if (await dd.IsStopped())
-                                                     stopButton.IsEnabled = false;
-                                                else
-                                                    stopButton.IsEnabled = true;
-                                            }
-                                     }
-                                     else
-                                        {
-                                            comboDeviceStream.IsEnabled = false;
-                                            minusButton.IsEnabled = false;
-                                            plusButton.IsEnabled = false;
-                                         playButton.IsEnabled = false;
-                                         playPauseButton.IsEnabled = false;
-                                         stopButton.IsEnabled = false;
-                                        }
-                                        if(dd.IsHeosDevice())
-                                        {
-                                            muteButton.IsEnabled = true;
-                                            volumeUpButton.IsEnabled = true;
-                                            volumeDownButton.IsEnabled = true;
-                                            if(comboDeviceInput.Items.Count>0)
-                                            {
-                                                comboDeviceInput.IsEnabled = true;
-                                                inputButton.IsEnabled = true;
-                                            }
-                                            else
-                                            {
-                                                comboDeviceInput.IsEnabled = false;
-                                                inputButton.IsEnabled = false;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            muteButton.IsEnabled = false;
-                                            volumeUpButton.IsEnabled = false;
-                                            volumeDownButton.IsEnabled = false;
-                                            comboDeviceInput.IsEnabled = false;
-                                            inputButton.IsEnabled = false;
-                                        }
+                                        comboDeviceInput.IsEnabled = true;
+                                        inputButton.IsEnabled = true;
                                     }
                                     else
                                     {
-                                        removePlaylistButton.IsEnabled = false;
-                                        insertToPlaylistButton.IsEnabled = false;
-                                        addToPlaylistButton.IsEnabled = false;
-
-                                        comboDeviceStream.IsEnabled = false;
-                                        minusButton.IsEnabled = false;
-                                        plusButton.IsEnabled = false;
-                                        playButton.IsEnabled = false;
-                                        playPauseButton.IsEnabled = false;
-                                        stopButton.IsEnabled = false;
-                                        shuffleButton.IsEnabled = false;
-                                        repeatButton.IsEnabled = false;
-
-                                        muteButton.IsEnabled = false;
-                                        volumeUpButton.IsEnabled = false;
-                                        volumeDownButton.IsEnabled = false;
-
                                         comboDeviceInput.IsEnabled = false;
                                         inputButton.IsEnabled = false;
-
                                     }
-
-
                                 }
+                                else
+                                {
+                                    muteButton.IsEnabled = false;
+                                    volumeUpButton.IsEnabled = false;
+                                    volumeDownButton.IsEnabled = false;
+                                    comboDeviceInput.IsEnabled = false;
+                                    inputButton.IsEnabled = false;
+                                }
+                            }
+                            else
+                            {
+                                removePlaylistButton.IsEnabled = false;
+                                insertToPlaylistButton.IsEnabled = false;
+                                addToPlaylistButton.IsEnabled = false;
+
+                                comboDeviceStream.IsEnabled = false;
+                                minusButton.IsEnabled = false;
+                                plusButton.IsEnabled = false;
+                                playButton.IsEnabled = false;
+                                playPauseButton.IsEnabled = false;
+                                stopButton.IsEnabled = false;
+
+                                shuffleButton.IsEnabled = false;
+                                repeatButton.IsEnabled = false;
+
+                                muteButton.IsEnabled = false;
+                                volumeUpButton.IsEnabled = false;
+                                volumeDownButton.IsEnabled = false;
+
+                                comboDeviceInput.IsEnabled = false;
+                                inputButton.IsEnabled = false;
 
                             }
                         }
-                        else
-                        {
-                            RemoveDeviceButton.IsEnabled = false;
-                            comboDevice.IsEnabled = false;
-                            DeviceName.IsEnabled = false;
-                            DeviceIPAddress.IsEnabled = false;
+                    }
+                }
+                else
+                {
+                    RemoveDeviceButton.IsEnabled = false;
+                    comboDevice.IsEnabled = false;
+                    DeviceName.IsEnabled = false;
+                    DeviceIPAddress.IsEnabled = false;
 
-                             testConnectionWithDeviceButton.IsEnabled = false;
-                             importPlaylistButton.IsEnabled = false;
-                             exportPlaylistButton.IsEnabled = false;
+                    testConnectionWithDeviceButton.IsEnabled = false;
+                    importPlaylistButton.IsEnabled = false;
+                    exportPlaylistButton.IsEnabled = false;
 
-                            removePlaylistButton.IsEnabled = false;
-                            insertToPlaylistButton.IsEnabled = false;
-                            addToPlaylistButton.IsEnabled = false;
+                    removePlaylistButton.IsEnabled = false;
+                    insertToPlaylistButton.IsEnabled = false;
+                    addToPlaylistButton.IsEnabled = false;
 
-                            comboDeviceStream.IsEnabled = false;
-                            minusButton.IsEnabled = false;
-                            plusButton.IsEnabled = false;
-                            playButton.IsEnabled = false;
-                             playPauseButton.IsEnabled = false;
-                             stopButton.IsEnabled = false;
-                             shuffleButton.IsEnabled = false;
-                             repeatButton.IsEnabled = false;
+                    comboDeviceStream.IsEnabled = false;
+                    minusButton.IsEnabled = false;
+                    plusButton.IsEnabled = false;
+                    playButton.IsEnabled = false;
 
-                             muteButton.IsEnabled = false;
-                            volumeUpButton.IsEnabled = false;
-                            volumeDownButton.IsEnabled = false;
+                    playPauseButton.IsEnabled = false;
+                    stopButton.IsEnabled = false;
+                    shuffleButton.IsEnabled = false;
+                    repeatButton.IsEnabled = false;
 
-                            comboDeviceInput.IsEnabled = false;
-                            inputButton.IsEnabled = false;
-                        }
+                    muteButton.IsEnabled = false;
+                    volumeUpButton.IsEnabled = false;
+                    volumeDownButton.IsEnabled = false;
 
-                 });
+                    comboDeviceInput.IsEnabled = false;
+                    inputButton.IsEnabled = false;
+                }
+
+            });
 
         }
         private void comboPlayList_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
@@ -490,7 +480,7 @@ namespace AudioVideoPlayer.Pages.DLNA
             // Stop Monitoring
             foreach (var item in comboDevice.Items)
             {
-                AudioVideoPlayer.DLNA.DLNADevice d = comboDevice.SelectedItem as AudioVideoPlayer.DLNA.DLNADevice;
+                AudioVideoPlayer.DLNA.DLNADevice d = item as AudioVideoPlayer.DLNA.DLNADevice;
                 if (d != null)
                 {
                     bool result = d.StopMonitoringDevice();
@@ -710,7 +700,57 @@ namespace AudioVideoPlayer.Pages.DLNA
             AddingDevice
         }
 
+        async System.Threading.Tasks.Task<bool> UpdatePlayerInformation(AudioVideoPlayer.DLNA.DLNADevice p)
+        {
+            if (await p.IsConnected())
+            {
+                // Display Album Art and Title
+                AudioVideoPlayer.DLNA.DLNAMediaInformation info = await p.GetMediaInformation();
+                if (info != null)
+                {
+                    SelectCurrentMediaItem(info.CurrentUri);
+                    await DisplayAlbumArt(AudioVideoPlayer.DLNA.DLNADevice.GetTitleFromMetadataString(info.CurrentUriMetaData),
+                                                AudioVideoPlayer.DLNA.DLNADevice.GetAlbumArtUriFromMetadataString(info.CurrentUriMetaData));
+                }
+                // Display Time and Duration
+                AudioVideoPlayer.DLNA.DLNAMediaPosition posinfo = await p.GetMediaPosition();
+                if (posinfo != null)
+                {
+                    TrackDuration.Text = posinfo.TrackDuration.ToString(@"hh\:mm\:ss");
+                    TrackTime.Text = posinfo.RelTime.ToString(@"hh\:mm\:ss");
+                }
+                else
+                {
+                    TrackDuration.Text = @"00:00:00";
+                    TrackTime.Text = @"00:00:00";
+                }
 
+                // Display Play Mode
+                AudioVideoPlayer.DLNA.DLNAMediaTransportSettings trsettings = await p.GetTransportSettings();
+                if (trsettings != null)
+                    DisplayPlayModeButtons(trsettings.PlayMode);
+
+                // Display Player State
+                AudioVideoPlayer.DLNA.DLNAMediaTransportInformation trinfo = await p.GetTransportInformation();
+                if (trinfo != null)
+                    DisplayPlayerButtons(trinfo);
+
+            }
+            else
+            {
+                // Display Album Art and Title
+                await DisplayAlbumArt(string.Empty, string.Empty);
+                // Display Time and Duration
+                TrackDuration.Text = @"00:00:00";
+                TrackTime.Text = @"00:00:00";
+                // Display Play Mode
+                DisplayPlayModeButtons(string.Empty);
+                // Display Player State
+                DisplayPlayerButtons(null);
+            }
+
+            return true;
+        }
         private async void comboDevice_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             foreach (var item in e.RemovedItems)
@@ -738,7 +778,6 @@ namespace AudioVideoPlayer.Pages.DLNA
                         d.DeviceMediaPositionUpdated += DLNA_DeviceMediaPositionUpdated;
                         d.DeviceMediaTransportInformationUpdated += DLNA_DeviceMediaTransportInformationUpdated;
                         d.DeviceMediaTransportSettingsUpdated += DLNA_DeviceMediaTransportSettingsUpdated;
-                        d.RequestRefresh();
                     }
                 }
             }
@@ -760,54 +799,7 @@ namespace AudioVideoPlayer.Pages.DLNA
                             comboDeviceStream.SelectedIndex = 0;
                     }
                     Shell.Current.DisplayWaitRing = false;
-
-                    if (await p.IsConnected())
-                    {
-                        // Display Album Art and Title
-                        AudioVideoPlayer.DLNA.DLNAMediaInformation info = await p.GetMediaInformation();
-                        if (info != null)
-                        {
-                            SelectCurrentMediaItem(info.CurrentUri);
-                            await DisplayAlbumArt(AudioVideoPlayer.DLNA.DLNADevice.GetTitleFromMetadataString(info.CurrentUriMetaData),
-                                                        AudioVideoPlayer.DLNA.DLNADevice.GetAlbumArtUriFromMetadataString(info.CurrentUriMetaData));
-                        }
-                        // Display Time and Duration
-                        AudioVideoPlayer.DLNA.DLNAMediaPosition posinfo = await p.GetMediaPosition();
-                        if (posinfo != null)
-                        {
-                            TrackDuration.Text = posinfo.TrackDuration.ToString(@"hh\:mm\:ss");
-                            TrackTime.Text = posinfo.RelTime.ToString(@"hh\:mm\:ss");
-                        }
-                        else
-                        {
-                            TrackDuration.Text = @"00:00:00";
-                            TrackTime.Text = @"00:00:00";
-                        }
-
-                        // Display Play Mode
-                        AudioVideoPlayer.DLNA.DLNAMediaTransportSettings trsettings = await p.GetTransportSettings();
-                        if (trsettings != null)
-                            DisplayPlayModeButtons(trsettings.PlayMode);
-
-                        // Display Player State
-                        AudioVideoPlayer.DLNA.DLNAMediaTransportInformation trinfo = await p.GetTransportInformation();
-                        if (trinfo != null)
-                            DisplayPlayerButtons(trinfo);
-
-                    }
-                    else
-                    {
-                        // Display Album Art and Title
-                        await DisplayAlbumArt(string.Empty, string.Empty);
-                        // Display Time and Duration
-                        TrackDuration.Text = @"00:00:00";
-                        TrackTime.Text = @"00:00:00";
-                        // Display Play Mode
-                        DisplayPlayModeButtons(string.Empty);
-                        // Display Player State
-                        DisplayPlayerButtons(null);
-                    }
-
+                    await UpdatePlayerInformation(p);
                     if (comboDeviceInput.Items.Count > 0)
                     {
                         comboDeviceInput.SelectedIndex = 0;
@@ -861,7 +853,7 @@ namespace AudioVideoPlayer.Pages.DLNA
 
         void DisplayPlayModeButtons(string PlayMode)
         {
-            if (string.IsNullOrEmpty(PlayMode))
+            if (!string.IsNullOrEmpty(PlayMode))
             {
                 if (PlayMode == AudioVideoPlayer.DLNA.DLNADevice.PLAY_MODE_NORMAL)
                 {
@@ -894,24 +886,48 @@ namespace AudioVideoPlayer.Pages.DLNA
         {
             if(trinfo!=null)
             {
-                if (trinfo.CurrentTransportState == AudioVideoPlayer.DLNA.DLNADevice.TRANSPORT_STATE_PLAYING)
+                if (trinfo.CurrentTransportState == AudioVideoPlayer.DLNA.DLNADevice.TRANSPORT_STATE_NO_MEDIA_PRESENT)
                 {
-                    playPauseButton.Content = "\xE769";
-                    stopButton.IsEnabled = true;
+                    stopButton.IsEnabled = false;
+                    playPauseButton.IsEnabled = false;
                 }
                 else
                 {
-                    playPauseButton.Content = "\xE768";
-                    if (trinfo.CurrentTransportState == AudioVideoPlayer.DLNA.DLNADevice.TRANSPORT_STATE_STOPPED)
-                        stopButton.IsEnabled = false;
-                    else
+                    if (trinfo.CurrentTransportState == AudioVideoPlayer.DLNA.DLNADevice.TRANSPORT_STATE_PLAYING)
+                    {
+                        playPauseButton.IsEnabled = true;
+                        playPauseButton.Content = "\xE769";
                         stopButton.IsEnabled = true;
-                }
-                if (trinfo.CurrentTransportStatus != AudioVideoPlayer.DLNA.DLNADevice.TRANSPORT_STATUS_OK)
-                {
-                    // Error
-                    stopButton.IsEnabled = false;
-                    playPauseButton.IsEnabled = false;
+                    }
+                    else if (trinfo.CurrentTransportState == AudioVideoPlayer.DLNA.DLNADevice.TRANSPORT_STATE_PAUSED_PLAYBACK)
+                    {
+                        playPauseButton.Content = "\xE768";
+                        playPauseButton.IsEnabled = true;
+                        stopButton.IsEnabled = true;
+                    }
+                    else if (trinfo.CurrentTransportState == AudioVideoPlayer.DLNA.DLNADevice.TRANSPORT_STATE_STOPPED)
+                    {
+                        playPauseButton.Content = "\xE768";
+                        playPauseButton.IsEnabled = false;
+                        stopButton.IsEnabled = false;
+                    }
+                    else if (trinfo.CurrentTransportState == AudioVideoPlayer.DLNA.DLNADevice.TRANSPORT_STATE_TRANSITIONING)
+                    {
+                        stopButton.IsEnabled = true;
+                        playPauseButton.IsEnabled = true;
+                    }
+                    else                    
+                    {
+                        stopButton.IsEnabled = false;
+                        playPauseButton.IsEnabled = false;
+                    }
+
+                    if (trinfo.CurrentTransportStatus != AudioVideoPlayer.DLNA.DLNADevice.TRANSPORT_STATUS_OK)
+                    {
+                        // Error
+                        stopButton.IsEnabled = false;
+                        playPauseButton.IsEnabled = false;
+                    }
                 }
             }
             else
@@ -924,7 +940,7 @@ namespace AudioVideoPlayer.Pages.DLNA
         }
         private async void Shuffle_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Set Shuffle mode on speaker");
+
             if (comboDevice.SelectedItem is AudioVideoPlayer.DLNA.DLNADevice)
             {
                 AudioVideoPlayer.DLNA.DLNADevice d = comboDevice.SelectedItem as AudioVideoPlayer.DLNA.DLNADevice;
@@ -933,10 +949,22 @@ namespace AudioVideoPlayer.Pages.DLNA
                     AudioVideoPlayer.DLNA.DLNAMediaTransportSettings TransportSettings = await d.GetTransportSettings();
                     if (TransportSettings != null)
                     {
-                        if(TransportSettings.PlayMode == AudioVideoPlayer.DLNA.DLNADevice.PLAY_MODE_SHUFFLE)
-                            await d.SetPlayMode(AudioVideoPlayer.DLNA.DLNADevice.PLAY_MODE_NORMAL);
+                        if (TransportSettings.PlayMode == AudioVideoPlayer.DLNA.DLNADevice.PLAY_MODE_SHUFFLE)
+                        {
+                            bool res = await d.SetPlayMode(AudioVideoPlayer.DLNA.DLNADevice.PLAY_MODE_NORMAL);
+                            if(res == true)
+                                LogMessage("Device " + d.GetUniqueName() + " Set Play Mode to Normal sucessfull");
+                            else
+                                LogMessage("Device " + d.GetUniqueName() + " Set Play Mode to Normal error");
+                        }
                         else
-                            await d.SetPlayMode(AudioVideoPlayer.DLNA.DLNADevice.PLAY_MODE_SHUFFLE);
+                        {
+                            bool res = await d.SetPlayMode(AudioVideoPlayer.DLNA.DLNADevice.PLAY_MODE_SHUFFLE);
+                            if (res == true)
+                                LogMessage("Device " + d.GetUniqueName() + " Set Play Mode to Shuffle sucessfull");
+                            else
+                                LogMessage("Device " + d.GetUniqueName() + " Set Play Mode to Shuffle error");
+                        }
                     }
                     TransportSettings = await d.GetTransportSettings();
                     if (TransportSettings != null)
@@ -946,7 +974,6 @@ namespace AudioVideoPlayer.Pages.DLNA
         }
         private async void Repeat_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Set Shuffle mode on speaker");
             if (comboDevice.SelectedItem is AudioVideoPlayer.DLNA.DLNADevice)
             {
                 AudioVideoPlayer.DLNA.DLNADevice d = comboDevice.SelectedItem as AudioVideoPlayer.DLNA.DLNADevice;
@@ -957,11 +984,23 @@ namespace AudioVideoPlayer.Pages.DLNA
                     {
                         if ((TransportSettings.PlayMode == AudioVideoPlayer.DLNA.DLNADevice.PLAY_MODE_SHUFFLE) ||
                             (TransportSettings.PlayMode == AudioVideoPlayer.DLNA.DLNADevice.PLAY_MODE_NORMAL))
+                        {
                             await d.SetPlayMode(AudioVideoPlayer.DLNA.DLNADevice.PLAY_MODE_REPEAT_ALL);
+                            LogMessage("Device " + d.GetUniqueName() + " Set Play Mode to repeat all (loop at the end of the playlist)");
+                            await d.UpdateNextUrl();
+                        }
                         else if (TransportSettings.PlayMode == AudioVideoPlayer.DLNA.DLNADevice.PLAY_MODE_REPEAT_ALL)
+                        {
                             await d.SetPlayMode(AudioVideoPlayer.DLNA.DLNADevice.PLAY_MODE_REPEAT_ONE);
-                        else 
+                            LogMessage("Device " + d.GetUniqueName() + " Set Play Mode to repeat one (loop at the end of the current content)");
+                            await d.UpdateNextUrl();
+                        }
+                        else
+                        {
                             await d.SetPlayMode(AudioVideoPlayer.DLNA.DLNADevice.PLAY_MODE_NORMAL);
+                            LogMessage("Device " + d.GetUniqueName() + " Set Play Mode to normal (stop at at the end of the playlist)");
+                            await d.UpdateNextUrl();
+                        }
                     }
                     TransportSettings = await d.GetTransportSettings();
                     if (TransportSettings != null)
@@ -1085,7 +1124,7 @@ namespace AudioVideoPlayer.Pages.DLNA
             }
             return true;
         }
-        private void comboDevice_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private async void comboDevice_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             RemoveDeviceButton.IsEnabled = false;
             if (comboDevice.Items.Count > 0)
@@ -1099,7 +1138,7 @@ namespace AudioVideoPlayer.Pages.DLNA
                 AudioVideoPlayer.DLNA.DLNADevice d = item as AudioVideoPlayer.DLNA.DLNADevice;
                 if (d != null)
                 {
-                    bool result = d.StartMonitoringDevice();
+                    bool result = await d.StartMonitoringDevice();
                     if (result == true)
                         LogMessage("Start Monitoring Device: " + d.GetUniqueName());
                     else
@@ -1244,17 +1283,24 @@ namespace AudioVideoPlayer.Pages.DLNA
                             index = 0;
                         if (CanMediaItemBeImported(item.Content, item.PosterContent))
                         {
-                            hs.ListMediaItem.Items.Insert(index,item);
-                            comboDeviceStream.DataContext = hs.ListMediaItem.Items;
-                            if (hs.ListMediaItem.Items.Count > 0)
+                            if (hs.ListMediaItem == null)
                             {
-                                if (hs.ListMediaItem.Items.Count > index)
-                                    comboDeviceStream.SelectedIndex = index;
-                                else
-                                    comboDeviceStream.SelectedIndex = 0;
+                                await hs.LoadDevicePlaylist();
                             }
-                            await hs.SaveDevicePlaylist(null);
-                            LogMessage("Media Iteam " + item.Title + " imported into Device playlist " + hs.FriendlyName);
+                            if (hs.ListMediaItem != null)
+                            {
+                                hs.ListMediaItem.Items.Insert(index, item);
+                                comboDeviceStream.DataContext = hs.ListMediaItem.Items;
+                                if (hs.ListMediaItem.Items.Count > 0)
+                                {
+                                    if (hs.ListMediaItem.Items.Count > index)
+                                        comboDeviceStream.SelectedIndex = index;
+                                    else
+                                        comboDeviceStream.SelectedIndex = 0;
+                                }
+                                await hs.SaveDevicePlaylist(null);
+                                LogMessage("Media Iteam " + item.Title + " imported into Device playlist " + hs.FriendlyName);
+                            }
                         }
                         else
                             LogMessage("Media Iteam " + item.Title + " cannot be imported into Device playlist " + hs.FriendlyName + " is it http content?");
@@ -1327,18 +1373,25 @@ namespace AudioVideoPlayer.Pages.DLNA
                             index = 0;
                         if (CanMediaItemBeImported(item.Content, item.PosterContent))
                         {
-                            hs.ListMediaItem.Items.Add(item);
-                            comboDeviceStream.DataContext = hs.ListMediaItem.Items;
-                            if (hs.ListMediaItem.Items.Count > 0)
+                            if (hs.ListMediaItem == null)
                             {
-                                if (hs.ListMediaItem.Items.Count > index)
-                                    comboDeviceStream.SelectedIndex = index;
-                                else
-                                    comboDeviceStream.SelectedIndex = 0;
+                                await hs.LoadDevicePlaylist();
                             }
+                            if (hs.ListMediaItem != null)
+                            {
+                                hs.ListMediaItem.Items.Add(item);
+                                comboDeviceStream.DataContext = hs.ListMediaItem.Items;
+                                if (hs.ListMediaItem.Items.Count > 0)
+                                {
+                                    if (hs.ListMediaItem.Items.Count > index)
+                                        comboDeviceStream.SelectedIndex = index;
+                                    else
+                                        comboDeviceStream.SelectedIndex = 0;
+                                }
 
-                            await hs.SaveDevicePlaylist(null);
-                            LogMessage("Media Iteam " + item.Title + " imported into Device playlist " + hs.FriendlyName);
+                                await hs.SaveDevicePlaylist(null);
+                                LogMessage("Media Iteam " + item.Title + " imported into Device playlist " + hs.FriendlyName);
+                            }
                         }
                         else
                             LogMessage("Media Iteam " + item.Title + " cannot be imported into Device playlist " + hs.FriendlyName + " is it http content?" );
@@ -1399,6 +1452,9 @@ namespace AudioVideoPlayer.Pages.DLNA
                 result = await dd.AddNextUrl(IsAudio(ContentUrl), ContentUrl, AlbumUrl, Title, Codec);
 
             }
+            else
+                result = await dd.AddNextUrl(true, string.Empty, string.Empty, string.Empty, string.Empty);
+
             return result;
         }
         private async void Play_Click(object sender, RoutedEventArgs e)
@@ -1413,14 +1469,15 @@ namespace AudioVideoPlayer.Pages.DLNA
                     {
                         bool result = await UpdatePlaylist(dd, item1, null);
                         if(result == true)
-                            LogMessage("Play current content " + item1.Title   + " on device");
+                            LogMessage("Play current content " + item1.Title   + " on device - contentUrl: " + item1.Content + " posterUrl: " + item1.PosterContent);
                         else
-                            LogMessage("Error while playing current content " + item1.Title + " on device");
-
+                            LogMessage("Error while playing current content " + item1.Title + " on device - contentUrl: " + item1.Content + " posterUrl: " + item1.PosterContent);
+                        await UpdatePlayerInformation(dd);
                     }
                 }
             }
             UpdateControls();
+
         }
         private async void PlayPause_Click(object sender, RoutedEventArgs e)
         {
@@ -1432,7 +1489,7 @@ namespace AudioVideoPlayer.Pages.DLNA
                     if (await dd.IsPlaying())
                         await dd.Pause();
                     else
-                        dd.Play().Wait(450);
+                        await dd.Play();
                     UpdateControls();
                 }
             }
@@ -1515,32 +1572,24 @@ namespace AudioVideoPlayer.Pages.DLNA
                             index = 0;
                         if (++index >= comboDeviceStream.Items.Count)
                             index = 0;
-                        MediaItem item2 = comboDeviceStream.Items[index] as AudioVideoPlayer.DataModel.MediaItem;
-                        if (item2 != null)
-                        {
-                            await UpdatePlaylist(dd, item1, item2);
-                        }
+                        //MediaItem item2 = comboDeviceStream.Items[index] as AudioVideoPlayer.DataModel.MediaItem;
+                        //if (item2 != null)
+                        //{
+                            bool result = await UpdatePlaylist(dd, item1, null);
+                            if (result == true)
+                                LogMessage("Play previous content " + item1.Title + " on device - contentUrl: " + item1.Content + " posterUrl: " + item1.PosterContent);
+                            else
+                                LogMessage("Error while playing current content " + item1.Title + " on device - contentUrl: " + item1.Content + " posterUrl: " + item1.PosterContent);
+
+                        //}
+                        await UpdatePlayerInformation(dd);
                     }
                 }
             }
 
-            /*
-            AudioVideoPlayer.DLNA.DLNADevice hs = GetCurrentSpeaker();
-            if (hs != null)
-            {
-                LogMessage("Step to previous content in the playlist on Device: " + hs.FriendlyName);
-                bool result = await hs.PlayerPrevious();
-                if (result == true)
-                {
-                    LogMessage("Step to previous content in the playlist on Device: " + hs.FriendlyName + " successful");
-                }
-                else
-                {
-                    LogMessage("Step to previous content in the playlist on Device: " + hs.FriendlyName + " error");
-                }
-            }
-            */
+
             UpdateControls();
+            
         }
         private  async void Plus_Click(object sender, RoutedEventArgs e)
         {
@@ -1564,54 +1613,42 @@ namespace AudioVideoPlayer.Pages.DLNA
                         if (++index >= comboDeviceStream.Items.Count)
                             index = 0;
                         MediaItem item2 = comboDeviceStream.Items[index] as AudioVideoPlayer.DataModel.MediaItem;
-                        if (item2 != null)
-                        {
-                            await UpdatePlaylist(dd, item1, item2);
-                        }
+                        //if (item2 != null)
+                        //{
+                            bool result = await UpdatePlaylist(dd, item1, null);
+                            if (result == true)
+                                LogMessage("Play next content " + item1.Title + " on device - contentUrl: " + item1.Content + " posterUrl: " + item1.PosterContent);
+                            else
+                                LogMessage("Error while playing current content " + item1.Title + " on device - contentUrl: " + item1.Content + " posterUrl: " + item1.PosterContent);
+
+                        //}
+                        await UpdatePlayerInformation(dd);
                     }
                 }
             }
 
-            /*
-            AudioVideoPlayer.DLNA.DLNADevice hs = GetCurrentSpeaker();
-            if (hs != null)
-            {
-                LogMessage("Step to next content in the playlist on Device: " + hs.FriendlyName);
-                bool result = await hs.PlayerNext();
-                if (result == true)
-                {
-                    LogMessage("Step to next content in the playlist on Device: " + hs.FriendlyName + " successful");
-                }
-                else
-                {
-                    LogMessage("Step to next content in the playlist on Device: " + hs.FriendlyName + " error");
-                }
-            }
-            */
             UpdateControls();
         }
         private async void Input_Click(object sender, RoutedEventArgs e)
         {
-            LogMessage("Select audio input");
-            AudioVideoPlayer.DLNA.DLNADevice hs = GetCurrentDevice();
-            if (hs != null)
+            AudioVideoPlayer.DLNA.DLNADevice dd = GetCurrentDevice();
+            if (dd != null)
             {
                 Models.DeviceInput di = comboDeviceInput.SelectedItem as Models.DeviceInput;
                 if(di!=null)
                 {
-                    LogMessage("Select audio input " + di.Name + " on Device: " + hs.FriendlyName);
-                    bool result = await hs.PlayInput(di.Name);
+                    bool result = await dd.PlayInput(di.Name);
                     if (result==true)
-                        LogMessage("Select audio input " + di.Name + " on Device: " + hs.FriendlyName + " successful" );
+                        LogMessage("Select audio input " + di.Name + " on Device: " + dd.FriendlyName + " successful" );
                     else
-                        LogMessage("Select audio input " + di.Name + " on Device: " + hs.FriendlyName + " error");
+                        LogMessage("Select audio input " + di.Name + " on Device: " + dd.FriendlyName + " error");
+                    await UpdatePlayerInformation(dd);
                 }
             }
             UpdateControls();
         }
         private async void Mute_Click(object sender, RoutedEventArgs e)
         {
-//            LogMessage("Mute audio on speaker");
             AudioVideoPlayer.DLNA.DLNADevice hs = GetCurrentDevice();
             if (hs != null)
             {
@@ -1653,11 +1690,9 @@ namespace AudioVideoPlayer.Pages.DLNA
         }
         private async void VolumeDown_Click(object sender, RoutedEventArgs e)
         {
-            //LogMessage("Volume Down on speaker");
             AudioVideoPlayer.DLNA.DLNADevice hs = GetCurrentDevice();
             if (hs != null)
             {
-                //LogMessage("Volume Down on Device: " + hs.FriendlyName);
                 bool result = await hs.PlayerVolumeDown();
                 if (result == true)
                 {
@@ -1772,9 +1807,9 @@ namespace AudioVideoPlayer.Pages.DLNA
                         }
 
                         if (count > 0)
-                            LogMessage("Import external Playlist into the current device playlist: " + count.ToString() + " items imported (only http content can be imported)");
+                            LogMessage("Export the current device playlist into an external Playlist: " + count.ToString() + " items imported (only http content can be imported)");
                         else
-                            LogMessage("Import external Playlist into the current device playlist: Playlist empty: 0 item");
+                            LogMessage("Export the current device playlist into an external Playlist: Playlist empty: 0 item");
                     }
                     catch (Exception ex)
                     {
@@ -1957,9 +1992,43 @@ namespace AudioVideoPlayer.Pages.DLNA
             return result;
         }
 
-        private void DLNADeviceConnectionManager_DLNADeviceUpdated(AudioVideoPlayer.DLNA.DLNADeviceConnectionManager sender, AudioVideoPlayer.DLNA.DLNADevice args)
+        private async void DLNADeviceConnectionManager_DLNADeviceUpdated(AudioVideoPlayer.DLNA.DLNADeviceConnectionManager sender, AudioVideoPlayer.DLNA.DLNADevice args)
         {
-           // LogMessage("Updated Device: " + args.FriendlyName + " IP: " + args.Ip);
+            // LogMessage("Updated Device: " + args.FriendlyName + " IP: " + args.Ip);
+            if (args.IsHeosDevice())
+                LogMessage("Updated DLNA/HEOS Device: " + args.FriendlyName + " IP: " + args.Ip);
+            else
+                LogMessage("Updated DLNA Device: " + args.FriendlyName + " IP: " + args.Ip);
+
+
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
+            {
+                ObservableCollection<AudioVideoPlayer.DLNA.DLNADevice> speakerList = ViewModelLocator.Settings.DLNADeviceList;
+                if (speakerList != null)
+                {
+                    AudioVideoPlayer.DLNA.DLNADevice d = speakerList.FirstOrDefault(device => string.Equals(device.Id, args.Id));
+                    if (d == null)
+                    {
+                        LogMessage("Device: " + args.Id + " IP address: " + args.Ip + " added");
+                        speakerList.Add(new AudioVideoPlayer.DLNA.DLNADevice(args.Id, args.Location, args.Version, args.IpCache, args.Server, args.St, args.Usn, args.Ip, args.FriendlyName, args.Manufacturer, args.ModelName, args.ModelNumber));
+                        await d.StartMonitoringDevice();
+                    }
+                    else
+                    {
+                        if ((!string.Equals(d.Ip, args.Ip) && (string.IsNullOrEmpty(d.Ip))))
+                        {
+                            args.Id = d.Id;
+                            speakerList.Remove(d);
+                            speakerList.Add(args);
+                            await args.StartMonitoringDevice();
+                        }
+                    }
+
+                    ViewModelLocator.Settings.DLNADeviceList = speakerList;
+                    UpdateSelection(args.Id);
+                }
+            });
+
         }
         bool IsSpeakerRegistered(string Id)
         {
@@ -2004,7 +2073,7 @@ namespace AudioVideoPlayer.Pages.DLNA
                 LogMessage("Added DLNA Device: " + args.FriendlyName + " IP: " + args.Ip);
 
 
-            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
             {
                 ObservableCollection<AudioVideoPlayer.DLNA.DLNADevice> speakerList = ViewModelLocator.Settings.DLNADeviceList;
                 if (speakerList != null)
@@ -2014,6 +2083,7 @@ namespace AudioVideoPlayer.Pages.DLNA
                     {
                         LogMessage("Device: " + args.Id + " IP address: " + args.Ip + " added");
                         speakerList.Add(new AudioVideoPlayer.DLNA.DLNADevice(args.Id, args.Location, args.Version, args.IpCache, args.Server, args.St, args.Usn, args.Ip, args.FriendlyName, args.Manufacturer, args.ModelName, args.ModelNumber));
+                        await d.StartMonitoringDevice();
                     }
                     else
                     {
@@ -2022,6 +2092,7 @@ namespace AudioVideoPlayer.Pages.DLNA
                             args.Id = d.Id;
                             speakerList.Remove(d);
                             speakerList.Add(args);
+                            await args.StartMonitoringDevice();
                         }
                     }
 
@@ -2030,8 +2101,6 @@ namespace AudioVideoPlayer.Pages.DLNA
                 }
             });
 
-//            if (!IsSpeakerRegistered(args.Id))
-//                ViewModels.StaticSettingsViewModel.HeosSpeakerList.Add(args);
         }
 
         bool StopDiscovery()

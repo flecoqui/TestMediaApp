@@ -133,7 +133,7 @@
                            SelectionChanged="comboDevice_SelectionChanged"  
                            >
                             </ComboBox>
-                            <Button IsEnabled="true" x:Name="DiscoverDeviceButton"  Content="&#xE895;"  Style="{StaticResource CustomButtonStyle}"     ToolTipService.ToolTip="Start/Stop discovering devices" FontFamily="Segoe MDL2 Assets" IsTabStop="True"  Height="40" Width="40"  Click="DiscoverDevice_Click" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,0" />
+                            <Button IsEnabled="true" x:Name="DiscoverDeviceButton"  Content="&#xE895;"  Style="{StaticResource CustomButtonStyle}"     ToolTipService.ToolTip="Start/Stop discovering devices" FontFamily="Segoe MDL2 Assets" IsTabStop="True"  Height="40" Width="40"  Click="DiscoverDevice_Click" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="1,1,1,1" />
                             <Button IsEnabled="true" x:Name="RemoveDeviceButton" Content="&#xE74D;"  Style="{StaticResource CustomButtonStyle}"  Height="40" Width="40" ToolTipService.ToolTip="Remove the current device" FontFamily="Segoe MDL2 Assets" IsTabStop="True"  Margin="1,1,1,1" Click="RemoveDevice_Click" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
@@ -153,8 +153,8 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Margin="5,0,0,0" Text="Device Playlist:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" />
                             <Button  IsEnabled="True" Content="&#xE768;" x:Name="playButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Play the current content"  FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="52,1,1,1" Click="Play_Click" TabIndex="10" />
-                            <Button IsEnabled="true" Content="&#xE892;" x:Name="minusButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Step to the next content in the playlist" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Minus_Click" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-                            <Button IsEnabled="true" Content="&#xE893;" x:Name="plusButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Step to the previous content in the playlist" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Plus_Click"/>
+                            <Button IsEnabled="true" Content="&#xE892;" x:Name="minusButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Step to the previous content in the playlist" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Minus_Click" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                            <Button IsEnabled="true" Content="&#xE893;" x:Name="plusButton" Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Step to the next content in the playlist" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="Plus_Click"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <ComboBox  x:Name="comboDeviceStream" Width="300"  
