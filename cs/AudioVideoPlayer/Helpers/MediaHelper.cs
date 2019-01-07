@@ -160,7 +160,8 @@ namespace AudioVideoPlayer.Helpers
             {
                 if (!string.IsNullOrEmpty(filePath))
                 {
-                    string fileName = System.IO.Path.GetFileNameWithoutExtension(filePath);
+//                    string fileName = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                    string fileName = filePath;
                     if (!string.IsNullOrEmpty(fileName))
                     {
 

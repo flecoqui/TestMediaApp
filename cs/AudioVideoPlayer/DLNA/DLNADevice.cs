@@ -51,6 +51,20 @@ namespace AudioVideoPlayer.DLNA
         RepeatOne = 2,
         RepeatAll = 3
     }
+    public enum DLNADeviceThreadSessionEvent
+    {
+        TheadStarted = 0,
+        ThreadStoppedBeforeStarting = 1,
+        ThreadStoppedByUser = 2,
+        ThreadAutoStoppedInBackground = 3,
+        ThreadStoppedWhenFreed = 4,
+        ThreadRevoked = 5,
+        ExtendedExecutionSessionCreated = 6,
+        ExtendedExecutionSessionRemoved = 7,
+        ExtendedExecutionSessionDenied = 8,
+        ThreadAttachedToSession = 9,
+        ThreadDetachedFromSession = 10
+    }
     public class DLNADevice : IDisposable
     {
         private const string tcpPort = "1255";
@@ -113,8 +127,9 @@ namespace AudioVideoPlayer.DLNA
         private bool bSessionAvailable;
         private static int NumberOfDeviceUsingSession = 0;
         private int taskCount = 0;
-        CancellationTokenSource monitorTokenSource;
-        CancellationToken monitorCancellationToken;
+        private CancellationTokenSource monitorTokenSource;
+        private CancellationToken monitorCancellationToken;
+        private bool IsInBackgroundMode;
 
         private DLNADevicePlayMode PlayMode;
         protected virtual void OnDeviceMediaInformationUpdated(DLNADevice d, DLNAMediaInformation info)
@@ -122,10 +137,6 @@ namespace AudioVideoPlayer.DLNA
             if (DeviceMediaInformationUpdated != null)
                 DeviceMediaInformationUpdated(d, info);
         }
-        //
-        // Summary:
-        //     The event that is raised when a previously discovered Companion Device
-        //     is no longer visible.
         public event TypedEventHandler<DLNADevice, DLNAMediaInformation> DeviceMediaInformationUpdated;
 
 
@@ -134,10 +145,6 @@ namespace AudioVideoPlayer.DLNA
             if (DeviceMediaPositionUpdated != null)
                 DeviceMediaPositionUpdated(d, info);
         }
-        //
-        // Summary:
-        //     The event that is raised when a previously discovered Companion Device
-        //     is no longer visible.
         public event TypedEventHandler<DLNADevice, DLNAMediaPosition> DeviceMediaPositionUpdated;
 
 
@@ -146,10 +153,6 @@ namespace AudioVideoPlayer.DLNA
             if (DeviceMediaTransportInformationUpdated != null)
                 DeviceMediaTransportInformationUpdated(d, info);
         }
-        //
-        // Summary:
-        //     The event that is raised when a previously discovered Companion Device
-        //     is no longer visible.
         public event TypedEventHandler<DLNADevice, DLNAMediaTransportInformation> DeviceMediaTransportInformationUpdated;
 
         protected virtual void OnDeviceMediaTransportSettingsUpdated(DLNADevice d, DLNAMediaTransportSettings info)
@@ -157,11 +160,15 @@ namespace AudioVideoPlayer.DLNA
             if (DeviceMediaTransportSettingsUpdated != null)
                 DeviceMediaTransportSettingsUpdated(d, info);
         }
-        //
-        // Summary:
-        //     The event that is raised when a previously discovered Companion Device
-        //     is no longer visible.
         public event TypedEventHandler<DLNADevice, DLNAMediaTransportSettings> DeviceMediaTransportSettingsUpdated;
+
+        protected virtual void OnDeviceThreadSessionStateChanged(DLNADevice d, DLNADeviceThreadSessionEvent e)
+        {
+            if (DeviceThreadSessionStateChanged != null)
+                DeviceThreadSessionStateChanged(d, e);
+        }
+        public event TypedEventHandler<DLNADevice, DLNADeviceThreadSessionEvent> DeviceThreadSessionStateChanged;
+
 
         public DLNADevice()
         {
@@ -197,6 +204,7 @@ namespace AudioVideoPlayer.DLNA
             bDevicePlayerModeMonitorTaskStopped = true;
             monitorTokenSource = null;
             bSessionAvailable = false;
+            IsInBackgroundMode = false;
 
 
 
@@ -235,6 +243,7 @@ namespace AudioVideoPlayer.DLNA
             bDevicePlayerModeMonitorTaskStopped = true;
             monitorTokenSource = null;
             bSessionAvailable = false;
+            IsInBackgroundMode = false;
 
         }
         public bool IsHeosDevice()
@@ -413,6 +422,7 @@ namespace AudioVideoPlayer.DLNA
                                     {
                                         return await this.UpdatePlaylist(null, m);
                                     }
+                                    return true;
                                 }
                             }
                         }
@@ -451,12 +461,25 @@ namespace AudioVideoPlayer.DLNA
                             if (info != null)
                             {
                                 if (await UpdateNextUrl(info) == false)
+                                {
                                     System.Diagnostics.Debug.WriteLine("Error while setting the next url for device : " + this.FriendlyName);
+                                    return false;
+                                }
+                                return true;
                             }
                         }
                     }
+                    else if (trinfo.CurrentTransportState.ToString() == TRANSPORT_STATE_STOPPED)
+                    {
+                        return false;
+                    }
+                    else if (trinfo.CurrentTransportState.ToString() == TRANSPORT_STATE_NO_MEDIA_PRESENT)
+                    {
+                        return false;
+                    }
+                    else
+                        return true;
                 }
-                return true;
             }
             return false;
         }
@@ -533,40 +556,63 @@ namespace AudioVideoPlayer.DLNA
                 return true;
             return false;
         }
-        public bool StopMonitoringDevice()
+        public bool StopMonitoringDevice(DLNADeviceThreadSessionEvent e)
         {
-            ClearExtendedExecution();
+            if((this.bDevicePlaybackMonitorTaskRunning == false) &&
+             (this.bDevicePlayerStateMonitorTaskRunning == false)&&
+             (this.bDevicePlayerModeMonitorTaskRunning == false)&&
+             (this.bDevicePlaybackMonitorTaskStopped == true)&&
+             (this.bDevicePlayerStateMonitorTaskStopped == true)&&
+             (this.bDevicePlayerModeMonitorTaskStopped == true)&&
+             (this.DevicePlaybackMonitorTask == null)&&
+             (this.DevicePlayerStateMonitorTask == null)&&
+             (this.DevicePlayerModeMonitorTask == null))
+                return false;
 
-
-            this.bDevicePlaybackMonitorTaskRunning = false;
-            this.bDevicePlayerStateMonitorTaskRunning = false;
-            this.bDevicePlayerModeMonitorTaskRunning = false;
-
-
-            WaitEndTask(ref this.bDevicePlaybackMonitorTaskStopped, 1000);
-            WaitEndTask(ref this.bDevicePlayerStateMonitorTaskStopped, 1000);
-            WaitEndTask(ref this.bDevicePlayerModeMonitorTaskStopped, 1000);
-
-            if (this.DevicePlaybackMonitorTask != null)
+            try
             {
-                this.DevicePlaybackMonitorTask.Wait(1000);
-                this.DevicePlaybackMonitorTask = null;
-            }
-            if (this.DevicePlayerStateMonitorTask != null)
-            {
-                this.DevicePlayerStateMonitorTask.Wait(1000);
-                this.DevicePlayerStateMonitorTask = null;
-            }
-            if (this.DevicePlayerModeMonitorTask != null)
-            {
-                this.DevicePlayerModeMonitorTask.Wait(1000);
-                this.DevicePlayerModeMonitorTask = null;
-            }
-            
-            this.bDevicePlaybackMonitorTaskStopped = true;
-            this.bDevicePlayerStateMonitorTaskStopped = true;
-            this.bDevicePlayerModeMonitorTaskStopped = true;
 
+                App.Current.EnteredBackground -= Current_EnteredBackground;
+                App.Current.LeavingBackground -= Current_LeavingBackground;
+
+                ClearExtendedExecution();
+
+
+                this.bDevicePlaybackMonitorTaskRunning = false;
+                this.bDevicePlayerStateMonitorTaskRunning = false;
+                this.bDevicePlayerModeMonitorTaskRunning = false;
+
+
+                WaitEndTask(ref this.bDevicePlaybackMonitorTaskStopped, 1000);
+                WaitEndTask(ref this.bDevicePlayerStateMonitorTaskStopped, 1000);
+                WaitEndTask(ref this.bDevicePlayerModeMonitorTaskStopped, 1000);
+
+                if (this.DevicePlaybackMonitorTask != null)
+                {
+                    this.DevicePlaybackMonitorTask.Wait(1000);
+                    this.DevicePlaybackMonitorTask = null;
+                }
+                if (this.DevicePlayerStateMonitorTask != null)
+                {
+                    this.DevicePlayerStateMonitorTask.Wait(1000);
+                    this.DevicePlayerStateMonitorTask = null;
+                }
+                if (this.DevicePlayerModeMonitorTask != null)
+                {
+                    this.DevicePlayerModeMonitorTask.Wait(1000);
+                    this.DevicePlayerModeMonitorTask = null;
+                }
+
+                this.bDevicePlaybackMonitorTaskStopped = true;
+                this.bDevicePlayerStateMonitorTaskStopped = true;
+                this.bDevicePlayerModeMonitorTaskStopped = true;
+
+                OnDeviceThreadSessionStateChanged(this, e);
+            }
+            catch(Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while stopping monitoring threads: " + ex.Message);
+            }
             return true;
         }
 
@@ -580,11 +626,9 @@ namespace AudioVideoPlayer.DLNA
 
                 case ExtendedExecutionRevokedReason.SystemPolicy:
                     System.Diagnostics.Debug.WriteLine("Extended execution revoked due to system policy." );
+                    StopMonitoringDevice(DLNADeviceThreadSessionEvent.ThreadRevoked);
                     break;
             }
-
-            // ClearExtendedExecution();
-
         }
         void ClearExtendedExecution()
         {
@@ -605,14 +649,19 @@ namespace AudioVideoPlayer.DLNA
                 if (NumberOfDeviceUsingSession > 0)
                     NumberOfDeviceUsingSession--;
                 bSessionAvailable = false;
+                OnDeviceThreadSessionStateChanged(this, DLNADeviceThreadSessionEvent.ThreadDetachedFromSession);
                 // Dispose any outstanding session.
+                if (session != null)
+                {
+                    session.Revoked -= SessionRevoked;
+                }
                 if (NumberOfDeviceUsingSession == 0)
                 {
                     if (session != null)
                     {
-                        session.Revoked -= SessionRevoked;
                         session.Dispose();
                         session = null;
+                        OnDeviceThreadSessionStateChanged(this, DLNADeviceThreadSessionEvent.ExtendedExecutionSessionRemoved);
                     }
                 }
             }
@@ -646,6 +695,8 @@ namespace AudioVideoPlayer.DLNA
             {
                 bSessionAvailable = true;
                 NumberOfDeviceUsingSession++;
+                session.Revoked += SessionRevoked;
+                OnDeviceThreadSessionStateChanged(this, DLNADeviceThreadSessionEvent.ThreadAttachedToSession);
                 return true;
             }
 
@@ -667,6 +718,8 @@ namespace AudioVideoPlayer.DLNA
                     session = newSession;
                     bSessionAvailable = true;
                     NumberOfDeviceUsingSession++;
+                    OnDeviceThreadSessionStateChanged(this, DLNADeviceThreadSessionEvent.ThreadAttachedToSession);
+                    OnDeviceThreadSessionStateChanged(this, DLNADeviceThreadSessionEvent.ExtendedExecutionSessionCreated);
                     break;
 
                 default:
@@ -674,19 +727,33 @@ namespace AudioVideoPlayer.DLNA
                     System.Diagnostics.Debug.WriteLine("Extended execution denied.");
                     newSession.Dispose();
                     bSessionAvailable = false;
+                    OnDeviceThreadSessionStateChanged(this, DLNADeviceThreadSessionEvent.ExtendedExecutionSessionDenied);
                     break;
             }
             if (bSessionAvailable == true)
                 return false;
             return true;
         }
+        private void Current_EnteredBackground(object sender, Windows.ApplicationModel.EnteredBackgroundEventArgs e)
+        {
+            IsInBackgroundMode = true;
+        }
+        private async void Current_LeavingBackground(object sender, Windows.ApplicationModel.LeavingBackgroundEventArgs e)
+        {
+            IsInBackgroundMode = false;
+            // if the Monitoring Thread has been revoked in background, restart monitoring thread
+            if(bSessionAvailable == false)
+                await StartMonitoringDevice();
+        }
         public async System.Threading.Tasks.Task<bool> StartMonitoringDevice()
         {
             TimeSpan period = TimeSpan.FromSeconds(1);
+            App.Current.EnteredBackground += Current_EnteredBackground;
+            App.Current.LeavingBackground += Current_LeavingBackground;
             string name = GetUniqueName();
             if (string.IsNullOrEmpty(name))
                 return false;
-            StopMonitoringDevice();
+            StopMonitoringDevice(DLNADeviceThreadSessionEvent.ThreadStoppedBeforeStarting);
 
             await BeginExtendedExecution();
             if (session != null)
@@ -720,7 +787,16 @@ namespace AudioVideoPlayer.DLNA
                                     await Task.Delay(1000, monitorCancellationToken);
                                     if (monitorCancellationToken.IsCancellationRequested)
                                         break;
-                                    await PlaybackMonitorThread();
+                                    if(await PlaybackMonitorThread()==false)
+                                    {
+                                        // no need to update the next url
+                                        if(IsInBackgroundMode == true)
+                                        {
+                                            // if in background mode
+                                            // stopping the task
+                                         //   StopMonitoringDevice(DLNADeviceThreadSessionEvent.ThreadAutoStoppedInBackground);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -808,9 +884,12 @@ namespace AudioVideoPlayer.DLNA
             }
             return true;
         }
+
+
+
         public void Dispose()
         {
-            StopMonitoringDevice();
+            StopMonitoringDevice(DLNADeviceThreadSessionEvent.ThreadStoppedWhenFreed);
         }
         /// <summary>
         /// This method checks if the url is a music url 

@@ -133,6 +133,8 @@ namespace AudioVideoPlayer.DataModel
 
     class MediaDataSource
     {
+
+
         public static string MediaDataPath { get; private set; }
 
         private static MediaDataSource _MediaDataSource = new MediaDataSource();
@@ -152,12 +154,14 @@ namespace AudioVideoPlayer.DataModel
 
         public static async Task<MediaDataGroup> GetGroupAsync(string path, string uniqueId)
         {
+
             if (await _MediaDataSource.GetMediaDataAsync(path) == true)
             {
                 // Simple linear search is acceptable for small data sets
                 var matches = _MediaDataSource.Groups.Where((group) => group.UniqueId.Equals(uniqueId));
                 if (matches.Count() == 1) return matches.First();
             }
+
             return null;
         }
 
@@ -259,7 +263,8 @@ namespace AudioVideoPlayer.DataModel
 
                 JsonObject jsonObject = JsonObject.Parse(jsonText);
                 JsonArray jsonArray = jsonObject["Groups"].GetArray();
-
+                if (this.Groups.Count != 0)
+                    this.Groups.Clear();
                 foreach (JsonValue groupValue in jsonArray)
                 {
                     JsonObject groupObject = groupValue.GetObject();
