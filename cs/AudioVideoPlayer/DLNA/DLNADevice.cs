@@ -1322,12 +1322,7 @@ namespace AudioVideoPlayer.DLNA
         {
             //Description
             StringBuilder db = new StringBuilder(1024);
-            /*
-            if (UrlToPlay.IndexOf('%') >= 0)
-                UrlToPlay = Uri.UnescapeDataString(UrlToPlay);
-            if (AlbumArtUrl.IndexOf('%') >= 0)
-                AlbumArtUrl = Uri.UnescapeDataString(AlbumArtUrl);
-                */
+
             db.Append("<DIDL-Lite xmlns=\"urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/\" xmlns:upnp=\"urn:schemas-upnp-org:metadata-1-0/upnp/\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" >\r\n");
             db.Append("<item>\r\n");
             db.Append("<dc:title>" + Title + "</dc:title>\r\n");
@@ -1402,16 +1397,14 @@ namespace AudioVideoPlayer.DLNA
                 sb.Append(Index.ToString());
                 sb.Append("</InstanceID>");
                 sb.Append("<CurrentURI>");
-            //    if (UrlToPlay.IndexOf('%') >= 0)
-            //        sb.Append(Uri.UnescapeDataString(UrlToPlay));
-             //   else
+
                     sb.Append(UrlToPlay);
                 sb.Append("</CurrentURI>\r\n");
                 
                 sb.Append("<CurrentURIMetaData>");
 
 
-                //End Description
+
                 string desc = GetMetadataString(bAudioOnly, UrlToPlay,  AlbumArtUrl, Title, codec);
                 sb.Append(desc);
 
@@ -1424,13 +1417,12 @@ namespace AudioVideoPlayer.DLNA
                 HttpClient httpClient = new HttpClient();
 
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Cache-Control", "no-cache");
-               // httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Connection", "Close");
-               // httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Pragma", "no-cache");
+
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("User-Agent", "Microsoft-Windows/6.3 UPnP/1.0 Microsoft-DLNA DLNADOC/1.50");
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("FriendlyName.DLNA.ORG", AudioVideoPlayer.Information.SystemInformation.DeviceName);
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Content-Type", "text/xml; charset=\"utf-8\"");
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("SOAPAction", "\"urn:schemas-upnp-org:service:AVTransport:1#SetAVTransportURI\"");
-                // httpClient.DefaultRequestHeaders.Remove("Accept-Encoding");
+
 
 
 
@@ -1478,16 +1470,14 @@ namespace AudioVideoPlayer.DLNA
                 sb.Append("</InstanceID>");
                 sb.Append("<NextURI>");
                 
-               // if (UrlToPlay.IndexOf('%') >= 0)
-               //     sb.Append(Uri.UnescapeDataString(UrlToPlay));
-              //  else
+
                     sb.Append(UrlToPlay);
                 sb.Append("</NextURI>\r\n");
 
                 sb.Append("<NextURIMetaData>");
 
 
-                //End Description
+
                 if (!string.IsNullOrEmpty(UrlToPlay))
                 {
                     string desc = GetMetadataString(bAudioOnly, UrlToPlay, AlbumArtUrl, Title, codec);
@@ -1504,13 +1494,10 @@ namespace AudioVideoPlayer.DLNA
                 HttpClient httpClient = new HttpClient();
 
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Cache-Control", "no-cache");
-                // httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Connection", "Close");
-                // httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Pragma", "no-cache");
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("User-Agent", "Microsoft-Windows/6.3 UPnP/1.0 Microsoft-DLNA DLNADOC/1.50");
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("FriendlyName.DLNA.ORG", AudioVideoPlayer.Information.SystemInformation.DeviceName);
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Content-Type", "text/xml; charset=\"utf-8\"");
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("SOAPAction", "\"urn:schemas-upnp-org:service:AVTransport:1#SetNextAVTransportURI\"");
-                // httpClient.DefaultRequestHeaders.Remove("Accept-Encoding");
 
 
 
@@ -1559,18 +1546,14 @@ namespace AudioVideoPlayer.DLNA
                 HttpClient httpClient = new HttpClient();
 
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Cache-Control", "no-cache");
-              //  httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Connection", "Close");
-              //  httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Pragma", "no-cache");
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("User-Agent", "Microsoft-Windows/6.3 UPnP/1.0 Microsoft-DLNA DLNADOC/1.50");
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("FriendlyName.DLNA.ORG", AudioVideoPlayer.Information.SystemInformation.DeviceName);
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("Content-Type", "text/xml; charset=\"utf-8\"");
                 httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("SOAPAction", "\"urn:schemas-upnp-org:service:AVTransport:1#Play\"");
-               // httpClient.DefaultRequestHeaders.Remove("Accept-Encoding");
 
                 Windows.Web.Http.HttpStringContent httpContent = new Windows.Web.Http.HttpStringContent(sb.ToString());
                 httpContent.Headers.Remove("Content-Type");
                 httpContent.Headers.TryAppendWithoutValidation("Content-Type", "text/xml; charset=utf-8");
-               // httpContent.Headers.Remove("Accept-Encoding");
 
                 string prefix = GetHttpPrefix(this.Location);
                 if (!string.IsNullOrEmpty(prefix))

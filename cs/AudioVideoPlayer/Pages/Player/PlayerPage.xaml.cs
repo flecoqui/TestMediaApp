@@ -374,27 +374,7 @@ namespace AudioVideoPlayer.Pages.Player
         {
             // Refresh the pages with the new Color                         
             AudioVideoPlayer.Shell.Current.UpdateTitleBarAndColor(bShow);
-           /* 
-            ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
-            Windows.ApplicationModel.Core.CoreApplicationViewTitleBar coreTitleBar = Windows.ApplicationModel.Core.CoreApplication.GetCurrentView().TitleBar;
-            // Save titleBarColor
-            if (titleBarColor == Windows.UI.Colors.Transparent)
-                titleBarColor = formattableTitleBar.ButtonBackgroundColor?? Windows.UI.Colors.Transparent;
-            if (bShow == true)
-            {
-                formattableTitleBar.ButtonBackgroundColor = titleBarColor;
-                formattableTitleBar.ButtonHoverBackgroundColor = titleBarColor;
-                formattableTitleBar.ButtonInactiveBackgroundColor = titleBarColor;
-                coreTitleBar.ExtendViewIntoTitleBar = false;
-            }
-            else
-            {
-                formattableTitleBar.ButtonBackgroundColor = Windows.UI.Colors.Transparent;
-                formattableTitleBar.ButtonHoverBackgroundColor = Windows.UI.Colors.Transparent;
-                formattableTitleBar.ButtonInactiveBackgroundColor = Windows.UI.Colors.Transparent;
-                coreTitleBar.ExtendViewIntoTitleBar = true;
-            }
-            */
+
         }
         void SetAutoStartWindowState()
         {
@@ -3038,25 +3018,6 @@ namespace AudioVideoPlayer.Pages.Player
                     try
                     {
                         
-                        // Load the bitmap image over http
-                        //Windows.Web.Http.HttpClient httpClient = new Windows.Web.Http.HttpClient();
-                        //Windows.Storage.Streams.InMemoryRandomAccessStream ras = new Windows.Storage.Streams.InMemoryRandomAccessStream();
-                        //using (var stream = await httpClient.GetInputStreamAsync(new Uri(PosterUrl)))
-                        //{
-                        //    if (stream != null)
-                        //    {
-                        //        await stream.AsStreamForRead().CopyToAsync(ras.AsStreamForWrite());
-                        //        ras.Seek(0);
-                        //        var b = new Windows.UI.Xaml.Media.Imaging.BitmapImage();
-                        //        if (b != null)
-                        //        {
-                        //            await b.SetSourceAsync(ras);
-                        //            SetPictureSource(b);
-                        //            SetPictureElementSize();
-                        //            return true;
-                        //        }
-                        //    }
-                        //}
 
                         using (var client = new Windows.Web.Http.HttpClient())
                         {
@@ -3093,14 +3054,7 @@ namespace AudioVideoPlayer.Pages.Player
             }
             if (IsMusic(PosterUrl))
             {
-                // Comment the line below
-                //if (!IsLocalFile(PosterUrl))
-                //{
-                    
-                //    string localPath = await DownloadRemoteFile(Windows.Storage.ApplicationData.Current.LocalFolder, PosterUrl);
-                //    if (!string.IsNullOrEmpty(localPath))
-                //        PosterUrl = "file://" + localPath;
-                //}
+
 
                 if (IsLocalFile(PosterUrl))
                 {
@@ -3326,22 +3280,7 @@ namespace AudioVideoPlayer.Pages.Player
             else if (PosterUrl.ToLower().StartsWith("file://"))
             {
                 path = PosterUrl.Replace("file://", "");
-                // As it's local path should be on USB storage
-                /*
-                var devices = Windows.Storage.KnownFolders.RemovableDevices;
-                IReadOnlyList<Windows.Storage.StorageFolder> rootFolders = await devices.GetFoldersAsync();
-                if ((rootFolders != null) && (rootFolders.Count > 0))
-                {
-                    foreach (Windows.Storage.StorageFolder rootFolder in rootFolders)
-                    {
-                        if (path.StartsWith(rootFolder.Path, StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            folder = rootFolder;
-                          //  path = path.Replace(rootFolder.Path, "");
-                            break;
-                        }
-                    }
-                }*/
+
             }
             else if (PosterUrl.ToLower().StartsWith("ms-appx://"))
             {

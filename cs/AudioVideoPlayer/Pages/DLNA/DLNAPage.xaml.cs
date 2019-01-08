@@ -312,124 +312,7 @@ namespace AudioVideoPlayer.Pages.DLNA
             }
             return false;
         }
-        /// <summary>
-        /// Method LoadingData which loads the Device JSON playlist file
-        /// </summary>
-        /*
-        async System.Threading.Tasks.Task<bool> LoadingDevicePlaylist(string name, string path)
-        {
-            try
-            {
-                Shell.Current.DisplayWaitRing = true;
-                UpdateControls(true);
-
-                MediaDataSource.Clear();
-                LogMessage(string.IsNullOrEmpty(path) ? "Loading default Device playlist" : "Loading Device playlist :" + path);
-                DefaultDevicePlaylist = await MediaDataSource.GetGroupAsync(path, "audio_video_picture");
-                if (DefaultDevicePlaylist == null)
-                {
-                    await Helpers.MediaHelper.CreateEmptyPlaylist(name, path);
-                    DefaultDevicePlaylist = await MediaDataSource.GetGroupAsync(path, "audio_video_picture");
-                }
-                if (DefaultDevicePlaylist != null) 
-                {
-                    LogMessage("Loading Device playlist successful with " + DefaultDevicePlaylist.Items.Count.ToString() + " items");
-                    comboDeviceStream.DataContext = DefaultDevicePlaylist.Items;
-                    if(DefaultDevicePlaylist.Items.Count > 0)
-                        comboDeviceStream.SelectedIndex = 0;
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogMessage("Loading Device playlist failed: " + ex.Message);
-
-            }
-            finally
-            {
-                Shell.Current.DisplayWaitRing = false;
-                UpdateControls();
-
-            }
-            return false;
-        }
-        */
-        /*
-        ThreadPoolTimer MonitorDeviceTimer;
-        bool StartMonitorDeviceTimer()
-        {
-            TimeSpan period = TimeSpan.FromSeconds(1);
-            MonitorDeviceTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
-            {
-                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
-                    async () =>
-                    {
-                        AudioVideoPlayer.DLNA.DLNADevice dd = comboDevice.SelectedItem as AudioVideoPlayer.DLNA.DLNADevice;
-                        if (dd != null)
-                        {
-                            if (await dd.IsConnected())
-                            {
-                                if(await dd.IsPlaying())
-                                {
-                                    string url = await dd.GetContentUrl();
-                                    if (!string.IsNullOrEmpty(url))
-                                    {
-                                        if (url.StartsWith("https"))
-                                            url = url.Replace("https", "");
-                                        else if (url.StartsWith("http"))
-                                            url = url.Replace("http", "");
-                                        int index = 0;
-                                        int j = 0;
-                                        foreach (var i in comboDeviceStream.Items)
-                                        {
-                                            MediaItem m = i as MediaItem;
-                                            if (m != null)
-                                            {
-                                                if (m.Content.IndexOf(url) > 0)
-                                                {
-                                                    index = j;
-                                                    break;
-                                                }
-                                            }
-                                            j++;
-                                        }
-                                        if (comboDeviceStream.Items.Count > 0)
-                                        {
-                                            if (comboDeviceStream.SelectedIndex != index)
-                                            {
-                                                comboDeviceStream.SelectedIndex = index;
-                                                int nextIndex = (index + 1 >= comboDeviceStream.Items.Count) ? 0 : index + 1;
-                                                MediaItem m = comboDeviceStream.Items[nextIndex] as MediaItem;
-                                                if(m!=null)
-                                                {
-                                                    LogMessage("Add a new URL in the Playlist: " + m.Title);
-                                                    await UpdatePlaylist(dd, null, m);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }); ;
-
-            },
-            period);
-            if (MonitorDeviceTimer != null)
-                return true;
-            return false;
-        }
-        bool StopMonitorDeviceTimer()
-        {
-            if (MonitorDeviceTimer != null)
-            {
-                MonitorDeviceTimer.Cancel();
-                MonitorDeviceTimer = null;
-                return true;
-            }
-            return true;
-        }
-        */
+  
         /// <summary>
         /// Invoked when this page is about to be displayed in a Frame.
         /// </summary>
@@ -1419,28 +1302,7 @@ namespace AudioVideoPlayer.Pages.DLNA
                     }
                 }
             }
-            /*
-            LogMessage("Play url " + mediaUri.Text + " on Device: " + hs.FriendlyName);
-                    string Codec = GetCodec(mediaUri.Text);
-                    
-                    string CurrentUrl = mediaUri.Text;
-                    if (hs.IsSamsungDevice())
-                    {
-                        CurrentUrl = CurrentUrl.Replace("https://", "http://");
-                        CurrentAlbumArtUrl = CurrentAlbumArtUrl.Replace("https://", "http://");
-                    }
-                    bool result = await hs.AddUrl(IsAudio(CurrentUrl), CurrentUrl, CurrentAlbumArtUrl, CurrentTitle, Codec);
-                    if (result == true)
-                    {
-                        LogMessage("Play url " + mediaUri.Text + " on Device: " + hs.FriendlyName + " successful");
-                    }
-                    else
-                    {
-                        LogMessage("Play url " + mediaUri.Text + " on Device: " + hs.FriendlyName + " error");
-                    }
-                }
-            }
-            */
+
             UpdateControls();
         }
         async System.Threading.Tasks.Task<bool> UpdatePlaylist(AudioVideoPlayer.DLNA.DLNADevice dd, MediaItem  item1, MediaItem item2)
@@ -1536,22 +1398,7 @@ namespace AudioVideoPlayer.Pages.DLNA
                     }
                 }
             }
-            /*
-            AudioVideoPlayer.DLNA.DLNADevice hs = GetCurrentSpeaker();
-            if (hs != null)
-            {
-                LogMessage("Pause player on Device: " + hs.FriendlyName);
-                bool result = await hs.PlayerSetState("pause");
-                if (result == true)
-                {
-                    LogMessage("Pause player on Device: " + hs.FriendlyName + " successful");
-                }
-                else
-                {
-                    LogMessage("Play player on Device: " + hs.FriendlyName + " error");
-                }
-            }
-            */
+
             UpdateControls();
         }
         private async void Stop_Click(object sender, RoutedEventArgs e)
@@ -1593,9 +1440,7 @@ namespace AudioVideoPlayer.Pages.DLNA
                             index = 0;
                         if (++index >= comboDeviceStream.Items.Count)
                             index = 0;
-                        //MediaItem item2 = comboDeviceStream.Items[index] as AudioVideoPlayer.DataModel.MediaItem;
-                        //if (item2 != null)
-                        //{
+
                             bool result = await UpdatePlaylist(dd, item1, null);
                             if (result == true)
                                 LogMessage("Play previous content " + item1.Title + " on device - contentUrl: " + item1.Content + " posterUrl: " + item1.PosterContent);
@@ -1634,15 +1479,14 @@ namespace AudioVideoPlayer.Pages.DLNA
                         if (++index >= comboDeviceStream.Items.Count)
                             index = 0;
                         MediaItem item2 = comboDeviceStream.Items[index] as AudioVideoPlayer.DataModel.MediaItem;
-                        //if (item2 != null)
-                        //{
+
                             bool result = await UpdatePlaylist(dd, item1, null);
                             if (result == true)
                                 LogMessage("Play next content " + item1.Title + " on device - contentUrl: " + item1.Content + " posterUrl: " + item1.PosterContent);
                             else
                                 LogMessage("Error while playing current content " + item1.Title + " on device - contentUrl: " + item1.Content + " posterUrl: " + item1.PosterContent);
 
-                        //}
+
                         await UpdatePlayerInformation(dd);
                     }
                 }
@@ -2189,19 +2033,13 @@ namespace AudioVideoPlayer.Pages.DLNA
             {
                 if (timer.Interval.Ticks == 1000)
                 {
-                    //each time set the offset to scrollviewer.HorizontalOffset + 5
-                    //titleScrollViewer.ScrollToHorizontalOffset(titleScrollViewer.HorizontalOffset + 1);
+
                     titleScrollViewer.ChangeView(offset++, titleScrollViewer.VerticalOffset, titleScrollViewer.ZoomFactor);
                     //if the scrollviewer scrolls to the end, scroll it back to the start.
                     if (offset >= titleScrollViewer.ScrollableWidth-5)
                     {
-                        //string s = title.Text;
-                        //title.Text = string.Empty;
                         offset = 5;
-                        //titleScrollViewer.ScrollToHorizontalOffset(0);
                         titleScrollViewer.ChangeView(offset, titleScrollViewer.VerticalOffset, titleScrollViewer.ZoomFactor,true);
-                        
-                        //title.Text = s;
                     }
                 }
             };
