@@ -65,6 +65,39 @@ namespace AudioVideoPlayer.DLNA
         ThreadAttachedToSession = 9,
         ThreadDetachedFromSession = 10
     }
+
+    public class DLNADeviceConnectionLossInBackgroundException : Exception
+    {
+        public DLNADeviceConnectionLossInBackgroundException()
+        {
+        }
+
+        public DLNADeviceConnectionLossInBackgroundException(string message)
+            : base(message)
+        {
+        }
+
+        public DLNADeviceConnectionLossInBackgroundException(string message, Exception inner)
+            : base(message, inner)
+        {
+        }
+    }
+    public class DLNADeviceEndOfLoopInBackgroundException : Exception
+    {
+        public DLNADeviceEndOfLoopInBackgroundException()
+        {
+        }
+
+        public DLNADeviceEndOfLoopInBackgroundException(string message)
+            : base(message)
+        {
+        }
+
+        public DLNADeviceEndOfLoopInBackgroundException(string message, Exception inner)
+            : base(message, inner)
+        {
+        }
+    }
     public class DLNADevice : IDisposable
     {
         private const string tcpPort = "1255";
@@ -83,7 +116,8 @@ namespace AudioVideoPlayer.DLNA
         public DLNADeviceStatus Status { get; set; }
         public string PlayerId { get; set; }
 
-        private DateTime LastConnectionTime = DateTime.MinValue;
+        private DateTime LatestConnectionTime = DateTime.MinValue;
+        private DateTime LatestConnectionCheckTime = DateTime.MinValue;
         public List<DLNAService> ListDLNAServices { get; set; }
 
         public MediaDataGroup ListMediaItem { get; set; }
@@ -130,6 +164,13 @@ namespace AudioVideoPlayer.DLNA
         private CancellationTokenSource monitorTokenSource;
         private CancellationToken monitorCancellationToken;
         private bool IsInBackgroundMode;
+
+        TimeSpan periodDevicePlaybackMonitorTask = TimeSpan.FromMilliseconds(1000);
+        TimeSpan periodDevicePlayerStateMonitorTask = TimeSpan.FromMilliseconds(1000);
+        TimeSpan periodDevicePlayerModeMonitorTask = TimeSpan.FromMilliseconds(1000);
+        TimeSpan periodConnectionCheck = TimeSpan.FromMilliseconds(3000);
+        TimeSpan periodConnectionLoss = TimeSpan.FromMilliseconds(30000);
+        TimeSpan periodWaitTaskCompletion = TimeSpan.FromMilliseconds(1000);
 
         private DLNADevicePlayMode PlayMode;
         protected virtual void OnDeviceMediaInformationUpdated(DLNADevice d, DLNAMediaInformation info)
@@ -425,6 +466,13 @@ namespace AudioVideoPlayer.DLNA
                                     return true;
                                 }
                             }
+                            else
+                            {
+                                if (IsInBackgroundMode == true)
+                                {
+                                    throw new DLNADeviceEndOfLoopInBackgroundException("End of Media Loop in background mode");
+                                }
+                            }
                         }
                     }
                 }
@@ -481,6 +529,17 @@ namespace AudioVideoPlayer.DLNA
                         return true;
                 }
             }
+            else
+            {
+                if(this.TimeSinceLatestConnection()> periodConnectionLoss.TotalMilliseconds)
+                {
+                    if (IsInBackgroundMode == true)
+                    {
+                        throw new DLNADeviceConnectionLossInBackgroundException("Connection with Device loss in background mode");
+                    }
+
+                }
+            }
             return false;
         }
 
@@ -515,6 +574,17 @@ namespace AudioVideoPlayer.DLNA
                 }
                 return true;
             }
+            else
+            {
+                if (this.TimeSinceLatestConnection() > periodConnectionLoss.TotalMilliseconds)
+                {
+                    if (IsInBackgroundMode == true)
+                    {
+                        throw new DLNADeviceConnectionLossInBackgroundException("Connection with Device loss in background mode");
+                    }
+
+                }
+            }
             return false;
         }
 
@@ -538,6 +608,17 @@ namespace AudioVideoPlayer.DLNA
                     }
                 }
                 return true;
+            }
+            else
+            {
+                if (this.TimeSinceLatestConnection() > periodConnectionLoss.TotalMilliseconds)
+                {
+                    if (IsInBackgroundMode == true)
+                    {
+                        throw new DLNADeviceConnectionLossInBackgroundException("Connection with Device loss in background mode");
+                    }
+
+                }
             }
             return false;
         }
@@ -583,23 +664,23 @@ namespace AudioVideoPlayer.DLNA
                 this.bDevicePlayerModeMonitorTaskRunning = false;
 
 
-                WaitEndTask(ref this.bDevicePlaybackMonitorTaskStopped, 1000);
-                WaitEndTask(ref this.bDevicePlayerStateMonitorTaskStopped, 1000);
-                WaitEndTask(ref this.bDevicePlayerModeMonitorTaskStopped, 1000);
+                WaitEndTask(ref this.bDevicePlaybackMonitorTaskStopped, (int) periodWaitTaskCompletion.TotalMilliseconds);
+                WaitEndTask(ref this.bDevicePlayerStateMonitorTaskStopped, (int)periodWaitTaskCompletion.TotalMilliseconds);
+                WaitEndTask(ref this.bDevicePlayerModeMonitorTaskStopped, (int)periodWaitTaskCompletion.TotalMilliseconds);
 
                 if (this.DevicePlaybackMonitorTask != null)
                 {
-                    this.DevicePlaybackMonitorTask.Wait(1000);
+                    this.DevicePlaybackMonitorTask.Wait((int)periodWaitTaskCompletion.TotalMilliseconds);
                     this.DevicePlaybackMonitorTask = null;
                 }
                 if (this.DevicePlayerStateMonitorTask != null)
                 {
-                    this.DevicePlayerStateMonitorTask.Wait(1000);
+                    this.DevicePlayerStateMonitorTask.Wait((int)periodWaitTaskCompletion.TotalMilliseconds);
                     this.DevicePlayerStateMonitorTask = null;
                 }
                 if (this.DevicePlayerModeMonitorTask != null)
                 {
-                    this.DevicePlayerModeMonitorTask.Wait(1000);
+                    this.DevicePlayerModeMonitorTask.Wait((int)periodWaitTaskCompletion.TotalMilliseconds);
                     this.DevicePlayerModeMonitorTask = null;
                 }
 
@@ -747,7 +828,7 @@ namespace AudioVideoPlayer.DLNA
         }
         public async System.Threading.Tasks.Task<bool> StartMonitoringDevice()
         {
-            TimeSpan period = TimeSpan.FromSeconds(1);
+            
             App.Current.EnteredBackground += Current_EnteredBackground;
             App.Current.LeavingBackground += Current_LeavingBackground;
             string name = GetUniqueName();
@@ -784,22 +865,23 @@ namespace AudioVideoPlayer.DLNA
                                 {
                                     if (monitorCancellationToken.IsCancellationRequested)
                                         break;
-                                    await Task.Delay(1000, monitorCancellationToken);
+                                    await Task.Delay((int)periodDevicePlaybackMonitorTask.TotalMilliseconds, monitorCancellationToken);
                                     if (monitorCancellationToken.IsCancellationRequested)
                                         break;
-                                    if(await PlaybackMonitorThread()==false)
-                                    {
-                                        // no need to update the next url
-                                        if(IsInBackgroundMode == true)
-                                        {
-                                            // if in background mode
-                                            // stopping the task
-                                         //   StopMonitoringDevice(DLNADeviceThreadSessionEvent.ThreadAutoStoppedInBackground);
-                                        }
-                                    }
+                                    await PlaybackMonitorThread();
                                 }
                             }
                         }
+                    }
+                    catch(DLNADeviceEndOfLoopInBackgroundException ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("DLNADeviceEndOfLoopInBackgroundException in Playback Monitor Thread: " + ex.Message);
+                        StopMonitoringDevice(DLNADeviceThreadSessionEvent.ThreadAutoStoppedInBackground);
+                    }
+                    catch (DLNADeviceConnectionLossInBackgroundException ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("DLNADeviceConnectionLossInBackgroundException in Playback Monitor Thread: " + ex.Message);
+                        StopMonitoringDevice(DLNADeviceThreadSessionEvent.ThreadAutoStoppedInBackground);
                     }
                     catch (Exception ex)
                     {
@@ -828,7 +910,7 @@ namespace AudioVideoPlayer.DLNA
                                 {
                                     if (monitorCancellationToken.IsCancellationRequested)
                                         break;
-                                    await Task.Delay(1000, monitorCancellationToken);
+                                    await Task.Delay((int)periodDevicePlayerStateMonitorTask.TotalMilliseconds, monitorCancellationToken);
                                     if (monitorCancellationToken.IsCancellationRequested)
                                         break;
                                     await PlayerStateMonitorThread();
@@ -836,6 +918,17 @@ namespace AudioVideoPlayer.DLNA
                             }
                         }
                     }
+                    catch (DLNADeviceEndOfLoopInBackgroundException ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("DLNADeviceEndOfLoopInBackgroundException in Playback Monitor Thread: " + ex.Message);
+                        StopMonitoringDevice(DLNADeviceThreadSessionEvent.ThreadAutoStoppedInBackground);
+                    }
+                    catch (DLNADeviceConnectionLossInBackgroundException ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("DLNADeviceConnectionLossInBackgroundException in Playback Monitor Thread: " + ex.Message);
+                        StopMonitoringDevice(DLNADeviceThreadSessionEvent.ThreadAutoStoppedInBackground);
+                    }
+
                     catch (Exception ex)
                     {
                         System.Diagnostics.Debug.WriteLine("Exception in Player State Monitor Thread: " + ex.Message);
@@ -863,7 +956,7 @@ namespace AudioVideoPlayer.DLNA
                                 {
                                     if (monitorCancellationToken.IsCancellationRequested)
                                         break;
-                                    await Task.Delay(1000, monitorCancellationToken);
+                                    await Task.Delay((int)periodDevicePlayerModeMonitorTask.TotalMilliseconds, monitorCancellationToken);
                                     if (monitorCancellationToken.IsCancellationRequested)
                                         break;
                                     await PlayerModeMonitorThread();
@@ -871,6 +964,17 @@ namespace AudioVideoPlayer.DLNA
                             }
                         }
                     }
+                    catch (DLNADeviceEndOfLoopInBackgroundException ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("DLNADeviceEndOfLoopInBackgroundException in Playback Monitor Thread: " + ex.Message);
+                        StopMonitoringDevice(DLNADeviceThreadSessionEvent.ThreadAutoStoppedInBackground);
+                    }
+                    catch (DLNADeviceConnectionLossInBackgroundException ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("DLNADeviceConnectionLossInBackgroundException in Playback Monitor Thread: " + ex.Message);
+                        StopMonitoringDevice(DLNADeviceThreadSessionEvent.ThreadAutoStoppedInBackground);
+                    }
+
                     catch (Exception ex)
                     {
                         System.Diagnostics.Debug.WriteLine("Exception in Player Mode Monitor Thread: " + ex.Message);
@@ -1008,17 +1112,33 @@ namespace AudioVideoPlayer.DLNA
             if (string.IsNullOrEmpty(name))
                 return false;
             DateTime d = DateTime.Now;
-            if((d-LastConnectionTime).TotalSeconds>3)
+            if((d-LatestConnectionTime).TotalSeconds>3)
             {
                 string s = await GetLocationContent();
                 if(!string.IsNullOrEmpty(s))
                 {
-                    LastConnectionTime = d;
+                    LatestConnectionTime = d;
                     return true;
                 }
                 return false;
             }
             return true;
+        }
+        public int TimeSinceLatestConnection()
+        {
+            DateTime begin ;
+            DateTime end = DateTime.Now;
+            if (LatestConnectionTime != DateTime.MinValue)
+            {
+                begin = LatestConnectionTime;
+            }
+            else
+            {
+                if (LatestConnectionCheckTime == DateTime.MinValue)
+                    LatestConnectionCheckTime = DateTime.Now;
+                begin = LatestConnectionCheckTime;
+            }
+            return (int) (end - begin).TotalMilliseconds;
         }
         private async System.Threading.Tasks.Task<string> SendTelnetCommand(string cmd)
         {
