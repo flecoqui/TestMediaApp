@@ -445,7 +445,21 @@ namespace AudioVideoPlayer.Pages.Playlist
                     !string.IsNullOrEmpty(ViewModelLocator.Settings.CloudPlaylistPath)
                     )
                 {
-                    int counter = await Helpers.MediaHelper.CreateCloudPlaylist(ViewModelLocator.Settings.CloudPlaylistName, ViewModelLocator.Settings.AzureAccountName, ViewModelLocator.Settings.AzureAccountKey, ViewModelLocator.Settings.AzureContainer, ViewModelLocator.Settings.AzureFolder, ViewModelLocator.Settings.CloudPlaylistFilters, ViewModelLocator.Settings.CloudCreateThumbnails, ViewModelLocator.Settings.CloudSlideShowPeriod, ViewModelLocator.Settings.CloudPlaylistPath);
+                    int counter = await Helpers.MediaHelper.CreateCloudPlaylist(ViewModelLocator.Settings.CloudPlaylistName,
+                                                                                ViewModelLocator.Settings.AzureAccountName,
+                                                                                ViewModelLocator.Settings.AzureAccountKey,
+                                                                                ViewModelLocator.Settings.AzureContainer,
+                                                                                ViewModelLocator.Settings.AzureFolder,
+                                                                                ViewModelLocator.Settings.CloudPlaylistFilters,
+                                                                                ViewModelLocator.Settings.CloudCreateThumbnails,
+                                                                                ViewModelLocator.Settings.CloudSlideShowPeriod,
+                                                                                ViewModelLocator.Settings.CloudPlaylistPath);
+                    //int counter = await Helpers.MediaHelper.RenameCloudPlaylist(ViewModelLocator.Settings.CloudPlaylistName,
+                    //                                                            ViewModelLocator.Settings.AzureAccountName,
+                    //                                                            ViewModelLocator.Settings.AzureAccountKey,
+                    //                                                            ViewModelLocator.Settings.AzureContainer,
+                    //                                                            ViewModelLocator.Settings.AzureFolder,
+                    //                                                            ViewModelLocator.Settings.CloudPlaylistPath);
                     cloudPlaylistItemsCount.Text = counter.ToString();
                 }
             }

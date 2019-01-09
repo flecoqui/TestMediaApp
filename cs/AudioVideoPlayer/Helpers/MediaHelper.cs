@@ -991,11 +991,6 @@ namespace AudioVideoPlayer.Helpers
                         // Retrieve reference to a previously created container.
                         CloudBlobContainer container = blobClient.GetContainerReference(Container);
 
-
-                        // Loop over items within the container and output the length and URI.
-                        //var result = await container.ListBlobsSegmentedAsync(null);
-                        //BlobResultSegment result = null;
-                        //BlobContinuationToken token = null;
                         string header = headerStart + PlaylistName + headerEnd;
                         string s = header;
                         AppendText(stream, s);
@@ -1008,6 +1003,189 @@ namespace AudioVideoPlayer.Helpers
 
                         System.Diagnostics.Debug.WriteLine(counter.ToString() + " files discovered on cloud storage\n");
                         return counter;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while discovering media file on cloud storage:" + ex.Message);
+            }
+            return -1;
+        }
+        static string[] conversionTable = {
+            "&", "and",
+            "é", "e",
+            "è", "e",
+            "ê", "e",
+            "ë","e",
+            "à", "a",
+            "ç", "c",
+            "Á", "A",
+            "É", "E",
+            "Í", "I",
+            "Ó", "O",
+            "Ú", "U",
+            "Ü", "U",
+            "á", "a",
+            "í", "i",
+            "î", "i",
+            "ï", "i",
+            "ó", "o",
+
+            "ö", "o",
+            "ø", "o",
+            "õ", "o",
+
+            "ú", "u",
+            "û", "u",
+            "ù", "u",
+            "ü", "u",
+            "Ñ", "N",
+            "ñ", "n",
+            "ß", "ss",
+            "¿","?",
+            "À","A",
+            "â","a",
+            "Â","A",
+            "Ç","C",
+            "ò","o",
+            "œ","oe",
+            "ä","a",
+            "ž","z"
+        };
+        static string GetNewChar(char c)
+        {
+            string result = new string(c,1);
+            int i = 0;
+            while (i < conversionTable.Count()/2)
+            {
+                if(conversionTable[i*2].IndexOf(c)>=0)
+                {
+                    return conversionTable[i * 2 + 1];
+                }
+                i++;
+            }
+            return result;
+        }
+        static bool IsNameChangeRequired(string name)
+        {
+            string newName = string.Empty;
+            foreach (char c in name)
+            {
+                string s = new string(c, 1);
+                byte[] tab = Encoding.UTF8.GetBytes(s);
+                if ((tab != null) && (tab.Count() > 0))
+                {
+                    if ((tab[0] != 0x20) &&
+                        (tab[0] != 0x28) &&
+                        (tab[0] != 0x29) &&
+                        (tab[0] != 0x2D) && (tab[0] != 0x2C) &&
+                        (tab[0] != 0x5B) && (tab[0] != 0x5D) &&
+                        (tab[0] != 0x27) && (tab[0] != 0x21) &&
+                        (tab[0] != 0x2E) &&
+                        (tab[0] != 0x3A) &&
+                        (tab[0] != 0x3B) &&
+                        (tab[0] != 0x2F) &&
+                        ((tab[0] < 0x30) ||
+                        ((tab[0] > 0x39) && (tab[0] < 0x41)) ||
+                        (tab[0] > 0x7A)))
+                    {
+                        return true;
+                    }
+
+                }
+            }
+            return false;
+        }
+        static string  GetNewName(string name)
+        {
+            string newName = string.Empty;
+            if (IsNameChangeRequired(name))
+            {
+                foreach (char c in name)
+                {
+                    newName += GetNewChar(c);
+                }
+            }
+            return newName;
+        }
+        public static async System.Threading.Tasks.Task<int> RenameCloudFolder(bool bFirst, string PlaylistName, CloudBlobContainer container, CloudBlobDirectory directory, Stream stream)
+        {
+            int counter = 0;
+            BlobResultSegment result = null;
+            BlobContinuationToken token = null;
+            do
+            {
+                if (directory != null)
+                    result = await directory.ListBlobsSegmentedAsync(token);
+                else
+                    result = await container.ListBlobsSegmentedAsync(null, false, BlobListingDetails.None, 500, token, null, null);
+                if (result != null)
+                {
+                    token = result.ContinuationToken;
+                    foreach (IListBlobItem item in result.Results)
+                    {
+                        if (item.GetType() == typeof(CloudBlockBlob))
+                        {
+                            CloudBlockBlob blob = (CloudBlockBlob)item;
+                            if (blob != null)
+                            {
+                                string newName = GetNewName(blob.Name);
+                                if (!string.IsNullOrEmpty(newName))
+                                {
+                                    AppendText(stream, blob.Name + " -> " + newName + "\r\n");
+                                    
+                                    CloudBlockBlob newblob = container.GetBlockBlobReference(newName);
+
+                                    if (!await newblob.ExistsAsync())
+                                    {
+                                        await newblob.StartCopyAsync(blob);
+                                        await blob.DeleteIfExistsAsync();
+                                    }
+                                    
+                                }
+                            }
+                        }
+                        else if (item.GetType() == typeof(CloudBlobDirectory))
+                        {
+                            CloudBlobDirectory subdirectory = (CloudBlobDirectory)item;
+                            bFirst = ((counter == 0) && (bFirst == true)) ? true : false;
+                            int c = await RenameCloudFolder(bFirst, PlaylistName, container, subdirectory, stream);
+                            counter += c;
+                        }
+                    }
+                }
+            }
+            while (result.ContinuationToken != null);
+            return counter;
+        }
+
+        public static async System.Threading.Tasks.Task<int> RenameCloudPlaylist(string PlaylistName, string AccountName, string AccountKey, string Container, string folder, string outputFile)
+        {
+            List<string> blobs = new List<string>();
+            try
+            {
+                Windows.Storage.StorageFile writer = await CreateFile(outputFile);
+                if (writer != null)
+                {
+                    Stream stream = await writer.OpenStreamForWriteAsync();
+                    if (stream != null)
+                    {
+                        // Retrieve storage account from connection string.
+                        CloudStorageAccount storageAccount = CloudStorageAccount.Parse(
+                        "DefaultEndpointsProtocol=https;AccountName=" + AccountName + ";AccountKey=" + AccountKey);
+
+                        // Create the blob client.
+                        CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+
+                        // Retrieve reference to a previously created container.
+                        CloudBlobContainer container = blobClient.GetContainerReference(Container);
+
+                        CloudBlobDirectory directory = (!string.IsNullOrEmpty(folder) ? container.GetDirectoryReference(folder) : null);
+                        bool bFirst = true;
+                        int c = await RenameCloudFolder(bFirst, PlaylistName, container, directory, stream);
+                        stream.Flush();
+                        return 0;
                     }
                 }
             }
