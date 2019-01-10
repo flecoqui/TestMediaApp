@@ -1311,7 +1311,7 @@ namespace AudioVideoPlayer.Pages.DLNA
             if (item1 != null)
             {
                 string ContentUrl = item1.Content;
-                string AlbumUrl = item1.PosterContent;
+                string AlbumUrl = (string.IsNullOrEmpty(item1.PosterContent) || item1.PosterContent.StartsWith("ms-appx") ? string.Empty: item1.PosterContent);
                 string Title = item1.Title;
                 string Codec = GetCodec(ContentUrl);
                 if (dd.IsSamsungDevice())
@@ -1324,7 +1324,7 @@ namespace AudioVideoPlayer.Pages.DLNA
             if (item2 != null)
             {
                 string ContentUrl = item2.Content;
-                string AlbumUrl = item2.PosterContent;
+                string AlbumUrl = (string.IsNullOrEmpty(item2.PosterContent) || item2.PosterContent.StartsWith("ms-appx") ? string.Empty : item2.PosterContent);
                 string Title = item2.Title;
                 string Codec = GetCodec(ContentUrl);
                 if (dd.IsSamsungDevice())
@@ -1579,7 +1579,8 @@ namespace AudioVideoPlayer.Pages.DLNA
                 {
                     if (!string.IsNullOrEmpty(PosterContentUrl))
                     {
-                        if (PosterContentUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                        if ((PosterContentUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) )||
+                            (PosterContentUrl.StartsWith("ms-appx", StringComparison.OrdinalIgnoreCase)))
                             return true;
                         else
                             return false;    

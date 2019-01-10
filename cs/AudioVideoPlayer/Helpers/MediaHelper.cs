@@ -198,6 +198,35 @@ namespace AudioVideoPlayer.Helpers
             return false;
 
         }
+        public static async System.Threading.Tasks.Task<int> RenameDirectory(int counter, string PlaylistName,  Stream writer, string targetDirectory)
+        {
+            // Process the list of files found in the directory.
+            string[] fileEntries = System.IO.Directory.GetFiles(targetDirectory);
+            foreach (string fileName in fileEntries)
+                counter = await RenameFile(counter, PlaylistName, writer, fileName);
+
+            // Recurse into subdirectories of this directory.
+            string[] subdirectoryEntries = System.IO.Directory.GetDirectories(targetDirectory);
+            foreach (string subdirectory in subdirectoryEntries)
+                counter = await RenameDirectory(counter, PlaylistName, writer, subdirectory);
+            Windows.Storage.StorageFolder Folder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(targetDirectory);
+            if (Folder != null)
+            {
+                string orgname = Folder.Name;
+                if (IsNameChangeRequired(orgname))
+                {
+                    string newname = GetNewName(orgname);
+                    if (!string.IsNullOrEmpty(newname))
+                    {
+                        AppendText(writer, orgname + " -> " + newname + "\r\n");
+                        //await Folder.RenameAsync(newname);
+                        counter++;
+                    }
+                }
+            }
+
+            return counter;
+        }
         // Process all files in the directory passed in, recurse on any directories 
         // that are found, and process the files they contain.
         public static async System.Threading.Tasks.Task<int> ProcessDirectory(int counter, string PlaylistName, string extensions, bool bCreateThumbnails, int SlideShowPeriod, Stream writer, string targetDirectory)
@@ -361,7 +390,7 @@ namespace AudioVideoPlayer.Helpers
                         string album = string.Empty;
                         string posteruri = "";// GetPosterFile(path, extensions);
                         string title = "";//GetFileName(path);
-
+                        
                         if (IsMusicFile(ext))
                         {
                             posteruri = "ms-appx:///Assets/MUSIC.png";
@@ -513,6 +542,33 @@ namespace AudioVideoPlayer.Helpers
             }
             return counter;
         }
+        public static async System.Threading.Tasks.Task<int> RenameFile(int counter, string PlaylistName, Stream writer, string path)
+        {
+            try
+            {
+                Windows.Storage.StorageFile File = await Windows.Storage.StorageFile.GetFileFromPathAsync(path);
+                if (File != null)
+                {
+                    string orgname = File.Name;
+                    if (IsNameChangeRequired(orgname))
+                    {
+                        string newname = GetNewName(orgname);
+                        if (!string.IsNullOrEmpty(newname))
+                        {
+                            AppendText(writer, orgname + " -> " + newname + "\r\n");
+
+                            //await File.RenameAsync(newname);
+                            counter++;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while processing file: " + ex.Message);
+            }
+            return counter;
+        }
         public static async System.Threading.Tasks.Task<int> CreateEmptyPlaylist(string PlaylistName, string outputFile)
         {
             try
@@ -627,6 +683,43 @@ namespace AudioVideoPlayer.Helpers
                         }
                         //await Windows.Storage.FileIO.AppendTextAsync(File, footer);
                         AppendText(stream, footer);
+                        stream.Flush();
+                        System.Diagnostics.Debug.WriteLine(counter.ToString() + " files discovered on local storage\n");
+                        return counter;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while discovering media file on local hard drive:" + ex.Message);
+            }
+            return -1;
+        }
+        public static async System.Threading.Tasks.Task<int> RenameLocalPlaylist(string PlaylistName, string folderName, string outputFile)
+        {
+            try
+            {
+                int counter = 0;
+                Windows.Storage.StorageFile File = await CreateFile(outputFile);
+                if (File != null)
+                {
+                    Stream stream = await File.OpenStreamForWriteAsync();
+                    if (stream != null)
+                    {
+                        if (await IsFile(folderName) == true)
+                        {
+                            counter = await RenameFile(counter, PlaylistName, stream, folderName);
+                        }
+                        else if (await IsFolder(folderName))
+                        {
+                            // This path is a directory
+                            counter = await RenameDirectory(counter, PlaylistName, stream, folderName);
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine("{0} is not a valid file or directory.", folderName);
+                            return -1;
+                        }
                         stream.Flush();
                         System.Diagnostics.Debug.WriteLine(counter.ToString() + " files discovered on local storage\n");
                         return counter;
@@ -797,7 +890,8 @@ namespace AudioVideoPlayer.Helpers
                                             string posteruri = string.Empty;
                                             if (bCreateThumbnails)
                                                 posteruri = GetPosterUri(unescapeuri, extensions, result.Results);
-                                            string title = GetUriFileName(unescapeuri);
+                                            //string title = GetUriFileName(unescapeuri);
+                                            string title = blob.Name;
                                             if (!string.IsNullOrEmpty(title))
                                             {
                                                 string uri = EncodeUri(unescapeuri);
@@ -877,14 +971,19 @@ namespace AudioVideoPlayer.Helpers
 
         private static string EncodeUri(string input)
         {
-        //    string result1 = System.Net.WebUtility.HtmlEncode(input);
-        //    string result1 = Uri.EscapeUriString(input);
-            string result2 = Uri.EscapeDataString(input);
-            result2 = result2.Replace("%3A", ":");
-            result2 = result2.Replace("%2F", "/");
-       //     if (result1 != result2)
-       //         return result1;
-            return result2;
+            //string result0 = System.Net.WebUtility.HtmlEncode(input);
+
+            input = input.Replace("%3F", "?");
+
+            //string result1 = Uri.EscapeUriString(input);
+            string result1 = Uri.EscapeDataString(input);
+            result1 = result1.Replace("%3A", ":");
+            result1 = result1.Replace("%2F", "/");
+            //result2 = result2.Replace("%3F", "?");
+//            excapeString = excapeString.Replace("\'", "%27");
+            //     if (result1 != result2)
+            //         return result1;
+            return result1;
         }
         public static async System.Threading.Tasks.Task<int> ProcessCloudFolder(bool bFirst, string PlaylistName,CloudBlobContainer container, CloudBlobDirectory directory, Stream stream, string extensions, bool bCreateThumbnails, int SlideShowPeriod)
         {
@@ -915,7 +1014,8 @@ namespace AudioVideoPlayer.Helpers
                                 string posteruri = string.Empty;
                                 if (bCreateThumbnails)
                                     posteruri = GetPosterUri(unescapeuri, extensions, result.Results);
-                                string title = GetUriFileName(unescapeuri);
+                                //string title = GetUriFileName(unescapeuri);
+                                string title = blob.Name;
                                 if (!string.IsNullOrEmpty(title))
                                 {
                                     string uri = EncodeUri(unescapeuri);
@@ -1051,7 +1151,8 @@ namespace AudioVideoPlayer.Helpers
             "ò","o",
             "œ","oe",
             "ä","a",
-            "ž","z"
+            "ž","z",
+            "ô","o"
         };
         static string GetNewChar(char c)
         {
