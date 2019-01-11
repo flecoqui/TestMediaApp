@@ -298,6 +298,16 @@ namespace AudioVideoPlayer.Pages.DLNA
                     comboStream.SelectedIndex = 0;
                     return true;
                 }
+                else
+                {
+                    DefaultPlaylist = new MediaDataGroup();
+                    DefaultPlaylist.Items = new ObservableCollection<MediaItem>();
+                    this.defaultViewModel = DefaultPlaylist.Items;
+                    comboStream.DataContext = this.defaultViewModel;
+                    mediaUri.Text = string.Empty;
+                    comboStream.SelectedIndex = 0;
+                    LogMessage("Failed to load playlist ");
+                }
             }
             catch (Exception ex)
             {
@@ -404,6 +414,7 @@ namespace AudioVideoPlayer.Pages.DLNA
                         ViewModelLocator.Settings.CurrentMediaIndex = p.Index;
                     }
                     await LoadingData(ViewModelLocator.Settings.CurrentPlayListPath);
+
                 }
             }
         }
@@ -1706,6 +1717,10 @@ namespace AudioVideoPlayer.Pages.DLNA
                             + "\r\n  NextUri: " + MediaInfo.NextUri.ToString()
                             + "\r\n  CurrentUriMetaData: " + MediaInfo.CurrentUriMetaData.ToString()
                             + "\r\n  NextUriMetaData: " + MediaInfo.NextUriMetaData.ToString());
+                        SelectCurrentMediaItem(MediaInfo.CurrentUri);
+                        await DisplayAlbumArt(AudioVideoPlayer.DLNA.DLNADevice.GetTitleFromMetadataString(MediaInfo.CurrentUriMetaData),
+                            AudioVideoPlayer.DLNA.DLNADevice.GetAlbumArtUriFromMetadataString(MediaInfo.CurrentUriMetaData));
+
                     }
                     else
                     {
@@ -1722,6 +1737,8 @@ namespace AudioVideoPlayer.Pages.DLNA
                             + "\r\n  AbsTime: " + PositionInfo.AbsTime.ToString()
 
                             );
+                        TrackDuration.Text = PositionInfo.TrackDuration.ToString(@"hh\:mm\:ss");
+                        TrackTime.Text = PositionInfo.RelTime.ToString(@"hh\:mm\:ss");
                     }
                     else
                     {
@@ -1961,14 +1978,19 @@ namespace AudioVideoPlayer.Pages.DLNA
                         LogMessage("Device: " + args.Id + " IP address: " + args.Ip + " added");
                         d = new AudioVideoPlayer.DLNA.DLNADevice(args.Id, args.Location, args.Version, args.IpCache, args.Server, args.St, args.Usn, args.Ip, args.FriendlyName, args.Manufacturer, args.ModelName, args.ModelNumber);
                         speakerList.Add(d);
-                        d.DeviceThreadSessionStateChanged += DLNA_DeviceThreadSessionStateChanged;
-                        await d.StartMonitoringDevice();
                         if (d.IsHeosDevice())
                             LogMessage("Added DLNA/HEOS Device: " + d.FriendlyName + " IP: " + d.Ip);
                         else
                             LogMessage("Added DLNA Device: " + d.FriendlyName + " IP: " + d.Ip);
                         ViewModelLocator.Settings.DLNADeviceList = speakerList;
                         UpdateSelection(args.Id);
+
+                        AudioVideoPlayer.DLNA.DLNADevice dd = comboDevice.SelectedItem as AudioVideoPlayer.DLNA.DLNADevice;
+                        if (dd != null)
+                        {
+                            dd.DeviceThreadSessionStateChanged += DLNA_DeviceThreadSessionStateChanged;
+                            await dd.StartMonitoringDevice();
+                        }
                     }
                     else
                     {
@@ -1980,8 +2002,7 @@ namespace AudioVideoPlayer.Pages.DLNA
                             speakerList.Remove(d);
                             d = new AudioVideoPlayer.DLNA.DLNADevice(args.Id, args.Location, args.Version, args.IpCache, args.Server, args.St, args.Usn, args.Ip, args.FriendlyName, args.Manufacturer, args.ModelName, args.ModelNumber);
                             speakerList.Add(d);
-                            d.DeviceThreadSessionStateChanged += DLNA_DeviceThreadSessionStateChanged;
-                            await d.StartMonitoringDevice();
+
                             if (d.IsHeosDevice())
                                 LogMessage("Added DLNA/HEOS Device: " + d.FriendlyName + " IP: " + d.Ip);
                             else
@@ -1989,6 +2010,12 @@ namespace AudioVideoPlayer.Pages.DLNA
                             ViewModelLocator.Settings.DLNADeviceList = speakerList;
                             UpdateSelection(args.Id);
 
+                            AudioVideoPlayer.DLNA.DLNADevice dd = comboDevice.SelectedItem as AudioVideoPlayer.DLNA.DLNADevice;
+                            if (dd != null)
+                            {
+                                dd.DeviceThreadSessionStateChanged += DLNA_DeviceThreadSessionStateChanged;
+                                await dd.StartMonitoringDevice();
+                            }
                         }
                     }
 
