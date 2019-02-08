@@ -891,7 +891,7 @@ namespace AudioVideoPlayer.Helpers
                                             if (bCreateThumbnails)
                                                 posteruri = GetPosterUri(unescapeuri, extensions, result.Results);
                                             //string title = GetUriFileName(unescapeuri);
-                                            string title = blob.Name;
+                                            string title = GetUriFileName(blob.Name);
                                             if (!string.IsNullOrEmpty(title))
                                             {
                                                 string uri = EncodeUri(unescapeuri);
@@ -1015,7 +1015,7 @@ namespace AudioVideoPlayer.Helpers
                                 if (bCreateThumbnails)
                                     posteruri = GetPosterUri(unescapeuri, extensions, result.Results);
                                 //string title = GetUriFileName(unescapeuri);
-                                string title = blob.Name;
+                                string title = GetUriFileName(blob.Name);
                                 if (!string.IsNullOrEmpty(title))
                                 {
                                     string uri = EncodeUri(unescapeuri);

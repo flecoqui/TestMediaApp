@@ -1953,7 +1953,70 @@ namespace AudioVideoPlayer.Pages.Player
             mediaPlayer.Volume = (mediaPlayer.Volume - 0.10 >= 0 ? mediaPlayer.Volume - 0.10 : 0);
             UpdateControls();
         }
+        private async void comboPlayList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
 
+            if (comboPlayList.SelectedItem is Models.PlayList)
+            {
+                Models.PlayList p = (Models.PlayList)comboPlayList.SelectedItem;
+                if (p != null)
+                {
+                    if (!string.IsNullOrEmpty(p.ImportedPath))
+                    {
+                        ViewModelLocator.Settings.CurrentPlayListPath = p.ImportedPath;
+                        ViewModelLocator.Settings.CurrentPlayListIndex = comboPlayList.SelectedIndex;
+                        ViewModelLocator.Settings.CurrentMediaPath = string.Empty;
+                        ViewModelLocator.Settings.CurrentMediaIndex = p.Index;
+                    }
+                    else if (!string.IsNullOrEmpty(p.Path))
+                    {
+                        ViewModelLocator.Settings.CurrentPlayListPath = p.Path;
+                        ViewModelLocator.Settings.CurrentPlayListIndex = comboPlayList.SelectedIndex;
+                        ViewModelLocator.Settings.CurrentMediaPath = string.Empty;
+                        ViewModelLocator.Settings.CurrentMediaIndex = p.Index;
+                    }
+                    await LoadingData(ViewModelLocator.Settings.CurrentPlayListPath);
+
+                }
+            }
+        }
+
+
+        private void comboPlayList_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            if (comboPlayList.Items.Count > 0)
+            {
+                ViewModels.ViewModel vm = this.DataContext as ViewModels.ViewModel;
+                if (vm != null)
+                {
+                    string PlaylistPath = vm.Settings.CurrentPlayListPath;
+                    int index = 0;
+                    foreach (var item in comboPlayList.Items)
+                    {
+                        if (item is Models.PlayList)
+                        {
+                            Models.PlayList p = item as Models.PlayList;
+                            if (p != null)
+                            {
+                                if (string.Equals(p.Path, PlaylistPath))
+                                {
+                                    comboPlayList.SelectedIndex = index;
+                                    break;
+                                }
+                                if (string.Equals(p.ImportedPath, PlaylistPath))
+                                {
+                                    comboPlayList.SelectedIndex = index;
+                                    break;
+                                }
+                            }
+                        }
+                        index++;
+                    }
+                    if (comboPlayList.SelectedIndex < 0)
+                        comboPlayList.SelectedIndex = 0;
+                }
+            }
+        }
         /// <summary>
         /// This method is called when the ComboStream selection changes 
         /// </summary>

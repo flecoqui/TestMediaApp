@@ -100,8 +100,12 @@ namespace AudioVideoPlayer.Pages.Settings
             // Windows.Phone.UI.Input.HardwareButtons.BackPressed event.
             // If you are using the NavigationHelper provided by some templates,
             // this event is handled for you.
-            if(e.Parameter !=null)
-                bColorUpdated = Convert.ToBoolean(e.Parameter);
+            if (e.Parameter != null)
+            {
+                Type t = e.Parameter.GetType();
+                if (t.Equals(typeof(bool)))
+                    bColorUpdated = Convert.ToBoolean(e.Parameter);
+            }
             this.Loaded += SettingsPage_Loaded;
         }
         protected override void OnNavigatedFrom(NavigationEventArgs e)

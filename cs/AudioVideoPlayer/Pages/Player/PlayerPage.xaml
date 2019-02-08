@@ -88,6 +88,21 @@
             </StackPanel>
             <StackPanel x:Name="ButtonPanel" VerticalAlignment="Top"  >
                 <StackPanel>
+                        <TextBlock    Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Select the current playlist:" Style="{StaticResource LabelTextBoldBlockStyle}" HorizontalAlignment="Left" />
+                        <ComboBox   Name="comboPlayList"                            
+                           DisplayMemberPath="Name"
+                           ToolTipService.ToolTip="Name of the current selected  playlist"    
+                           HorizontalAlignment="Stretch" 
+                           ItemsSource="{x:Bind ViewModelLocator.Settings.PlayListList,Mode=OneWay}" 
+                           SelectedValuePath="Name"
+                           IsTabStop="True" 
+                           Loaded="comboPlayList_Loaded"                                
+                           SelectionChanged="comboPlayList_SelectionChanged"  
+                           MinWidth="270"
+                               TabIndex="1"
+                              >
+                        </ComboBox>
+
                         <TextBlock x:Name="labelStream" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Select a stream:" Style="{StaticResource LabelTextBoldBlockStyle}" HorizontalAlignment="Left" />
                         <ComboBox  x:Name="comboStream" ToolTipService.ToolTip="Title of the current selected stream"    HorizontalAlignment="Stretch" ItemsSource="{Binding}" IsTabStop="True"  TabIndex="0">
                         <ComboBox.ItemTemplate>
