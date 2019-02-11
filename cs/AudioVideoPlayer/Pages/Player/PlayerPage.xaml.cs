@@ -793,7 +793,7 @@ namespace AudioVideoPlayer.Pages.Player
         /// <summary>
         /// Method LoadingData which loads the JSON playlist file
         /// </summary>
-        async System.Threading.Tasks.Task<bool> LoadingData(string path)
+        async System.Threading.Tasks.Task<bool> LoadingData(string path, int defaultIndex = 0)
         {
 
             string oldPath = MediaDataSource.MediaDataPath;
@@ -820,7 +820,7 @@ namespace AudioVideoPlayer.Pages.Player
                     }
                     this.defaultViewModel = audio_video.Items;
                     comboStream.DataContext = this.DefaultViewModel;
-                    comboStream.SelectedIndex = 0;
+                    comboStream.SelectedIndex = defaultIndex;
                     return true;
                 }
             }
@@ -1598,13 +1598,13 @@ namespace AudioVideoPlayer.Pages.Player
                                  volumeDownButton.IsEnabled = true;
                                  volumeUpButton.IsEnabled = true;
 
-                                 playPauseButton.IsEnabled = false;
-                                 pausePlayButton.IsEnabled = false;
-                                 stopButton.IsEnabled = false;
 
 
                                  if (IsPicture(CurrentMediaUrl))
                                  {
+                                     playPauseButton.IsEnabled = false;
+                                     pausePlayButton.IsEnabled = false;
+                                     stopButton.IsEnabled = false;
                                      fullscreenButton.IsEnabled = true;
                                      fullwindowButton.IsEnabled = true;
                                  }
@@ -1612,6 +1612,9 @@ namespace AudioVideoPlayer.Pages.Player
                                  {
                                      if (mediaPlayer.PlaybackSession.PlaybackState == Windows.Media.Playback.MediaPlaybackState.Opening)
                                      {
+                                         playPauseButton.IsEnabled = false;
+                                         pausePlayButton.IsEnabled = false;
+                                         stopButton.IsEnabled = false;
                                          fullscreenButton.IsEnabled = true;
                                          fullwindowButton.IsEnabled = true;
                                      }
@@ -1621,9 +1624,9 @@ namespace AudioVideoPlayer.Pages.Player
                                          //{
                                          fullscreenButton.IsEnabled = true;
                                          fullwindowButton.IsEnabled = true;
-                                         playPauseButton.IsEnabled = false;
                                          pausePlayButton.IsEnabled = true;
                                          stopButton.IsEnabled = true;
+                                         playPauseButton.IsEnabled = false;
                                          //}
                                      }
                                      else if (mediaPlayer.PlaybackSession.PlaybackState == Windows.Media.Playback.MediaPlaybackState.Paused)
@@ -1632,12 +1635,22 @@ namespace AudioVideoPlayer.Pages.Player
                                          fullwindowButton.IsEnabled = true;
                                          playPauseButton.IsEnabled = true;
                                          stopButton.IsEnabled = true;
+                                         pausePlayButton.IsEnabled = false;
                                      }
                                      else if (mediaPlayer.PlaybackSession.PlaybackState == Windows.Media.Playback.MediaPlaybackState.None)
                                      {
                                          //   mediaPlayerElement.AreTransportControlsEnabled = false;
                                          fullscreenButton.IsEnabled = false;
                                          fullwindowButton.IsEnabled = false;
+                                         playPauseButton.IsEnabled = false;
+                                         pausePlayButton.IsEnabled = false;
+                                         stopButton.IsEnabled = false;
+                                     }
+                                     else
+                                     {
+                                         playPauseButton.IsEnabled = false;
+                                         pausePlayButton.IsEnabled = false;
+                                         stopButton.IsEnabled = false;
                                      }
                                  }
                                  // Volume buttons control
@@ -1698,6 +1711,9 @@ namespace AudioVideoPlayer.Pages.Player
                     {
                         smoothSubtitleMgr.StopLoadingSubtitles();
                     }
+                    // Avoid set focus on the next control Edit box
+                    UpdateControls();
+                    playButton.Focus(FocusState.Programmatic);
                 }
             }
             catch (Exception ex)
@@ -1744,6 +1760,10 @@ namespace AudioVideoPlayer.Pages.Player
                 {
                     LogMessage("Play " + CurrentMediaUrl.ToString());
                     mediaPlayer.Play();
+                    // Avoid set focus on the next control Edit box
+                    UpdateControls();
+                    stopButton.Focus(FocusState.Programmatic);
+
                 }
             }
             catch (Exception ex)
@@ -1764,6 +1784,9 @@ namespace AudioVideoPlayer.Pages.Player
                 {
                     LogMessage("Play " + CurrentMediaUrl.ToString());
                     mediaPlayer.Pause();
+                    // Avoid set focus on the next control Edit box
+                    UpdateControls();
+                    stopButton.Focus(FocusState.Programmatic);
                 }
             }
             catch (Exception ex)
@@ -1975,7 +1998,9 @@ namespace AudioVideoPlayer.Pages.Player
                         ViewModelLocator.Settings.CurrentMediaPath = string.Empty;
                         ViewModelLocator.Settings.CurrentMediaIndex = p.Index;
                     }
-                    await LoadingData(ViewModelLocator.Settings.CurrentPlayListPath);
+                    // Remove Picture or Poster
+                    SetPictureSource(null);
+                    await LoadingData(ViewModelLocator.Settings.CurrentPlayListPath, p.Index);
 
                 }
             }
@@ -2706,6 +2731,7 @@ namespace AudioVideoPlayer.Pages.Player
                     await StartPlay(mediaUri.Text, mediaUri.Text, null, 0, 0);
                 else
                     await StartPlay(item.Title, mediaUri.Text, item.PosterContent, item.Start, item.Duration);
+                SaveSettings();
                 UpdateControls();
             }
             else
@@ -3845,7 +3871,7 @@ namespace AudioVideoPlayer.Pages.Player
                             {
                                 LogMessage("TTML Subtitle track detected: " + s.Value.Name + " Language: " + s.Value.Language);
                             }
-                            if(smoothSubtitleMgr.SubtitleTrackList.Count>0)
+                            if ((ViewModels.StaticSettingsViewModel.SubtitleLogs) &&(smoothSubtitleMgr.SubtitleTrackList.Count>0))
                             {
                                 smoothSubtitleMgr.StartLoadingSubtitles();
                             }
@@ -5249,6 +5275,21 @@ namespace AudioVideoPlayer.Pages.Player
             ViewModels.StaticSettingsViewModel.CurrentPlayListPath = MediaDataSource.MediaDataPath;
             ViewModels.StaticSettingsViewModel.CurrentMediaIndex = comboStream.SelectedIndex;
             ViewModels.StaticSettingsViewModel.CurrentMediaPath = mediaUri.Text;
+
+            Models.PlayList p = (Models.PlayList)comboPlayList.SelectedItem;
+            if (p != null)
+            {
+                if (p.Index != comboStream.SelectedIndex)
+                {
+                    p.Index = comboStream.SelectedIndex;
+                    if ((comboPlayList.SelectedIndex >= 0) && (comboPlayList.SelectedIndex < ViewModels.StaticSettingsViewModel.PlayListList.Count))
+                    {
+                        var ppl = ViewModels.StaticSettingsViewModel.PlayListList;
+                        ppl[comboPlayList.SelectedIndex] = p;
+                        ViewModels.StaticSettingsViewModel.PlayListList = ppl;
+                    }
+                }
+            }
             return true;
         }
         /// <summary>
