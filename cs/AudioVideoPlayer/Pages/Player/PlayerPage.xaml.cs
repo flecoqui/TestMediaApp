@@ -623,7 +623,7 @@ namespace AudioVideoPlayer.Pages.Player
             backgroundVideo.SizeChanged += BackgroundVideo_SizeChanged;
             this.KeyDown += OnKeyDown;
             this.DoubleTapped += doubleTapped;
-            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
+           // if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
                 Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
 
             // Create the popup used to display the pictures in fullscreen
@@ -734,7 +734,7 @@ namespace AudioVideoPlayer.Pages.Player
             backgroundVideo.SizeChanged -= BackgroundVideo_SizeChanged;
             this.KeyDown -= OnKeyDown;
             this.DoubleTapped -= doubleTapped;
-            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
+//            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Xbox", StringComparison.OrdinalIgnoreCase))
                 Window.Current.CoreWindow.KeyDown -= CoreWindow_KeyDown;
 
 
@@ -2387,7 +2387,8 @@ namespace AudioVideoPlayer.Pages.Player
         /// </summary>
         private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs args)
         {
-            if (args.VirtualKey == Windows.System.VirtualKey.GamepadA)
+            if ((args.VirtualKey == Windows.System.VirtualKey.GamepadA) ||
+                (args.VirtualKey == Windows.System.VirtualKey.Escape))
             {
                 if (IsFullScreen())
                 {
@@ -2399,6 +2400,26 @@ namespace AudioVideoPlayer.Pages.Player
                     SetWindowMode(WindowMediaState.WindowMode);
                     fullwindowButton.Focus(FocusState.Programmatic);
                 }
+            }
+            else if ((args.VirtualKey == Windows.System.VirtualKey.GamepadLeftThumbstickUp) ||
+                (args.VirtualKey == Windows.System.VirtualKey.PageUp))
+            {
+                if (IsFullScreen() ||
+                    IsFullWindow())
+                {
+                    Plus_Click(null, null);
+                }
+            
+            }
+            else if ((args.VirtualKey == Windows.System.VirtualKey.GamepadLeftThumbstickDown) ||
+                (args.VirtualKey == Windows.System.VirtualKey.PageDown))
+            {
+                if (IsFullScreen() ||
+                    IsFullWindow())
+                {
+                    Minus_Click(null, null);
+                }
+
             }
         }
         /// <summary>
