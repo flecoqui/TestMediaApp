@@ -25,6 +25,107 @@ using Windows.UI.Core;
 
 namespace AudioVideoPlayer.DLNA
 {
+    
+    static class ExtendedExecutionHelper
+    {
+        private static ExtendedExecutionSession session = null;
+        private static int taskCount = 0;
+
+        public static bool IsRunning
+        {
+            get
+            {
+                if (session != null)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public static async Task<ExtendedExecutionResult> RequestSessionAsync(ExtendedExecutionReason reason, TypedEventHandler<object, ExtendedExecutionRevokedEventArgs> revoked, String description)
+        {
+            // The previous Extended Execution must be closed before a new one can be requested.       
+            ClearSession();
+
+            var newSession = new ExtendedExecutionSession();
+            newSession.Reason = reason;
+            newSession.Description = description;
+            newSession.Revoked += SessionRevoked;
+
+            // Add a revoked handler provided by the app in order to clean up an operation that had to be halted prematurely
+            if (revoked != null)
+            {
+                newSession.Revoked += revoked;
+            }
+
+            ExtendedExecutionResult result = await newSession.RequestExtensionAsync();
+
+            switch (result)
+            {
+                case ExtendedExecutionResult.Allowed:
+                    session = newSession;
+                    break;
+                default:
+                case ExtendedExecutionResult.Denied:
+                    newSession.Dispose();
+                    break;
+            }
+            return result;
+        }
+
+        public static void ClearSession()
+        {
+            if (session != null)
+            {
+                session.Dispose();
+                session = null;
+            }
+
+            taskCount = 0;
+        }
+
+        public static Deferral GetExecutionDeferral()
+        {
+            if (session == null)
+            {
+                throw new InvalidOperationException("No extended execution session is active");
+            }
+
+            taskCount++;
+            return new Deferral(OnTaskCompleted);
+        }
+
+        private static void OnTaskCompleted()
+        {
+            if (taskCount > 0)
+            {
+                taskCount--;
+            }
+
+            //If there are no more running tasks than end the extended lifetime by clearing the session
+            if (taskCount == 0 && session != null)
+            {
+                ClearSession();
+            }
+        }
+
+        private static void SessionRevoked(object sender, ExtendedExecutionRevokedEventArgs args)
+        {
+            //The session has been prematurely revoked due to system constraints, ensure the session is disposed
+            if (session != null)
+            {
+                session.Dispose();
+                session = null;
+            }
+
+            taskCount = 0;
+        }
+    }
+
     public enum DLNADeviceStatus
     {
         //
@@ -653,8 +754,8 @@ namespace AudioVideoPlayer.DLNA
             try
             {
 
-                App.Current.EnteredBackground -= Current_EnteredBackground;
-                App.Current.LeavingBackground -= Current_LeavingBackground;
+              //  App.Current.EnteredBackground -= Current_EnteredBackground;
+              //  App.Current.LeavingBackground -= Current_LeavingBackground;
 
                 ClearExtendedExecution();
 
@@ -786,32 +887,41 @@ namespace AudioVideoPlayer.DLNA
             // execution to begin until the previous one ends, but we leave it here for illustration.
             ClearExtendedExecution();
 
-            var newSession = new ExtendedExecutionSession();
-            newSession.Reason = ExtendedExecutionReason.Unspecified;
-            newSession.Description = "Running multiple tasks";
-            newSession.Revoked += SessionRevoked;
-            ExtendedExecutionResult result = await newSession.RequestExtensionAsync();
-
-            switch (result)
+            if (session == null)
             {
-                case ExtendedExecutionResult.Allowed:
-                    System.Diagnostics.Debug.WriteLine("Extended execution allowed.");
-                    session = newSession;
-                    bSessionAvailable = true;
-                    NumberOfDeviceUsingSession++;
-                    OnDeviceThreadSessionStateChanged(this, DLNADeviceThreadSessionEvent.ThreadAttachedToSession);
-                    OnDeviceThreadSessionStateChanged(this, DLNADeviceThreadSessionEvent.ExtendedExecutionSessionCreated);
-                    break;
+                var newSession = new ExtendedExecutionSession();
+                // Select Location Tracking to be sure to run in background
+                newSession.Reason = ExtendedExecutionReason.LocationTracking;
+                newSession.Description = "Running multiple tasks";
+                newSession.Revoked += SessionRevoked;
+                ExtendedExecutionResult result = await newSession.RequestExtensionAsync();
 
-                default:
-                case ExtendedExecutionResult.Denied:
-                    System.Diagnostics.Debug.WriteLine("Extended execution denied.");
-                    newSession.Dispose();
-                    bSessionAvailable = false;
-                    OnDeviceThreadSessionStateChanged(this, DLNADeviceThreadSessionEvent.ExtendedExecutionSessionDenied);
-                    break;
+                switch (result)
+                {
+                    case ExtendedExecutionResult.Allowed:
+                        System.Diagnostics.Debug.WriteLine("Extended execution allowed.");
+                        session = newSession;
+                        bSessionAvailable = true;
+                        NumberOfDeviceUsingSession++;
+                        OnDeviceThreadSessionStateChanged(this, DLNADeviceThreadSessionEvent.ThreadAttachedToSession);
+                        OnDeviceThreadSessionStateChanged(this, DLNADeviceThreadSessionEvent.ExtendedExecutionSessionCreated);
+                        break;
+
+                    default:
+                    case ExtendedExecutionResult.Denied:
+                        System.Diagnostics.Debug.WriteLine("Extended execution denied.");
+                        newSession.Dispose();
+                        bSessionAvailable = false;
+                        OnDeviceThreadSessionStateChanged(this, DLNADeviceThreadSessionEvent.ExtendedExecutionSessionDenied);
+                        break;
+                }
             }
-            if (bSessionAvailable == true)
+            else
+            {
+                session.Revoked += SessionRevoked;
+                bSessionAvailable = true;
+            }
+            if (bSessionAvailable == false)
                 return false;
             return true;
         }
@@ -823,8 +933,14 @@ namespace AudioVideoPlayer.DLNA
         {
             IsInBackgroundMode = false;
             // if the Monitoring Thread has been revoked in background, restart monitoring thread
-            if(bSessionAvailable == false)
-                await StartMonitoringDevice();
+
+            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+            async () =>
+            {
+                if (bSessionAvailable == false)
+                    await StartMonitoringDevice();
+            });
+
         }
         public async System.Threading.Tasks.Task<bool> StartMonitoringDevice()
         {
@@ -836,8 +952,7 @@ namespace AudioVideoPlayer.DLNA
                 return false;
             StopMonitoringDevice(DLNADeviceThreadSessionEvent.ThreadStoppedBeforeStarting);
 
-            await BeginExtendedExecution();
-            if (session != null)
+            if ((true == await BeginExtendedExecution())&&(session != null))
             {
                 this.bDevicePlaybackMonitorTaskRunning = true;
                 this.bDevicePlaybackMonitorTaskStopped = false;

@@ -750,7 +750,11 @@ namespace AudioVideoPlayer.Pages.Player
                 mediaPlayer.PlaybackSession.PlaybackStateChanged -= PlaybackSession_PlaybackStateChanged;
             }
             if (Windows.Foundation.Metadata.ApiInformation.IsEventPresent("Windows.Media.Playback.MediaPlaybackSession", "SeekableRangesChanged"))
-                mediaPlayer.PlaybackSession.SeekableRangesChanged -= PlaybackSession_SeekableRangesChanged;
+            {
+                if((mediaPlayer!=null)&&
+                    (mediaPlayer.PlaybackSession != null))
+                    mediaPlayer.PlaybackSession.SeekableRangesChanged -= PlaybackSession_SeekableRangesChanged;
+            }
             mediaPlayerElement.DoubleTapped -= doubleTapped;
             mediaPlayerElement.KeyDown -= OnKeyDown;
             mediaPlayerElement.UnregisterPropertyChangedCallback(MediaElement.IsFullWindowProperty, IsFullWindowToken);

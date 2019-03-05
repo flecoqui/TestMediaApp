@@ -339,6 +339,9 @@ namespace AudioVideoPlayer.Pages.DLNA
             // Register Network
             RegisterNetworkHelper();
 
+            // Book network for background task
+            BookNetworkForBackground();
+
             // Combobox event
             comboStream.SelectionChanged += ComboStream_SelectionChanged;
             // Logs updated
@@ -2080,6 +2083,67 @@ namespace AudioVideoPlayer.Pages.DLNA
             timer.Stop();
         }
         #endregion
+
+        #region backgroundPlayer
+        /// <summary>
+        /// Local Media Player use to keep the network up while in background mode
+        /// </summary>
+        Windows.Media.Playback.MediaPlayer localMediaPlayer = null;
+        Windows.Media.Core.MediaBinder localMediaBinder = null;
+        Windows.Media.Core.MediaSource localMediaSource = null;
+        // used to prevent deferral from being gc'd
+        Windows.Foundation.Deferral deferral = null;
+        // Methode used to keep the netwotk on while the application is in background.
+        // it creates a fake MediaPlayer playing from a MediaBinder source.
+        // On Phone you need to create this MediaPlayer before the MediaPlayer used by the application.
+        public bool BookNetworkForBackground()
+        {
+            bool result = false;
+            try
+            {
+                if (localMediaBinder == null)
+                {
+                    localMediaBinder = new Windows.Media.Core.MediaBinder();
+                    if (localMediaBinder != null)
+                    {
+                        localMediaBinder.Binding += LocalMediaBinder_Binding;
+                    }
+                }
+                if (localMediaSource == null)
+                {
+                    localMediaSource = Windows.Media.Core.MediaSource.CreateFromMediaBinder(localMediaBinder);
+                }
+                if (localMediaPlayer == null)
+                {
+                    localMediaPlayer = new Windows.Media.Playback.MediaPlayer();
+                    if (localMediaPlayer != null)
+                    {
+                        localMediaPlayer.CommandManager.IsEnabled = false;
+                        localMediaPlayer.Source = localMediaSource;
+                        result = true;
+                        LogMessage("Booking network for Background task successful");
+                        return result;
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                LogMessage("Exception while booking network for Background task: Exception: " + ex.Message);
+            }
+            LogMessage("Booking network for Background task failed");
+            return result;
+        }
+        // Method used to keep the network on while the application is in background
+        private void LocalMediaBinder_Binding(Windows.Media.Core.MediaBinder sender, Windows.Media.Core.MediaBindingEventArgs args)
+        {
+            deferral = args.GetDeferral();
+            LogMessage("Booking network for Background task running...");
+        }
+
+        #endregion
+
+
     }
 
 
