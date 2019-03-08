@@ -177,7 +177,7 @@ namespace AudioVideoPlayer.DLNA
                     if ((!string.IsNullOrEmpty(Id))&&
                         (!string.IsNullOrEmpty(friendlyName)))
                     {
-                        DLNADevice hs = new DLNADevice(Id, Location, Version, IpCache, Server, St, Usn, Ip, friendlyName, manufacturer, modelName, modelNumber);
+                        DLNADevice hs = new DLNADevice(Id, Location, Version, IpCache, Server, St, Usn, Ip, friendlyName, manufacturer, modelName, modelNumber,DLNADevicePlayMode.Normal,false);
                         if (hs != null)
                         {
                             await hs.GetDNLAServices();

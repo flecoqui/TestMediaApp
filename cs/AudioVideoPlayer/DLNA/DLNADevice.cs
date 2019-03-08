@@ -216,6 +216,8 @@ namespace AudioVideoPlayer.DLNA
         public string ModelNumber { get; set; }
         public DLNADeviceStatus Status { get; set; }
         public string PlayerId { get; set; }
+        public DLNADevicePlayMode PlayMode { get; set; }
+        public bool ShuffleMode { get; set; }
 
         private DateTime LatestConnectionTime = DateTime.MinValue;
         private DateTime LatestConnectionCheckTime = DateTime.MinValue;
@@ -273,7 +275,11 @@ namespace AudioVideoPlayer.DLNA
         TimeSpan periodConnectionLoss = TimeSpan.FromMilliseconds(30000);
         TimeSpan periodWaitTaskCompletion = TimeSpan.FromMilliseconds(1000);
 
-        private DLNADevicePlayMode PlayMode;
+
+        public bool IsShuffleMode()
+        {
+            return ShuffleMode;
+        }
         protected virtual void OnDeviceMediaInformationUpdated(DLNADevice d, DLNAMediaInformation info)
         {
             if (DeviceMediaInformationUpdated != null)
@@ -333,6 +339,7 @@ namespace AudioVideoPlayer.DLNA
             latest_currentUri = string.Empty;
             Status = DLNADeviceStatus.Unknown;
             PlayMode = DLNADevicePlayMode.Normal;
+            ShuffleMode = false;
 
             DevicePlaybackMonitorTask = null;
             DevicePlayerStateMonitorTask = null;
@@ -352,7 +359,7 @@ namespace AudioVideoPlayer.DLNA
 
     }
         public DLNADevice(string id, string location, string version, string ipCache, string server,
-            string st, string usn, string ip, string friendlyName, string manufacturer, string modelName, string modelNumber)
+            string st, string usn, string ip, string friendlyName, string manufacturer, string modelName, string modelNumber, DLNADevicePlayMode playMode, bool bShuffleMode)
         {
             Id = id;
             Location = location;
@@ -370,9 +377,11 @@ namespace AudioVideoPlayer.DLNA
             latest_transport_state = string.Empty;
             latest_transport_status = string.Empty;
             latest_transport_speed = -1;
-            latest_play_mode = string.Empty;
+            //latest_play_mode = string.Empty;
             latest_currentUri = string.Empty;
-            PlayMode = DLNADevicePlayMode.Normal;
+            PlayMode = playMode;
+            latest_play_mode = GetPlayModeString();
+            ShuffleMode = bShuffleMode;
             DevicePlaybackMonitorTask = null;
             DevicePlayerStateMonitorTask = null;
             DevicePlayerModeMonitorTask = null;
@@ -2336,7 +2345,21 @@ namespace AudioVideoPlayer.DLNA
                 result = DLNADevicePlayMode.Normal;
             return result;
         }
-
+        string GetPlayModeString(DLNADevicePlayMode PlayMode)
+        {
+            string result;
+            if (PlayMode == DLNADevicePlayMode.Normal)
+                result = DLNADevice.PLAY_MODE_NORMAL;
+            else if (PlayMode == DLNADevicePlayMode.Shuffle)
+                result = DLNADevice.PLAY_MODE_SHUFFLE;
+            else if (PlayMode == DLNADevicePlayMode.RepeatOne)
+                result = DLNADevice.PLAY_MODE_REPEAT_ONE;
+            else if (PlayMode == DLNADevicePlayMode.RepeatAll)
+                result = DLNADevice.PLAY_MODE_REPEAT_ALL;
+            else
+                result = DLNADevice.PLAY_MODE_NORMAL;
+            return result;
+        }
         public async System.Threading.Tasks.Task<bool> SetPlayMode(string PlayMode)
         {
             bool result = false;
@@ -2349,8 +2372,20 @@ namespace AudioVideoPlayer.DLNA
                     result = await SetPlayMode(ds.ControlURL, 0, PlayMode);
                 else
                     result = true;
+                if (this.PlayMode == DLNADevicePlayMode.Shuffle)
+                    ShuffleMode = true;
+                else
+                    ShuffleMode = false;
             }
             return result;
+        }
+        public string GetPlayModeString()
+        {
+            return GetPlayModeString(this.PlayMode);
+        }
+        public DLNADevicePlayMode GetPlayMode()
+        {
+            return this.PlayMode;
         }
         public async System.Threading.Tasks.Task<bool> Play()
         {
@@ -2522,27 +2557,38 @@ namespace AudioVideoPlayer.DLNA
             }
             return false;
         }
-        string PreparePlayModeResult(string PlayMode)
+        string PreparePlayModeResult(string playMode)
         {
             string result = string.Empty;
             if(this.PlayMode == DLNADevicePlayMode.Normal)
             {
-                if (PlayMode == DLNADevice.PLAY_MODE_NORMAL)
-                    result = PlayMode;
+                if (playMode == DLNADevice.PLAY_MODE_NORMAL)
+                    result = playMode;
                 else
                 {
-                    this.PlayMode = GetPlayModeEnum(PlayMode);
-                    result = PlayMode;
+                    this.PlayMode = GetPlayModeEnum(playMode);
+                    if (this.PlayMode == DLNADevicePlayMode.Shuffle)
+                        ShuffleMode = true;
+                    else
+                        ShuffleMode = false;
+
+                    result = playMode;
                 }
             }
             else if (this.PlayMode == DLNADevicePlayMode.RepeatOne)
             {
-                if (PlayMode == DLNADevice.PLAY_MODE_REPEAT_ONE)
-                    result = PlayMode;
+                if (playMode == DLNADevice.PLAY_MODE_REPEAT_ONE)
+                    result = playMode;
                 else
                 {
-                    this.PlayMode = GetPlayModeEnum(PlayMode);
-                    result = PlayMode;
+                    this.PlayMode = GetPlayModeEnum(playMode);
+                    if (this.PlayMode == DLNADevicePlayMode.Shuffle)
+                        ShuffleMode = true;
+                    else
+                        ShuffleMode = false;
+
+                    result = playMode;
+
                 }
 
             }

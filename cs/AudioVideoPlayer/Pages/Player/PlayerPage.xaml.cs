@@ -282,18 +282,34 @@ namespace AudioVideoPlayer.Pages.Player
         }
         // localPath is used to store the path of the content to be played
         string localPath = string.Empty;
+        public void StopMediaPlayer()
+        {
+            //   mediaPlayer.Stop();
+            if (adaptiveMediaSource != null)
+            {
+                adaptiveMediaSource.Dispose();
+                adaptiveMediaSource = null;
+            }
+            if (playbackItem != null)
+            {
+                if (playbackItem.Source != null)
+                {
+                    playbackItem.Source.Dispose();;
+                }
+                playbackItem = null;
+            }
+            mediaPlayer.Source = null;
+            if (smoothSubtitleMgr != null)
+            {
+                smoothSubtitleMgr.StopLoadingSubtitles();
+            }
 
+        }
         public async System.Threading.Tasks.Task<bool> LoadingNewPlaylist(string path)
         {
             try
             {
-                //   mediaPlayer.Stop();
-                mediaPlayer.Source = null;
-                if (smoothSubtitleMgr != null)
-                {
-                    smoothSubtitleMgr.StopLoadingSubtitles();
-                }
-
+                StopMediaPlayer();
             }
             catch (Exception)
             {
@@ -569,11 +585,7 @@ namespace AudioVideoPlayer.Pages.Player
             // Stop Media Player
             try
             {
-                mediaPlayer.Source = null;
-                if (smoothSubtitleMgr != null)
-                {
-                    smoothSubtitleMgr.StopLoadingSubtitles();
-                }
+                StopMediaPlayer();
 
             }
             catch (Exception ex)
@@ -1708,13 +1720,8 @@ namespace AudioVideoPlayer.Pages.Player
                     (!string.IsNullOrEmpty(mediaUri.Text)) &&
                     (string.Equals(mediaUri.Text, CurrentMediaUrl)))
                 {
-                    LogMessage("Stop " + CurrentMediaUrl.ToString());
-                    //mediaPlayer.Stop();
-                    mediaPlayer.Source = null;
-                    if (smoothSubtitleMgr != null)
-                    {
-                        smoothSubtitleMgr.StopLoadingSubtitles();
-                    }
+                     LogMessage("Stop " + CurrentMediaUrl.ToString());
+                    StopMediaPlayer();
                     // Avoid set focus on the next control Edit box
                     UpdateControls();
                     playButton.Focus(FocusState.Programmatic);
@@ -1819,12 +1826,7 @@ namespace AudioVideoPlayer.Pages.Player
                 LogMessage("Stopping MediaElement before Loading playlist");
                 try
                 {
-                 //   mediaPlayer.Stop();
-                    mediaPlayer.Source = null;
-                    if (smoothSubtitleMgr != null)
-                    {
-                        smoothSubtitleMgr.StopLoadingSubtitles();
-                    }
+                    StopMediaPlayer();
 
                 }
                 catch (Exception)
@@ -2070,12 +2072,8 @@ namespace AudioVideoPlayer.Pages.Player
                 httpHeadersString = ms.HttpHeaders;
                 httpHeaders = GetHttpHeaders(httpHeadersString);
                 if (!string.Equals(CurrentMediaUrl, mediaUri.Text))
-//                    mediaPlayer.Stop();
-                mediaPlayer.Source = null;
-                if (smoothSubtitleMgr != null)
-                {
-                    smoothSubtitleMgr.StopLoadingSubtitles();
-                }
+                    StopMediaPlayer();
+
 
                 UpdateControls();
             }
@@ -3281,11 +3279,7 @@ namespace AudioVideoPlayer.Pages.Player
                 EnableSoftwareDRM(!IsHardwareDRMSupported());
 
                 // Stop the current stream
-                mediaPlayer.Source = null;
-                if (smoothSubtitleMgr != null)
-                {
-                    smoothSubtitleMgr.StopLoadingSubtitles();
-                }
+                StopMediaPlayer();
 
                 mediaPlayerElement.PosterSource = null;
                 mediaPlayer.AutoPlay = true;
@@ -4145,6 +4139,7 @@ namespace AudioVideoPlayer.Pages.Player
                                 if (playbackItem != null)
                                 {
                                     mediaPlayer.Source = playbackItem;
+
                                     return true;
                                 }
                             }
