@@ -88,12 +88,15 @@
             </StackPanel>
             <StackPanel x:Name="ButtonPanel" VerticalAlignment="Top"  >
                 <StackPanel>
+
+                        <!--
+                           ItemsSource="{x:Bind ViewModelLocator.Settings.PlayListList,Mode=OneWay}" 
+                            -->
                         <TextBlock    Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Select the current playlist:" Style="{StaticResource LabelTextBoldBlockStyle}" HorizontalAlignment="Left" />
                         <ComboBox   Name="comboPlayList"                            
                            DisplayMemberPath="Name"
                            ToolTipService.ToolTip="Name of the current selected  playlist"    
                            HorizontalAlignment="Stretch" 
-                           ItemsSource="{x:Bind ViewModelLocator.Settings.PlayListList,Mode=OneWay}" 
                            SelectedValuePath="Name"
                            IsTabStop="True" 
                            Loaded="comboPlayList_Loaded"                                

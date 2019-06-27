@@ -263,14 +263,15 @@ namespace AudioVideoPlayer
             }
 
         }
-        public async void SetPath(string path)
+        public async System.Threading.Tasks.Task<bool> SetPath(string path)
         {
-            var p = NavigationFrame.Content as PlayerPage;
-            if (p == null)
+          //  var p = NavigationFrame.Content as PlayerPage;
+//            if (p == null)
                 NavigateToSample(typeof(AudioVideoPlayer.Pages.Player.PlayerPage), null);
-            p = NavigationFrame.Content as PlayerPage;
+            var p = NavigationFrame.Content as PlayerPage;
             if (p != null)
-                await p.SetPath(path);
+                return await p.SetPath(path);
+            return true;
         }
         public  void AutoPlay(string verb)
         {

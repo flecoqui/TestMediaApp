@@ -175,7 +175,7 @@ namespace AudioVideoPlayer
             //TODO: Save application state and stop any background activity
             deferral.Complete();
         }
-        protected override  void OnFileActivated(FileActivatedEventArgs args)
+        protected override  async void OnFileActivated(FileActivatedEventArgs args)
         {
             LogMessage("OnFileActivated");
             base.OnFileActivated(args);
@@ -209,7 +209,7 @@ namespace AudioVideoPlayer
                         {
                             Windows.Storage.AccessCache.StorageApplicationPermissions.FutureAccessList.Add(f);
                             LogMessage("SetPath:" + f.Path);
-                            p.SetPath(f.Path);
+                            await p.SetPath(f.Path);
                         }
                         else if (string.Equals(args.Verb, "PlayCD", StringComparison.OrdinalIgnoreCase))
                         {

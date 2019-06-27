@@ -278,8 +278,84 @@ namespace AudioVideoPlayer.Pages.Player
         public PlayerPage()
         {
             this.InitializeComponent();
+            this.Loaded += PlayerPage_Loaded;
             LogMessage("Application PlayerPage Initialized");
         }
+
+        private async void PlayerPage_Loaded(object sender, RoutedEventArgs e)
+        {
+
+
+            // Register Companion
+            await InitializeCompanion();
+            // Register NetworkHelper
+            RegisterNetworkHelper();
+
+            // Read Setting to fill combo boxes
+            await ReadSettings();
+
+
+            // Load Data
+            if (string.IsNullOrEmpty(MediaDataSource.MediaDataPath))
+            {
+                LogMessage("PlayerPage Loading Data...");
+                await LoadingData(string.Empty);
+            }
+
+
+
+            // If the path has been set before
+            // the application will use this path 
+            // to play the content or playlist
+            string updatedPath = ViewModels.StaticSettingsViewModel.CurrentMediaPath;
+            if (!string.IsNullOrEmpty(updatedPath))
+            {
+                mediaUri.Text = updatedPath;
+            }
+            if (!string.IsNullOrEmpty(localPath))
+            {
+                if (localPath.EndsWith(".tma", StringComparison.OrdinalIgnoreCase))
+                {
+                    LogMessage("Loading new playlist: " + localPath);
+                    if (await LoadingNewPlaylist(localPath) == true)
+                    {
+                        // New playlist added
+                        comboPlayList_Loaded(null, null);
+                    }
+                }
+                else
+                {
+                    LogMessage("Loading new content: " + localPath);
+                    await LoadingNewContent(localPath);
+                }
+            }
+            // Start to play the first asset
+            if (ViewModels.StaticSettingsViewModel.AutoStart)
+            {
+                SetAutoStartWindowState();
+                PlayCurrentUrl();
+            }
+
+            LogDownload = ViewModels.StaticSettingsViewModel.DownloadLogs;
+            LogSubtitle = ViewModels.StaticSettingsViewModel.SubtitleLogs;
+            LogLiveBuffer = ViewModels.StaticSettingsViewModel.LiveBufferLogs;
+
+            // Update control and play first video
+            UpdateControls();
+
+            // Display OS, Device information
+            LogMessage(Information.SystemInformation.GetString());
+
+            // Message for localhost content 
+            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Desktop"))
+            {
+                LogMessage("If you need to play locally hosted content (url starting with \"http://localhost/\"), run the following command:\r\nCheckNetIsolation.exe LoopbackExempt -a -p=S-1-15-2-2982070501-967104153-2962845618-3522483597-428830490-3611180981-3161762328\r\n");
+            }
+            // Focus on PlayButton
+            playButton.Focus(FocusState.Programmatic);
+
+        }
+
         // localPath is used to store the path of the content to be played
         string localPath = string.Empty;
         public void StopMediaPlayer()
@@ -317,26 +393,30 @@ namespace AudioVideoPlayer.Pages.Player
             }
             if (await LoadingData(path) == false)
                 await LoadingData(string.Empty);
-            //Update control and play first video
-            if (ViewModels.StaticSettingsViewModel.AutoStart)
-                PlayCurrentUrl();
-            // Update PlaylistList
-
-            Models.PlayList playlist = await Models.PlayList.GetNewPlaylist(path);
-            if ((playlist != null)&&(playlist.Count>0))
+            else
             {
-                if (ViewModelLocator != null)
+                //Update control and play first video
+                if (ViewModels.StaticSettingsViewModel.AutoStart)
+                    PlayCurrentUrl();
+                // Update PlaylistList
+
+                Models.PlayList playlist = await Models.PlayList.GetNewPlaylist(path);
+                if ((playlist != null) && (playlist.Count > 0))
                 {
-                    var p = ViewModelLocator.Settings.PlayListList.FirstOrDefault(x => string.Equals(x.Path, path, StringComparison.OrdinalIgnoreCase) || string.Equals(x.Name, playlist.Name, StringComparison.OrdinalIgnoreCase));
-                    if (p == null)
+                    if (ViewModelLocator != null)
                     {
-                        ObservableCollection<Models.PlayList> PlayListList = ViewModelLocator.Settings.PlayListList;
-                        PlayListList.Add(playlist);
-                        ViewModelLocator.Settings.PlayListList = PlayListList;
+                        var p = ViewModelLocator.Settings.PlayListList.FirstOrDefault(x => string.Equals(x.Path, path, StringComparison.OrdinalIgnoreCase) || string.Equals(x.Name, playlist.Name, StringComparison.OrdinalIgnoreCase));
+                        if (p == null)
+                        {
+                            ObservableCollection<Models.PlayList> PlayListList = ViewModelLocator.Settings.PlayListList;
+                            PlayListList.Add(playlist);
+                            ViewModelLocator.Settings.PlayListList = PlayListList;
+                        }
                     }
                 }
+                return true;
             }
-            return true;
+            return false;
         }
         public async System.Threading.Tasks.Task<bool> LoadingNewContent(string path)
         {
@@ -355,33 +435,98 @@ namespace AudioVideoPlayer.Pages.Player
             LogMessage("Receive URI request for : " + uri.ToString());
             return true;
         }
+        bool IsThePlaylistNameUsed(string name)
+        {
+            ViewModels.ViewModel vm = this.DataContext as ViewModels.ViewModel;
+            if (vm != null)
+            {
+                foreach (var p in vm.Settings.PlayListList)
+                {
+                    if (string.Equals(p.Name, name))
+                        return true;
+                }
+            }
+            return false;
+        }
+        int GetPlaylistIndex(string path)
+        {
+            int Index = 0;
+            ViewModels.ViewModel vm = this.DataContext as ViewModels.ViewModel;
+            if (vm != null)
+            {
+                foreach (var p in vm.Settings.PlayListList)
+                {
+                    if (string.Equals(p.Path, path))
+                        return Index;
+                    Index++;
+                }
+            }
+            return -1;
+        }
+        async System.Threading.Tasks.Task<bool> AddPlayList(string Path)
+        {
+            try
+            {
+                Shell.Current.DisplayWaitRing = true;
+                //Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Wait, 1);
+                Models.PlayList playlist = await Models.PlayList.GetNewPlaylist(Path);
+                if (playlist != null)
+                {
+                    if (playlist.Count > 0)
+                    {
+                        if (!IsThePlaylistNameUsed(playlist.Name))
+                        {
+                            ViewModels.ViewModel vm = this.DataContext as ViewModels.ViewModel;
+                            if (vm != null)
+                            {
+                                ObservableCollection<Models.PlayList> PlayListList = vm.Settings.PlayListList;
+                                PlayListList.Add(playlist);
+                                vm.Settings.PlayListList = PlayListList;
+                                return true;
+                            }
+                        }
+                        else
+                            LogMessage("Playlist name already used");
+                    }
+                    else
+                        LogMessage("Playlist empty: 0 item");
+                }
+                else
+                    LogMessage("Error while parsing the playlist file");
+            }
+            catch (Exception ex)
+            {
+                LogMessage("Exception: " + ex.Message);
+            }
+            finally
+            {
+                Shell.Current.DisplayWaitRing = false;
+                //Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+            }
+            return false;
+
+        }
         public async System.Threading.Tasks.Task<bool> SetPath(string path)
         {
             bool result = false;
             if (!string.IsNullOrEmpty(path))
             {
-
-                if (IsDataLoaded())
+                if (path.EndsWith(".tma", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (path.EndsWith(".tma", StringComparison.OrdinalIgnoreCase))
+                    LogMessage("Loading new playlist: " + path);
+                    if(await AddPlayList(path)==true)
                     {
-                        LogMessage("Loading new playlist: " + path);
-                        result = await LoadingNewPlaylist(path);
-
-                    }
-                    else
-                    {
-                        LogMessage("Loading new content: " + path);
-                        result = await LoadingNewContent(path);
+                        ViewModelLocator.Settings.CurrentPlayListPath = path;
+                        ViewModelLocator.Settings.CurrentPlayListIndex = GetPlaylistIndex(path);
+                        ViewModelLocator.Settings.CurrentMediaPath = string.Empty;
+                        ViewModelLocator.Settings.CurrentMediaIndex = 0;
                     }
                 }
                 else
                 {
-                    // the content or the playlist will be loaded later on.
-                    localPath =  path;
-                    result = true;
+                LogMessage("Loading new content: " + path);
+                ViewModels.StaticSettingsViewModel.CurrentMediaPath = "file://" + path;
                 }
-                UpdateControls();
             }
             return result;
         }
@@ -411,7 +556,7 @@ namespace AudioVideoPlayer.Pages.Player
         /// </summary>
         /// <param name="e">Event data that describes how this page was reached.
         /// This parameter is typically used to configure the page.</param>
-        protected async override void OnNavigatedTo(NavigationEventArgs e)
+        protected  override void OnNavigatedTo(NavigationEventArgs e)
         {
             // TODO: If your application contains multiple pages, ensure that you are
             // handling the hardware Back button by registering for the
@@ -453,7 +598,6 @@ namespace AudioVideoPlayer.Pages.Player
                 return;
             }
 
-            await ReadSettings();
                        
             if (e.NavigationMode != NavigationMode.New)
                 RestoreState();
@@ -472,7 +616,7 @@ namespace AudioVideoPlayer.Pages.Player
             mediaPlayer.CommandManager.IsEnabled = false;
 
             // Register UI components and events
-           RegisterUI();
+            RegisterUI();
 
 
             // Register Smooth Streaming component
@@ -481,18 +625,6 @@ namespace AudioVideoPlayer.Pages.Player
             RegisterPlayReady();
             // Register Device Watcher
             RegisterDeviceWatcher();
-            // Register Companion
-            await InitializeCompanion();
-            // Register NetworkHelper
-            RegisterNetworkHelper();
-
-
-            // Load Data
-            if (string.IsNullOrEmpty(MediaDataSource.MediaDataPath))
-            {
-                LogMessage("PlayerPage Loading Data...");
-                await LoadingData(string.Empty);
-            }
 
             // Take into account the argument if file activated
             var args = e.Parameter as Windows.ApplicationModel.Activation.IActivatedEventArgs;
@@ -505,47 +637,6 @@ namespace AudioVideoPlayer.Pages.Player
                 }
             }
 
-            // If the path has been set before
-            // the application will use this path 
-            // to play the content or playlist
-            if (!string.IsNullOrEmpty(localPath))
-            {
-
-                if (localPath.EndsWith(".tma", StringComparison.OrdinalIgnoreCase))
-                {
-                    LogMessage("Loading new playlist: " + localPath);
-                    await LoadingNewPlaylist(localPath);
-                }
-                else
-                {
-                    LogMessage("Loading new content: " + localPath);
-                    await LoadingNewContent(localPath);
-                }
-            }
-            // Start to play the first asset
-            if (ViewModels.StaticSettingsViewModel.AutoStart)
-            {
-                SetAutoStartWindowState();
-                PlayCurrentUrl();
-            }
-
-            LogDownload = ViewModels.StaticSettingsViewModel.DownloadLogs;
-            LogSubtitle = ViewModels.StaticSettingsViewModel.SubtitleLogs;
-            LogLiveBuffer = ViewModels.StaticSettingsViewModel.LiveBufferLogs;
-
-            // Update control and play first video
-            UpdateControls();
-
-            // Display OS, Device information
-            LogMessage(Information.SystemInformation.GetString());
-
-            // Message for localhost content 
-            if (string.Equals(Information.SystemInformation.SystemFamily, "Windows.Desktop"))
-            {
-                LogMessage("If you need to play locally hosted content (url starting with \"http://localhost/\"), run the following command:\r\nCheckNetIsolation.exe LoopbackExempt -a -p=S-1-15-2-2982070501-967104153-2962845618-3522483597-428830490-3611180981-3161762328\r\n");
-            }
-            // Focus on PlayButton
-            playButton.Focus(FocusState.Programmatic);
 
         }
 
@@ -1072,8 +1163,6 @@ namespace AudioVideoPlayer.Pages.Player
                 () =>
                 {
                     LogMessage("Media ended");
-                    ReleaseDisplay();
-                    UpdateControls();
                     if (ViewModels.StaticSettingsViewModel.AutoStart)
                     {
                         LogMessage("Skipping to next Media on media end...");
@@ -1082,6 +1171,12 @@ namespace AudioVideoPlayer.Pages.Player
                             Loop_Click(null, null);
                         else
                             Plus_Click(null, null);
+                    }
+                    else
+                    {
+                        // Playback will stop
+                        ReleaseDisplay();
+                        UpdateControls();
                     }
                 });
         }
@@ -1849,23 +1944,37 @@ namespace AudioVideoPlayer.Pages.Player
         {
             try
             {
-                int Index = comboStream.SelectedIndex;
-                if (Index >= 0)
+                if ((!string.IsNullOrEmpty(CurrentMediaUrl))&&
+                    (mediaPlayer.PlaybackSession != null) &&
+                    (mediaPlayer.PlaybackSession.CanSeek) &&
+                    (!IsMusic(CurrentMediaUrl))&&
+                    (!IsPicture(CurrentMediaUrl)))
                 {
-                    comboStream.SelectedIndex = Index;
-                    MediaItem ms = comboStream.SelectedItem as MediaItem;
-                    if (ms != null)
-                    {
-                        mediaUri.Text = ms.Content;
-                        PlayReadyLicenseUrl = ms.PlayReadyUrl;
-                        httpHeadersString = ms.HttpHeaders;
-                        httpHeaders = GetHttpHeaders(httpHeadersString);
-                        PlayReadyChallengeCustomData = ms.PlayReadyCustomData;
-                    }
-                    PlayCurrentUrl();
+                    // For loop of video remove Transport Control
+                    mediaPlayerElement.AreTransportControlsEnabled = false;
+                    mediaPlayer.PlaybackSession.Position = CurrentStartPosition;
+                    mediaPlayer.Play();
                 }
                 else
-                    LogMessage("Error getting current playlis index");
+                {
+                    int Index = comboStream.SelectedIndex;
+                    if (Index >= 0)
+                    {
+                        comboStream.SelectedIndex = Index;
+                        MediaItem ms = comboStream.SelectedItem as MediaItem;
+                        if (ms != null)
+                        {
+                            mediaUri.Text = ms.Content;
+                            PlayReadyLicenseUrl = ms.PlayReadyUrl;
+                            httpHeadersString = ms.HttpHeaders;
+                            httpHeaders = GetHttpHeaders(httpHeadersString);
+                            PlayReadyChallengeCustomData = ms.PlayReadyCustomData;
+                        }
+                        PlayCurrentUrl();
+                    }
+                    else
+                        LogMessage("Error getting current playlis index");
+                }
 
             }
             catch (Exception ex)
@@ -1994,14 +2103,14 @@ namespace AudioVideoPlayer.Pages.Player
                     {
                         ViewModelLocator.Settings.CurrentPlayListPath = p.ImportedPath;
                         ViewModelLocator.Settings.CurrentPlayListIndex = comboPlayList.SelectedIndex;
-                        ViewModelLocator.Settings.CurrentMediaPath = string.Empty;
+                      //  ViewModelLocator.Settings.CurrentMediaPath = string.Empty;
                         ViewModelLocator.Settings.CurrentMediaIndex = p.Index;
                     }
                     else if (!string.IsNullOrEmpty(p.Path))
                     {
                         ViewModelLocator.Settings.CurrentPlayListPath = p.Path;
                         ViewModelLocator.Settings.CurrentPlayListIndex = comboPlayList.SelectedIndex;
-                        ViewModelLocator.Settings.CurrentMediaPath = string.Empty;
+                      //  ViewModelLocator.Settings.CurrentMediaPath = string.Empty;
                         ViewModelLocator.Settings.CurrentMediaIndex = p.Index;
                     }
                     // Remove Picture or Poster
@@ -2015,6 +2124,7 @@ namespace AudioVideoPlayer.Pages.Player
 
         private void comboPlayList_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
+
             if (comboPlayList.Items.Count > 0)
             {
                 ViewModels.ViewModel vm = this.DataContext as ViewModels.ViewModel;
@@ -5238,6 +5348,8 @@ namespace AudioVideoPlayer.Pages.Player
 
 
             // Restore PlayList path and index in the local settings
+            comboPlayList.ItemsSource = ViewModelLocator.Settings.PlayListList;
+            comboPlayList.SelectedIndex = ViewModels.StaticSettingsViewModel.CurrentPlayListIndex;
             string s = ViewModels.StaticSettingsViewModel.CurrentPlayListPath;
             if (!string.IsNullOrEmpty(s))
             {
@@ -5294,11 +5406,16 @@ namespace AudioVideoPlayer.Pages.Player
             // Save PlayList path and index in the local settings
             ViewModels.StaticSettingsViewModel.CurrentPlayListPath = MediaDataSource.MediaDataPath;
             ViewModels.StaticSettingsViewModel.CurrentMediaIndex = comboStream.SelectedIndex;
-            ViewModels.StaticSettingsViewModel.CurrentMediaPath = mediaUri.Text;
+            MediaItem ms = comboStream.SelectedItem as MediaItem;
+            if ((ms != null)&& (!string.Equals(ms.Content,mediaUri.Text)))
+                ViewModels.StaticSettingsViewModel.CurrentMediaPath = mediaUri.Text;
+            else
+                ViewModels.StaticSettingsViewModel.CurrentMediaPath = string.Empty;
 
             Models.PlayList p = (Models.PlayList)comboPlayList.SelectedItem;
             if (p != null)
             {
+                ViewModels.StaticSettingsViewModel.CurrentPlayListIndex = comboPlayList.SelectedIndex;
                 if (p.Index != comboStream.SelectedIndex)
                 {
                     p.Index = comboStream.SelectedIndex;
