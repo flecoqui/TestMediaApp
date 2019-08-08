@@ -23,6 +23,9 @@ using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System.Collections.ObjectModel;
+using Windows.ApplicationModel.UserDataTasks;
+using Windows.Foundation;
+using Windows.UI.Composition.Interactions;
 
 namespace AudioVideoPlayer.Helpers
 {
@@ -30,9 +33,9 @@ namespace AudioVideoPlayer.Helpers
     {
         const string headerStart = "{ \"Groups\": [{\"UniqueId\": \"audio_video_picture\",\"Title\": \"";
         const string headerEnd = "\",\"Category\": \"Windows 10 Audio Video Tests\",\"ImagePath\": \"ms-appx:///Assets/AudioVideo.png\",\"Description\": \"Windows 10 Audio Video Tests\",\"Items\": [\r\n";
-        const string videoItem = " \"UniqueId\": \"{0}\", \"Comment\": \"\", \"Title\": \"{1}\", \"ImagePath\": \"ms-appx:///Assets/VIDEO.png\",\"Description\": \"\", \"Content\": \"{2}\", \"PosterContent\": \"{3}\",\"Start\": \"0\",\"Duration\": \"0\",\"PlayReadyUrl\": \"null\",\"PlayReadyCustomData\": \"null\",\"BackgroundAudio\": true";
-        const string musicItem = " \"UniqueId\": \"{0}\", \"Comment\": \"\", \"Title\": \"{1}\", \"ImagePath\": \"ms-appx:///Assets/MUSIC.png\",\"Description\": \"\", \"Content\": \"{2}\", \"PosterContent\": \"{3}\",\"Start\": \"0\",\"Duration\": \"0\",\"PlayReadyUrl\": \"null\",\"PlayReadyCustomData\": \"null\",\"BackgroundAudio\": true";
-        const string pictureItem = " \"UniqueId\": \"{0}\", \"Comment\": \"\", \"Title\": \"{1}\", \"ImagePath\": \"ms-appx:///Assets/PHOTO.png\",\"Description\": \"\", \"Content\": \"{2}\", \"PosterContent\": \"{3}\",\"Start\": \"0\",\"Duration\": \"{4}\",\"PlayReadyUrl\": \"null\",\"PlayReadyCustomData\": \"null\",\"BackgroundAudio\": true";
+        const string videoItem = " \"UniqueId\": \"{0}\", \"Comment\": \"\", \"Title\": \"{1}\", \"ImagePath\": \"ms-appx:///Assets/VIDEO.png\",\"Description\": \"\", \"Content\": \"{2}\", \"PosterContent\": \"{3}\",\"Start\": \"0\",\"Duration\": \"0\",\"PlayReadyUrl\": \"null\",\"PlayReadyCustomData\": \"null\",\"BackgroundAudio\": true, \"Category\": \"{5}\"";
+        const string musicItem = " \"UniqueId\": \"{0}\", \"Comment\": \"\", \"Title\": \"{1}\", \"ImagePath\": \"ms-appx:///Assets/MUSIC.png\",\"Description\": \"\", \"Content\": \"{2}\", \"PosterContent\": \"{3}\",\"Start\": \"0\",\"Duration\": \"0\",\"PlayReadyUrl\": \"null\",\"PlayReadyCustomData\": \"null\",\"BackgroundAudio\": true, \"Artist\": \"{4}\", \"Album\": \"{5}\", \"Category\": \"{6}\"";
+        const string pictureItem = " \"UniqueId\": \"{0}\", \"Comment\": \"\", \"Title\": \"{1}\", \"ImagePath\": \"ms-appx:///Assets/PHOTO.png\",\"Description\": \"\", \"Content\": \"{2}\", \"PosterContent\": \"{3}\",\"Start\": \"0\",\"Duration\": \"{4}\",\"PlayReadyUrl\": \"null\",\"PlayReadyCustomData\": \"null\",\"BackgroundAudio\": truem, \"Category\": \"{5}\"";
         const string footer = "\r\n]}]}";
         public const string videoExts = ".asf;.avi;.ismv;.ts;.mkv;.mov;.mp4;.wmv;";
         public const string audioExts = ".mp3;.aac;.wma;.wav;.flac;.m4a;";
@@ -229,18 +232,25 @@ namespace AudioVideoPlayer.Helpers
         }
         // Process all files in the directory passed in, recurse on any directories 
         // that are found, and process the files they contain.
-        public static async System.Threading.Tasks.Task<int> ProcessDirectory(int counter, string PlaylistName, string extensions, bool bCreateThumbnails, int SlideShowPeriod, Stream writer, string targetDirectory)
+        public static async System.Threading.Tasks.Task<int> ProcessDirectory(string InitialFolder, int counter, string PlaylistName, string extensions, bool bCreateThumbnails, int SlideShowPeriod, Stream writer, string targetDirectory)
         {
 
             // Process the list of files found in the directory.
             string[] fileEntries = System.IO.Directory.GetFiles(targetDirectory);
             foreach (string fileName in fileEntries)
-                counter = await ProcessFile(counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, writer, fileName);
-
+            {
+                if (LocalPlaylistStopRequested == true)
+                    break;
+                counter = await ProcessFile(InitialFolder, counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, writer, fileName);
+            }
             // Recurse into subdirectories of this directory.
             string[] subdirectoryEntries = System.IO.Directory.GetDirectories(targetDirectory);
             foreach (string subdirectory in subdirectoryEntries)
-                counter = await ProcessDirectory(counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, writer, subdirectory);
+            {
+                if (LocalPlaylistStopRequested == true)
+                    break;
+                counter = await ProcessDirectory(InitialFolder, counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, writer, subdirectory);
+            }
             return counter;
         }
         static bool IsMusicFile(string ext)
@@ -351,9 +361,14 @@ namespace AudioVideoPlayer.Helpers
             }
             return null;
         }
-        static string GetText(string Text)
+        static string GetTextOld(string Text)
         {
             return  Text.Replace('"', ' ').Replace('\\', ' ').Replace('/', ' ').Replace('*', ' ').Replace("'", " ");
+
+        }
+        static string GetText(string Text)
+        {
+            return Text.Replace('"', ' ').Replace('\\', ' ').Replace('/', ' ').Replace('*', ' ');
 
         }
         static string GetTextForFileName(string Text)
@@ -376,7 +391,7 @@ namespace AudioVideoPlayer.Helpers
             }            
             return result;
         }
-        public static async System.Threading.Tasks.Task<int> ProcessFile(int counter, string PlaylistName, string extensions, bool bCreateThumbnails, int SlideShowPeriod, Stream writer, string path)
+        public static async System.Threading.Tasks.Task<int> ProcessFile(string InitialFolder, int counter, string PlaylistName, string extensions, bool bCreateThumbnails, int SlideShowPeriod, Stream writer, string path)
         {
             try
             {
@@ -388,9 +403,13 @@ namespace AudioVideoPlayer.Helpers
                     {
                         string artist = string.Empty;
                         string album = string.Empty;
+                        string category = string.Empty;
+                        int track = -1;
                         string posteruri = "";// GetPosterFile(path, extensions);
                         string title = "";//GetFileName(path);
-                        
+                        string fullPath = System.IO.Path.GetFullPath(path);
+                        category = GetCategoryFromPath(InitialFolder, fullPath);
+
                         if (IsMusicFile(ext))
                         {
                             posteruri = "ms-appx:///Assets/MUSIC.png";
@@ -399,10 +418,19 @@ namespace AudioVideoPlayer.Helpers
                             {
                                 artist = GetText(m.Artist);
                                 album = GetText(m.Album);
-                                //title = GetText(m.Title);
+                                title = GetText(m.Title);
+                                track = (int)m.TrackNumber;
                             }
+
                             if (string.IsNullOrEmpty(title))
                                 title = System.IO.Path.GetFileNameWithoutExtension(path);
+                            else
+                            {
+                                if (track > 0)
+                                    title = track.ToString("00") + "-" + artist + "-" + album + "-" + title;
+                                else
+                                    title = artist + "-" + album + "-" + title;
+                            }
                             using (var thumbnail = await File.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.MusicView, 300))
                             {
                                 if (thumbnail != null && thumbnail.Type == Windows.Storage.FileProperties.ThumbnailType.Image)
@@ -495,11 +523,11 @@ namespace AudioVideoPlayer.Helpers
                                     uri = "file://" + uri.Replace("\\", "\\\\");
                                     posteruri = "file://" + posteruri.Replace("\\", "\\\\");
                                     if (IsPictureFile(ext))
-                                        s += string.Format(pictureItem, counter.ToString(), title, uri, posteruri, SlideShowPeriod.ToString());
+                                        s += string.Format(pictureItem, counter.ToString(), title, uri, posteruri, SlideShowPeriod.ToString(), category);
                                     else if (IsMusicFile(ext))
-                                        s += string.Format(musicItem, counter.ToString(), title, uri, posteruri);
+                                        s += string.Format(musicItem, counter.ToString(), title, uri, posteruri,artist,album, category);
                                     else 
-                                        s += string.Format(videoItem, counter.ToString(), title, uri, posteruri);
+                                        s += string.Format(videoItem, counter.ToString(), title, uri, posteruri,category);
                                     // await Windows.Storage.FileIO.AppendTextAsync(writer, string.Format(pictureItem, counter.ToString(), title, uri, posteruri));
                                     //  await Windows.Storage.FileIO.AppendTextAsync(writer, string.Format(audioItem, counter.ToString(), title, uri, posteruri));
                                     // await Windows.Storage.FileIO.AppendTextAsync(writer, "}");
@@ -520,11 +548,11 @@ namespace AudioVideoPlayer.Helpers
                                     uri = "file://" + uri.Replace("\\", "\\\\");
                                     posteruri = "file://" + posteruri.Replace("\\", "\\\\");
                                     if (IsPictureFile(ext))
-                                        s += string.Format(pictureItem, counter.ToString(), title, uri, posteruri, SlideShowPeriod.ToString());
+                                        s += string.Format(pictureItem, counter.ToString(), title, uri, posteruri, SlideShowPeriod.ToString(), category);
                                     else if (IsMusicFile(ext))
-                                        s += string.Format(musicItem, counter.ToString(), title, uri, posteruri);
+                                        s += string.Format(musicItem, counter.ToString(), title, uri, posteruri, artist, album, category);
                                     else 
-                                        s += string.Format(videoItem, counter.ToString(), title, uri, posteruri);
+                                        s += string.Format(videoItem, counter.ToString(), title, uri, posteruri, category);
                                     //await Windows.Storage.FileIO.AppendTextAsync(writer, "}");
                                     s += "}";
                                     AppendText(writer, s);
@@ -532,6 +560,7 @@ namespace AudioVideoPlayer.Helpers
                                 }
                             }
                             counter++;
+                            LocalPlaylistCounter++;
                         }
                     }
                 }
@@ -618,11 +647,11 @@ namespace AudioVideoPlayer.Helpers
                                 string s = "{";
                                 ext = GetExtension(item.Content);
                                 if (IsPictureFile(ext))
-                                    s += string.Format(pictureItem, counter.ToString(), item.Title, item.Content, item.PosterContent, SlideShowPeriod.ToString());
+                                    s += string.Format(pictureItem, counter.ToString(), item.Title, item.Content, item.PosterContent, SlideShowPeriod.ToString(),item.Category);
                                 else if (IsMusicFile(ext))
-                                    s += string.Format(musicItem, counter.ToString(), item.Title, item.Content, item.PosterContent);
+                                    s += string.Format(musicItem, counter.ToString(), item.Title, item.Content, item.PosterContent,item.Artist,item.Album, item.Category);
                                 else
-                                    s += string.Format(videoItem, counter.ToString(), item.Title, item.Content, item.PosterContent);
+                                    s += string.Format(videoItem, counter.ToString(), item.Title, item.Content, item.PosterContent, item.Category);
                                 s += "}";
 
                                 AppendText(stream, s);
@@ -633,11 +662,11 @@ namespace AudioVideoPlayer.Helpers
                                 s += "{";
                                 ext = GetExtension(item.Content);
                                 if (IsPictureFile(ext))
-                                    s += string.Format(pictureItem, counter.ToString(), item.Title, item.Content, item.PosterContent, SlideShowPeriod.ToString());
+                                    s += string.Format(pictureItem, counter.ToString(), item.Title, item.Content, item.PosterContent, SlideShowPeriod.ToString(), item.Category);
                                 else if (IsMusicFile(ext))
-                                    s += string.Format(musicItem, counter.ToString(), item.Title, item.Content, item.PosterContent);
+                                    s += string.Format(musicItem, counter.ToString(), item.Title, item.Content, item.PosterContent, item.Artist, item.Album, item.Category);
                                 else
-                                    s += string.Format(videoItem, counter.ToString(), item.Title, item.Content, item.PosterContent);
+                                    s += string.Format(videoItem, counter.ToString(), item.Title, item.Content, item.PosterContent, item.Category);
                                 s += "}";
                                 AppendText(stream, s);
                             }
@@ -656,6 +685,109 @@ namespace AudioVideoPlayer.Helpers
             }
             return -1;
         }
+        private static int localPlaylistCounter;
+        public static int LocalPlaylistCounter { set
+            {
+                localPlaylistCounter = value ;
+                if(LocalItemDiscovered != null)
+                    LocalItemDiscovered(LocalPlayListTask, value);
+            }
+            get
+            {
+                return localPlaylistCounter;
+            } }
+        static System.Threading.Tasks.Task LocalPlayListTask = null;
+        static bool LocalPlaylistRunning = false;
+        static bool LocalPlaylistStopRequested = false;
+        //
+        // Summary:
+        //     Raised when a local item is discovered
+        public  static event TypedEventHandler<System.Threading.Tasks.Task, int> LocalItemDiscovered;
+
+        public static bool IsLocalPlaylistTaskRunning()
+        {
+            if(LocalPlayListTask !=null)
+            {
+                //if ((LocalPlayListTask.Status == TaskStatus.Running)
+                    if(LocalPlaylistRunning == true)
+                        return true;
+            }
+            return false;
+        }
+        public static async System.Threading.Tasks.Task<bool> StopLocalPlaylistTask()
+        {
+
+            if (IsLocalPlaylistTaskRunning())
+            {
+                LocalPlaylistStopRequested = true;
+                while (IsLocalPlaylistTaskRunning())
+                {
+                    await System.Threading.Tasks.Task.Delay(1000);
+                }
+                LocalPlayListTask = null;
+                return true;
+            }
+            return false;
+
+        }
+        public static async System.Threading.Tasks.Task<bool> StartLocalPlaylistTask(string PlaylistName, string folderName, string extensions, bool bCreateThumbnails, int SlideShowPeriod, string outputFile)
+        {
+            if(LocalPlayListTask != null)
+            {
+                await StopLocalPlaylistTask();
+            }
+            if(LocalPlayListTask == null)
+            {
+               LocalPlayListTask = new Task(async () =>
+               {
+                   try
+                   {
+                       LocalPlaylistRunning = true;
+                       LocalPlaylistStopRequested = false;
+                       LocalPlaylistCounter = 0;
+                       int counter = 0;
+                       Windows.Storage.StorageFile File = await CreateFile(outputFile);
+                       if (File != null)
+                       {
+                           Stream stream = await File.OpenStreamForWriteAsync();
+                           if (stream != null)
+                           {
+                               if (await IsFile(folderName) == true)
+                               {
+                                   counter = await ProcessFile(folderName, counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, stream, folderName);
+                               }
+                               else if (await IsFolder(folderName))
+                               {
+                                   // This path is a directory
+                                   counter = await ProcessDirectory(folderName, counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, stream, folderName);
+                               }
+                               else
+                               {
+                                   System.Diagnostics.Debug.WriteLine("{0} is not a valid file or directory.", folderName);
+                               }
+                               //await Windows.Storage.FileIO.AppendTextAsync(File, footer);
+                               AppendText(stream, footer);
+                               stream.Flush();
+                               System.Diagnostics.Debug.WriteLine(counter.ToString() + " files discovered on local storage\n");
+                           }
+                       }
+                   }
+                   catch (Exception ex)
+                   {
+                       System.Diagnostics.Debug.WriteLine("Exception while discovering media file on local hard drive:" + ex.Message);
+                   }
+                   finally
+                   {
+                       LocalPlaylistRunning = false;
+                       LocalPlaylistStopRequested = false;
+                   }
+
+               });
+               LocalPlayListTask.Start();
+               return true;
+            }
+            return false;
+        }
         public static async System.Threading.Tasks.Task<int> CreateLocalPlaylist(string PlaylistName, string folderName, string extensions, bool bCreateThumbnails , int SlideShowPeriod , string outputFile )
         {
             try
@@ -669,12 +801,12 @@ namespace AudioVideoPlayer.Helpers
                     {
                         if (await IsFile(folderName) == true)
                         {
-                            counter = await ProcessFile(counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, stream, folderName);
+                            counter = await ProcessFile(folderName, counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, stream, folderName);
                         }
                         else if (await IsFolder(folderName))
                         {
                             // This path is a directory
-                            counter = await ProcessDirectory(counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, stream, folderName);
+                            counter = await ProcessDirectory(folderName, counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, stream, folderName);
                         }
                         else
                         {
@@ -762,6 +894,71 @@ namespace AudioVideoPlayer.Helpers
             {
                 if (pos + 1 < uri.Length)
                     result = uri.Substring(pos + 1);
+            }
+            return result;
+        }
+        static string GetCategoryFromPath(string initialFolder, string path)
+        {
+            string result = string.Empty;
+            if(!string.IsNullOrEmpty(initialFolder) &&
+                !string.IsNullOrEmpty(path))
+            {
+                int pos = path.IndexOf(initialFolder);
+                if(pos >= 0)
+                {
+                    int lastPos = path.LastIndexOf("\\");
+                    result = path.Substring(pos + initialFolder.Length, path.Length - (pos + initialFolder.Length + (path.Length - lastPos)));
+                    result = result.Replace('\\', '/');
+                }
+            }
+            return result;
+        }
+        static string GetCategoryFromUri(string initialFolder, string uri)
+        {
+            string result = string.Empty;
+            if (!string.IsNullOrEmpty(initialFolder) &&
+                !string.IsNullOrEmpty(uri))
+            {
+                int pos = uri.IndexOf(initialFolder);
+                if (pos >= 0)
+                {
+                    int lastPos = uri.LastIndexOf("/");
+                    result = uri.Substring(pos + initialFolder.Length, uri.Length - (pos + initialFolder.Length + (uri.Length - lastPos)));
+                }
+            }
+            return result;
+        }
+        static string GetArtistFromUri(string initialFolder, string uri)
+        {
+            string result = GetCategoryFromUri(initialFolder,uri);
+            if (!string.IsNullOrEmpty(result))
+            {
+                int lastPos = result.LastIndexOf("/");
+                if((lastPos == (result.Length-1)) && (lastPos > 0))
+                    lastPos = result.LastIndexOf("/",lastPos-1);
+                if (lastPos > 0)
+                {
+                    int pos = result.LastIndexOf("/", lastPos - 1);
+                    if (pos >= 0)
+                    {
+                        result = result.Substring(pos + 1, lastPos - pos -1);
+                    }
+                }
+            }
+            return result;
+        }
+        static string GetAlbumFromUri(string initialFolder, string uri)
+        {
+            string result = GetCategoryFromUri(initialFolder, uri);
+            if (!string.IsNullOrEmpty(result))
+            {
+                int lastPos = result.LastIndexOf("/");
+                if ((lastPos == (result.Length - 1)) && (lastPos > 0))
+                    lastPos = result.LastIndexOf("/", lastPos - 1);
+                if (lastPos > 0)
+                {
+                    result = result.Substring(lastPos + 1, result.Length - lastPos - 1 );
+                }
             }
             return result;
         }
@@ -985,7 +1182,7 @@ namespace AudioVideoPlayer.Helpers
             //         return result1;
             return result1;
         }
-        public static async System.Threading.Tasks.Task<int> ProcessCloudFolder(bool bFirst, string PlaylistName,CloudBlobContainer container, CloudBlobDirectory directory, Stream stream, string extensions, bool bCreateThumbnails, int SlideShowPeriod)
+        public static async System.Threading.Tasks.Task<int> ProcessCloudFolder(CloudBlobDirectory initialDirectory, bool bFirst, string PlaylistName,CloudBlobContainer container, CloudBlobDirectory directory, Stream stream, string extensions, bool bCreateThumbnails, int SlideShowPeriod)
         {
             int counter = 0;
             BlobResultSegment result = null;
@@ -1009,9 +1206,8 @@ namespace AudioVideoPlayer.Helpers
                             string ext = GetExtension(unescapeuri);
                             if ((!string.IsNullOrEmpty(ext)) && (extensions.IndexOf(ext, StringComparison.OrdinalIgnoreCase) >= 0))
                             {
-                                string artist = string.Empty;
-                                string album = string.Empty;
                                 string posteruri = string.Empty;
+                                string category = GetCategoryFromUri(initialDirectory != null? initialDirectory.Uri.ToString(): container.Uri.ToString(), unescapeuri);
                                 if (bCreateThumbnails)
                                     posteruri = GetPosterUri(unescapeuri, extensions, result.Results);
                                 //string title = GetUriFileName(unescapeuri);
@@ -1027,11 +1223,15 @@ namespace AudioVideoPlayer.Helpers
                                         string s = "";
                                         s += "{";
                                         if (IsPictureFile(ext))
-                                            s += string.Format(pictureItem, counter.ToString(), title, uri, posteruri, SlideShowPeriod.ToString());
+                                            s += string.Format(pictureItem, counter.ToString(), title, uri, posteruri, SlideShowPeriod.ToString(), category);
                                         else if (IsMusicFile(ext))
-                                            s += string.Format(musicItem, counter.ToString(), title, uri, posteruri);
+                                        {
+                                            string artist = GetArtistFromUri(initialDirectory != null ? initialDirectory.Uri.ToString() : container.Uri.ToString(), unescapeuri);
+                                            string album = GetAlbumFromUri(initialDirectory != null ? initialDirectory.Uri.ToString() : container.Uri.ToString(), unescapeuri);
+                                            s += string.Format(musicItem, counter.ToString(), title, uri, posteruri, artist, album, category);
+                                        }
                                         else
-                                            s += string.Format(videoItem, counter.ToString(), title, uri, posteruri);
+                                            s += string.Format(videoItem, counter.ToString(), title, uri, posteruri, category);
                                         s += "}";
                                         AppendText(stream, s);
                                     }
@@ -1040,11 +1240,15 @@ namespace AudioVideoPlayer.Helpers
                                         string s = ",\r\n";
                                         s += "{";
                                         if (IsPictureFile(ext))
-                                            s += string.Format(pictureItem, counter.ToString(), title, uri, posteruri, SlideShowPeriod.ToString());
+                                            s += string.Format(pictureItem, counter.ToString(), title, uri, posteruri, SlideShowPeriod.ToString(), category);
                                         else if (IsMusicFile(ext))
-                                            s += string.Format(musicItem, counter.ToString(), title, uri, posteruri);
+                                        {
+                                            string artist = GetArtistFromUri(initialDirectory != null ? initialDirectory.Uri.ToString() : container.Uri.ToString(), unescapeuri);
+                                            string album = GetAlbumFromUri(initialDirectory != null ? initialDirectory.Uri.ToString() : container.Uri.ToString(), unescapeuri);
+                                            s += string.Format(musicItem, counter.ToString(), title, uri, posteruri, artist, album, category);
+                                        }
                                         else
-                                            s += string.Format(videoItem, counter.ToString(), title, uri, posteruri);
+                                            s += string.Format(videoItem, counter.ToString(), title, uri, posteruri, category);
                                         s += "}";
                                         AppendText(stream, s);
                                     }
@@ -1060,7 +1264,7 @@ namespace AudioVideoPlayer.Helpers
                         {
                             CloudBlobDirectory subdirectory = (CloudBlobDirectory)item;
                             bFirst = ((counter == 0) && (bFirst == true))? true : false;
-                            int c = await ProcessCloudFolder(bFirst,PlaylistName, container, subdirectory, stream, extensions, bCreateThumbnails, SlideShowPeriod);
+                            int c = await ProcessCloudFolder(initialDirectory, bFirst, PlaylistName, container, subdirectory, stream, extensions, bCreateThumbnails, SlideShowPeriod);
                             counter += c;
                         }
                     }
@@ -1069,6 +1273,152 @@ namespace AudioVideoPlayer.Helpers
             while (result.ContinuationToken != null);
             return counter;
         }
+        private static int cloudPlaylistCounter;
+        public static int CloudPlaylistCounter
+        {
+            set
+            {
+                cloudPlaylistCounter = value;
+                if (CloudItemDiscovered != null)
+                    CloudItemDiscovered(CloudPlayListTask, value);
+            }
+            get
+            {
+                return cloudPlaylistCounter;
+            }
+        }
+        static System.Threading.Tasks.Task CloudPlayListTask = null;
+        static bool CloudPlaylistRunning = false;
+        static bool CloudPlaylistStopRequested = false;
+        //
+        // Summary:
+        //     Raised when a local item is discovered
+        public static event TypedEventHandler<System.Threading.Tasks.Task, int> CloudItemDiscovered;
+
+        public static bool IsCloudPlaylistTaskRunning()
+        {
+            if (CloudPlayListTask != null)
+            {
+                //if ((LocalPlayListTask.Status == TaskStatus.Running)
+                if (CloudPlaylistRunning == true)
+                    return true;
+            }
+            return false;
+        }
+        public static async System.Threading.Tasks.Task<bool> StopCloudPlaylistTask()
+        {
+
+            if (IsCloudPlaylistTaskRunning())
+            {
+                CloudPlaylistStopRequested = true;
+                while (IsCloudPlaylistTaskRunning())
+                {
+                    await System.Threading.Tasks.Task.Delay(1000);
+                }
+                CloudPlayListTask = null;
+                return true;
+            }
+            return false;
+
+        }
+        public static async System.Threading.Tasks.Task<bool> StartCloudPlaylistTask(string PlaylistName, string folderName, string extensions, bool bCreateThumbnails, int SlideShowPeriod, string outputFile)
+        {
+            if (CloudPlayListTask != null)
+            {
+                await StopCloudPlaylistTask();
+            }
+            if (CloudPlayListTask == null)
+            {
+                CloudPlayListTask = new Task(async () =>
+                {
+                    try
+                    {
+                        CloudPlaylistRunning = true;
+                        CloudPlaylistStopRequested = false;
+                        CloudPlaylistCounter = 0;
+                        int counter = 0;
+                        Windows.Storage.StorageFile File = await CreateFile(outputFile);
+                        if (File != null)
+                        {
+                            Stream stream = await File.OpenStreamForWriteAsync();
+                            if (stream != null)
+                            {
+                                if (await IsFile(folderName) == true)
+                                {
+                                    counter = await ProcessFile(folderName, counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, stream, folderName);
+                                }
+                                else if (await IsFolder(folderName))
+                                {
+                                    // This path is a directory
+                                    counter = await ProcessDirectory(folderName, counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, stream, folderName);
+                                }
+                                else
+                                {
+                                    System.Diagnostics.Debug.WriteLine("{0} is not a valid file or directory.", folderName);
+                                }
+                                //await Windows.Storage.FileIO.AppendTextAsync(File, footer);
+                                AppendText(stream, footer);
+                                stream.Flush();
+                                System.Diagnostics.Debug.WriteLine(counter.ToString() + " files discovered on local storage\n");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Exception while discovering media file on local hard drive:" + ex.Message);
+                    }
+                    finally
+                    {
+                        CloudPlaylistRunning = false;
+                        CloudPlaylistStopRequested = false;
+                    }
+
+                });
+                CloudPlayListTask.Start();
+                return true;
+            }
+            return false;
+        }
+        public static async System.Threading.Tasks.Task<int> CreateCloudPlaylist(string PlaylistName, string folderName, string extensions, bool bCreateThumbnails, int SlideShowPeriod, string outputFile)
+        {
+            try
+            {
+                int counter = 0;
+                Windows.Storage.StorageFile File = await CreateFile(outputFile);
+                if (File != null)
+                {
+                    Stream stream = await File.OpenStreamForWriteAsync();
+                    if (stream != null)
+                    {
+                        if (await IsFile(folderName) == true)
+                        {
+                            counter = await ProcessFile(folderName, counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, stream, folderName);
+                        }
+                        else if (await IsFolder(folderName))
+                        {
+                            // This path is a directory
+                            counter = await ProcessDirectory(folderName, counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, stream, folderName);
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine("{0} is not a valid file or directory.", folderName);
+                            return -1;
+                        }
+                        //await Windows.Storage.FileIO.AppendTextAsync(File, footer);
+                        AppendText(stream, footer);
+                        stream.Flush();
+                        System.Diagnostics.Debug.WriteLine(counter.ToString() + " files discovered on local storage\n");
+                        return counter;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception while discovering media file on local hard drive:" + ex.Message);
+            }
+            return -1;
+        }
+
         public static async System.Threading.Tasks.Task<int> CreateCloudPlaylist(string PlaylistName, string AccountName, string AccountKey, string Container, string folder, string extensions, bool bCreateThumbnails, int SlideShowPeriod, string outputFile)
         {
             List<string> blobs = new List<string>();
@@ -1096,7 +1446,7 @@ namespace AudioVideoPlayer.Helpers
                         AppendText(stream, s);
                         CloudBlobDirectory directory = (!string.IsNullOrEmpty(folder) ? container.GetDirectoryReference(folder):null);
                         bool bFirst = true;
-                        int c = await ProcessCloudFolder(bFirst,PlaylistName, container, directory, stream, extensions, bCreateThumbnails, SlideShowPeriod);
+                        int c = await ProcessCloudFolder(directory,bFirst, PlaylistName, container, directory, stream, extensions, bCreateThumbnails, SlideShowPeriod);
                         counter += c;
                         AppendText(stream, footer);
                         stream.Flush();

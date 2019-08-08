@@ -53,7 +53,10 @@ namespace AudioVideoPlayer.DataModel
                               String httpHeaders,
                               String playReadyUrl,
                               String playReadyCustomData,
-                              bool backgroundAudio)
+                              bool backgroundAudio,
+                              string artist,
+                              string album,
+                              string category)
 
         {
             this.UniqueId = uniqueId;
@@ -69,7 +72,11 @@ namespace AudioVideoPlayer.DataModel
             this.PlayReadyUrl = playReadyUrl;
             this.PlayReadyCustomData = playReadyCustomData;
             this.BackgroundAudio = backgroundAudio;
+            this.Artist = artist;
+            this.Album = album;
+            this.Category = category;
         }
+        
         public string UniqueId { get;  set; }
         public string Comment { get;  set; }
         public string Title { get;  set; }
@@ -83,6 +90,11 @@ namespace AudioVideoPlayer.DataModel
         public string PlayReadyUrl { get;  set; }
         public string PlayReadyCustomData { get;  set; }
         public bool BackgroundAudio { get;  set; }
+
+        public string Artist { get; set; }
+        public string Album { get; set; }
+        public string Category { get; set; }
+
         public override string ToString()
         {
             return this.Title;
@@ -278,6 +290,16 @@ namespace AudioVideoPlayer.DataModel
                     {
                         JsonObject itemObject = itemValue.GetObject();
                         long timeValue = 0;
+                        string Artist = string.Empty;
+                        string Album = string.Empty;
+                        string Category = string.Empty;
+                        if (itemObject.Keys.Contains("Artist"))
+                            Artist = itemObject["Artist"].GetString();
+                        if (itemObject.Keys.Contains("Album"))
+                            Album = itemObject["Album"].GetString();
+                        if (itemObject.Keys.Contains("Category"))
+                            Category = itemObject["Category"].GetString();
+
                         group.Items.Add(new MediaItem(itemObject["UniqueId"].GetString(),
                                                            itemObject["Comment"].GetString(),
                                                            itemObject["Title"].GetString(),
@@ -290,7 +312,10 @@ namespace AudioVideoPlayer.DataModel
                                                            (itemObject.ContainsKey("HttpHeaders") ? itemObject["HttpHeaders"].GetString() : ""),
                                                            itemObject["PlayReadyUrl"].GetString(),
                                                            itemObject["PlayReadyCustomData"].GetString(),
-                                                           itemObject["BackgroundAudio"].GetBoolean()));
+                                                           itemObject["BackgroundAudio"].GetBoolean(),
+                                                           Artist,
+                                                           Album,
+                                                           Category));
                     }
                     this.Groups.Add(group);
                     return true;

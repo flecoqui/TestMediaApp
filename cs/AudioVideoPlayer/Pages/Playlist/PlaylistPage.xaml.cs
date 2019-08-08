@@ -35,6 +35,9 @@ using Windows.Storage.Streams;
 using System.Text.RegularExpressions;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Windows.UI.Popups;
+using System.Threading.Tasks;
+using Windows.UI.Core.Preview;
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
 namespace AudioVideoPlayer.Pages.Playlist
@@ -53,6 +56,7 @@ namespace AudioVideoPlayer.Pages.Playlist
         public PlaylistPage()
         {
             this.InitializeComponent();
+            
             ClearErrorMessage();
         }
         bool IsMusic(string filters)
@@ -168,6 +172,16 @@ namespace AudioVideoPlayer.Pages.Playlist
                          {
                              localPlaylistItemsCountLabel.Visibility = Visibility.Visible;
                              localPlaylistItemsCount.Visibility = Visibility.Visible;
+                         }
+                         if(Helpers.MediaHelper.IsLocalPlaylistTaskRunning()==true)
+                         {
+                             localPlaylistCreation.Content = "\xE7A7";
+                             localPlaylistCreationLabel.Text = "Cancel Creation: ";
+                         }
+                         else
+                         {
+                             localPlaylistCreation.Content = "\xE78C";
+                             localPlaylistCreationLabel.Text = "Launch Creation: ";
                          }
                          localPlaylistCreation.IsEnabled = true;
 
@@ -335,14 +349,29 @@ namespace AudioVideoPlayer.Pages.Playlist
             // Register Network
             RegisterNetworkHelper();
 
+            // Check if a Playlist creation is running while closing the app
+            SystemNavigationManagerPreview.GetForCurrentView().CloseRequested += PlaylistPage_CloseRequested;
+
+
+            // Ensure the current window is active
+            Window.Current.Activate();
             // Update playlist controls
             localPlaylistItemsCount.Text = "-1";
             UpdateControls();
 
             // Set Focus to Add button
             addPlaylistButton.Focus(FocusState.Programmatic);
+        }
 
-
+        private async void PlaylistPage_CloseRequested(object sender, SystemNavigationCloseRequestedPreviewEventArgs e)
+        {
+            var deferral = e.GetDeferral();
+            if (await CanClose() == false)
+            {
+                //cancel close by handling the event
+                e.Handled = true;
+            }
+            deferral.Complete();
         }
 
         /// <summary>
@@ -353,9 +382,31 @@ namespace AudioVideoPlayer.Pages.Playlist
 
             // Unregister Network
             UnregisterNetworkHelper();
-
-
+            // Check if a Playlist creation is running while closing the app
+            SystemNavigationManagerPreview.GetForCurrentView().CloseRequested -= PlaylistPage_CloseRequested;
         }
+        public static async System.Threading.Tasks.Task<bool> CanClose()
+        {
+            if ((Helpers.MediaHelper.IsLocalPlaylistTaskRunning())||
+                (Helpers.MediaHelper.IsCloudPlaylistTaskRunning()))
+            {
+                var dialog = new MessageDialog("A Playlist is still being created, are you sure you want to close the playlist page?", "Exit");
+                var confirmCommand = new UICommand("Yes");
+                var cancelCommand = new UICommand("No");
+                dialog.Commands.Add(confirmCommand);
+                dialog.Commands.Add(cancelCommand);
+                if (await dialog.ShowAsync() == cancelCommand)
+                {
+                    return false;
+                }
+                if (Helpers.MediaHelper.IsLocalPlaylistTaskRunning())
+                    await Helpers.MediaHelper.StopLocalPlaylistTask();
+                if (Helpers.MediaHelper.IsCloudPlaylistTaskRunning())
+                    await Helpers.MediaHelper.StopCloudPlaylistTask();
+            }
+            return true;
+        }
+
         bool IsThePlaylistNameUsed(string name)
         {
             ViewModels.ViewModel vm = this.DataContext as ViewModels.ViewModel;
@@ -404,7 +455,7 @@ namespace AudioVideoPlayer.Pages.Playlist
             if(!string.IsNullOrEmpty(text))
                 ErrorMessage.Text = text;
         }
-        private async void CreatePlaylist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private async void CreatePlaylist_ClickOld(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             try
             {
@@ -418,6 +469,94 @@ namespace AudioVideoPlayer.Pages.Playlist
                 { 
                     int counter = await Helpers.MediaHelper.CreateLocalPlaylist(ViewModelLocator.Settings.PlaylistName, ViewModelLocator.Settings.PlaylistFolder, ViewModelLocator.Settings.PlaylistFilters, ViewModelLocator.Settings.CreateThumbnails, ViewModelLocator.Settings.SlideShowPeriod, ViewModelLocator.Settings.PlaylistPath);
                     localPlaylistItemsCount.Text = counter.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception: " + ex.Message);
+            }
+            finally
+            {
+                Shell.Current.DisplayWaitRing = false;
+                UpdateControls();
+            }
+
+        }
+        private async void CreatePlaylist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            try
+            {
+                if (Helpers.MediaHelper.IsLocalPlaylistTaskRunning())
+                {
+                    Helpers.MediaHelper.LocalItemDiscovered -= MediaHelper_LocalItemDiscovered;
+                    await Helpers.MediaHelper.StopLocalPlaylistTask();
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(ViewModelLocator.Settings.PlaylistName) &&
+                        !string.IsNullOrEmpty(ViewModelLocator.Settings.PlaylistFolder) &&
+                        !string.IsNullOrEmpty(ViewModelLocator.Settings.PlaylistFilters) &&
+                        !string.IsNullOrEmpty(ViewModelLocator.Settings.PlaylistPath)
+                        )
+                    {
+                        localPlaylistItemsCount.Text = "0";
+                        Helpers.MediaHelper.LocalItemDiscovered += MediaHelper_LocalItemDiscovered;
+                        await Helpers.MediaHelper.StartLocalPlaylistTask(ViewModelLocator.Settings.PlaylistName, ViewModelLocator.Settings.PlaylistFolder, ViewModelLocator.Settings.PlaylistFilters, ViewModelLocator.Settings.CreateThumbnails, ViewModelLocator.Settings.SlideShowPeriod, ViewModelLocator.Settings.PlaylistPath);
+                        await Task.Delay(500);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Exception: " + ex.Message);
+            }
+            finally
+            {
+                UpdateControls();
+            }
+
+        }
+
+        private async void MediaHelper_LocalItemDiscovered(System.Threading.Tasks.Task sender, int args)
+        {
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+             () =>
+             {
+                 localPlaylistItemsCount.Text = args.ToString();
+             });
+
+        }
+
+        private async void CreateCloudPlaylist_ClickOld(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            try
+            {
+                Shell.Current.DisplayWaitRing = true;
+                cloudPlaylistItemsCount.Text = "-1";
+                if (!string.IsNullOrEmpty(ViewModelLocator.Settings.CloudPlaylistName) &&
+                    !string.IsNullOrEmpty(ViewModelLocator.Settings.AzureAccountKey) &&
+                    !string.IsNullOrEmpty(ViewModelLocator.Settings.AzureAccountName) &&
+                    !string.IsNullOrEmpty(ViewModelLocator.Settings.AzureContainer) &&
+                    !string.IsNullOrEmpty(ViewModelLocator.Settings.CloudPlaylistFilters) &&
+                    !string.IsNullOrEmpty(ViewModelLocator.Settings.CloudPlaylistPath)
+                    )
+                {
+                    int counter = await Helpers.MediaHelper.CreateCloudPlaylist(ViewModelLocator.Settings.CloudPlaylistName,
+                                                                                ViewModelLocator.Settings.AzureAccountName,
+                                                                                ViewModelLocator.Settings.AzureAccountKey,
+                                                                                ViewModelLocator.Settings.AzureContainer,
+                                                                                ViewModelLocator.Settings.AzureFolder,
+                                                                                ViewModelLocator.Settings.CloudPlaylistFilters,
+                                                                                ViewModelLocator.Settings.CloudCreateThumbnails,
+                                                                                ViewModelLocator.Settings.CloudSlideShowPeriod,
+                                                                                ViewModelLocator.Settings.CloudPlaylistPath);
+                    //int counter = await Helpers.MediaHelper.RenameCloudPlaylist(ViewModelLocator.Settings.CloudPlaylistName,
+                    //                                                            ViewModelLocator.Settings.AzureAccountName,
+                    //                                                            ViewModelLocator.Settings.AzureAccountKey,
+                    //                                                            ViewModelLocator.Settings.AzureContainer,
+                    //                                                            ViewModelLocator.Settings.AzureFolder,
+                    //                                                            ViewModelLocator.Settings.CloudPlaylistPath);
+                    cloudPlaylistItemsCount.Text = counter.ToString();
                 }
             }
             catch (Exception ex)

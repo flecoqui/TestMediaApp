@@ -119,10 +119,15 @@ namespace AudioVideoPlayer
                 MainTitleBar.Opacity = 0.5;
             }
         }
-        public void NavigateToSample(Type pageType,Object parameter)
+        public async void NavigateToSample(Type pageType,Object parameter)
         {
             if (pageType != null)
             {
+                if(NavigationFrame.CurrentSourcePageType == typeof(PlaylistPage))
+                {
+                    if (await PlaylistPage.CanClose() == false)
+                        return;
+                }
                 NavigationFrame.Navigate(pageType,parameter);
             }
         }
@@ -379,7 +384,7 @@ namespace AudioVideoPlayer
             }
         }
 
-        private void HamburgerMenu_OnItemClick(object sender, ItemClickEventArgs e)
+        private async void HamburgerMenu_OnItemClick(object sender, ItemClickEventArgs e)
         {
             var appPage = e.ClickedItem as MenuItem;
             if (appPage == null)
@@ -392,7 +397,13 @@ namespace AudioVideoPlayer
             {
 
 
-                
+                if (NavigationFrame.CurrentSourcePageType == typeof(PlaylistPage))
+                {
+                    if (await PlaylistPage.CanClose() == false)
+                        return;
+                }
+
+
                 var backStack = NavigationFrame.BackStack;
                 var backStackCount = backStack.Count;
 
