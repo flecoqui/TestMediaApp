@@ -254,7 +254,7 @@
                     </ToggleSwitch>
                     <TextBlock x:Name="cloudPlaylistItemsCountLabel"  Grid.Row="21" Grid.Column="0" Text="Items:" Foreground="{ThemeResource ButtonForegroundThemeBrush}" HorizontalAlignment="Left" Style="{StaticResource LabelTextBoldBlockStyle}" VerticalAlignment="Top"/>
                     <TextBox x:Name="cloudPlaylistItemsCount"  IsReadOnly="True" IsTabStop="False"  BorderThickness="0" Grid.Row="21" Grid.Column="1" Grid.ColumnSpan="2"  ToolTipService.ToolTip="Path/Uri of the created Playlist in the Documents folder" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="-1" TextWrapping="Wrap" TabIndex="32"/>
-                    <TextBlock Grid.Row="22" VerticalAlignment="Center" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Launch Creation: " />
+                    <TextBlock  x:Name="cloudPlaylistCreationLabel"   Grid.Row="22" VerticalAlignment="Center" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource LabelTextBoldBlockStyle}" Foreground="{ThemeResource ButtonForegroundThemeBrush}" Text="Launch Creation: " />
                     <Button x:Name="cloudPlaylistCreation"   IsEnabled="true" Content="&#xE78C;" Grid.Row="22" Grid.Column="2"   Style="{StaticResource CustomButtonStyle}"  ToolTipService.ToolTip="Create a cloud playlist from an existing Cloud Storage container" FontFamily="Segoe MDL2 Assets" IsTabStop="True" Height="40" Width="40" Margin="1,1,1,1" Click="CreateCloudPlaylist_Click" TabIndex="33"/>
                 </Grid>
             </StackPanel>

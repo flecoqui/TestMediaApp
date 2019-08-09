@@ -263,7 +263,20 @@ namespace AudioVideoPlayer.Pages.Playlist
                              cloudPlaylistItemsCountLabel.Visibility = Visibility.Visible;
                              cloudPlaylistItemsCount.Visibility = Visibility.Visible;
                          }
+
+
+                         if (Helpers.MediaHelper.IsCloudPlaylistTaskRunning() == true)
+                         {
+                             cloudPlaylistCreation.Content = "\xE7A7";
+                             cloudPlaylistCreationLabel.Text = "Cancel Creation: ";
+                         }
+                         else
+                         {
+                             cloudPlaylistCreation.Content = "\xE78C";
+                             cloudPlaylistCreationLabel.Text = "Launch Creation: ";
+                         }
                          cloudPlaylistCreation.IsEnabled = true;
+
 
                      }
                      else
@@ -489,6 +502,8 @@ namespace AudioVideoPlayer.Pages.Playlist
                 if (Helpers.MediaHelper.IsLocalPlaylistTaskRunning())
                 {
                     Helpers.MediaHelper.LocalItemDiscovered -= MediaHelper_LocalItemDiscovered;
+                    Helpers.MediaHelper.LocalTaskStatus -= MediaHelper_LocalTaskStatus;
+
                     await Helpers.MediaHelper.StopLocalPlaylistTask();
                 }
                 else
@@ -501,6 +516,8 @@ namespace AudioVideoPlayer.Pages.Playlist
                     {
                         localPlaylistItemsCount.Text = "0";
                         Helpers.MediaHelper.LocalItemDiscovered += MediaHelper_LocalItemDiscovered;
+                        Helpers.MediaHelper.LocalTaskStatus += MediaHelper_LocalTaskStatus;
+
                         await Helpers.MediaHelper.StartLocalPlaylistTask(ViewModelLocator.Settings.PlaylistName, ViewModelLocator.Settings.PlaylistFolder, ViewModelLocator.Settings.PlaylistFilters, ViewModelLocator.Settings.CreateThumbnails, ViewModelLocator.Settings.SlideShowPeriod, ViewModelLocator.Settings.PlaylistPath);
                         await Task.Delay(500);
                     }
@@ -526,7 +543,15 @@ namespace AudioVideoPlayer.Pages.Playlist
              });
 
         }
+        private async void MediaHelper_LocalTaskStatus(System.Threading.Tasks.Task sender, bool args)
+        {
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+             () =>
+             {
+                 UpdateControls();
+             });
 
+        }
         private async void CreateCloudPlaylist_ClickOld(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             try
@@ -570,21 +595,50 @@ namespace AudioVideoPlayer.Pages.Playlist
             }
 
         }
+        private async void MediaHelper_CloudItemDiscovered(System.Threading.Tasks.Task sender, int args)
+        {
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+             () =>
+             {
+                 cloudPlaylistItemsCount.Text = args.ToString();
+             });
+
+        }
+        private async void MediaHelper_CloudTaskStatus(System.Threading.Tasks.Task sender, bool args)
+        {
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+             () =>
+             {
+                 UpdateControls();
+             });
+
+        }
         private async void CreateCloudPlaylist_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             try
             {
-                Shell.Current.DisplayWaitRing = true;
-                cloudPlaylistItemsCount.Text = "-1";
-                if (!string.IsNullOrEmpty(ViewModelLocator.Settings.CloudPlaylistName) &&
-                    !string.IsNullOrEmpty(ViewModelLocator.Settings.AzureAccountKey) &&
-                    !string.IsNullOrEmpty(ViewModelLocator.Settings.AzureAccountName) &&
-                    !string.IsNullOrEmpty(ViewModelLocator.Settings.AzureContainer) &&
-                    !string.IsNullOrEmpty(ViewModelLocator.Settings.CloudPlaylistFilters) &&
-                    !string.IsNullOrEmpty(ViewModelLocator.Settings.CloudPlaylistPath)
-                    )
+                if (Helpers.MediaHelper.IsCloudPlaylistTaskRunning())
                 {
-                    int counter = await Helpers.MediaHelper.CreateCloudPlaylist(ViewModelLocator.Settings.CloudPlaylistName,
+                    Helpers.MediaHelper.CloudItemDiscovered -= MediaHelper_CloudItemDiscovered;
+                    Helpers.MediaHelper.CloudTaskStatus -= MediaHelper_CloudTaskStatus;
+
+                    await Helpers.MediaHelper.StopCloudPlaylistTask();
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(ViewModelLocator.Settings.CloudPlaylistName) &&
+                        !string.IsNullOrEmpty(ViewModelLocator.Settings.AzureAccountKey) &&
+                        !string.IsNullOrEmpty(ViewModelLocator.Settings.AzureAccountName) &&
+                        !string.IsNullOrEmpty(ViewModelLocator.Settings.AzureContainer) &&
+                        !string.IsNullOrEmpty(ViewModelLocator.Settings.CloudPlaylistFilters) &&
+                        !string.IsNullOrEmpty(ViewModelLocator.Settings.CloudPlaylistPath)
+                        )
+                    {
+                        cloudPlaylistItemsCount.Text = "0";
+                        Helpers.MediaHelper.CloudItemDiscovered += MediaHelper_CloudItemDiscovered;
+                        Helpers.MediaHelper.CloudTaskStatus += MediaHelper_CloudTaskStatus;
+
+                        await Helpers.MediaHelper.StartCloudPlaylistTask(ViewModelLocator.Settings.CloudPlaylistName,
                                                                                 ViewModelLocator.Settings.AzureAccountName,
                                                                                 ViewModelLocator.Settings.AzureAccountKey,
                                                                                 ViewModelLocator.Settings.AzureContainer,
@@ -593,13 +647,8 @@ namespace AudioVideoPlayer.Pages.Playlist
                                                                                 ViewModelLocator.Settings.CloudCreateThumbnails,
                                                                                 ViewModelLocator.Settings.CloudSlideShowPeriod,
                                                                                 ViewModelLocator.Settings.CloudPlaylistPath);
-                    //int counter = await Helpers.MediaHelper.RenameCloudPlaylist(ViewModelLocator.Settings.CloudPlaylistName,
-                    //                                                            ViewModelLocator.Settings.AzureAccountName,
-                    //                                                            ViewModelLocator.Settings.AzureAccountKey,
-                    //                                                            ViewModelLocator.Settings.AzureContainer,
-                    //                                                            ViewModelLocator.Settings.AzureFolder,
-                    //                                                            ViewModelLocator.Settings.CloudPlaylistPath);
-                    cloudPlaylistItemsCount.Text = counter.ToString();
+                        await Task.Delay(500);
+                    }
                 }
             }
             catch (Exception ex)
@@ -608,7 +657,6 @@ namespace AudioVideoPlayer.Pages.Playlist
             }
             finally
             {
-                Shell.Current.DisplayWaitRing = false;
                 UpdateControls();
             }
 

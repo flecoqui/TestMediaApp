@@ -686,24 +686,50 @@ namespace AudioVideoPlayer.Helpers
             return -1;
         }
         private static int localPlaylistCounter;
-        public static int LocalPlaylistCounter { set
+        public static int LocalPlaylistCounter
+        {
+            set
             {
-                localPlaylistCounter = value ;
-                if(LocalItemDiscovered != null)
-                    LocalItemDiscovered(LocalPlayListTask, value);
+                if (localPlaylistCounter != value)
+                {
+                    localPlaylistCounter = value;
+                    if (LocalItemDiscovered != null)
+                        LocalItemDiscovered(LocalPlayListTask, value);
+                }
             }
             get
             {
                 return localPlaylistCounter;
-            } }
+            }
+        }
         static System.Threading.Tasks.Task LocalPlayListTask = null;
-        static bool LocalPlaylistRunning = false;
+        private static bool localPlaylistRunning = false;
+        public static bool LocalPlaylistRunning
+        {
+            set
+            {
+                if (localPlaylistRunning != value)
+                {
+                    localPlaylistRunning = value;
+                    if (LocalTaskStatus != null)
+                        LocalTaskStatus(LocalPlayListTask, value);
+                }
+            }
+            get
+            {
+                return localPlaylistRunning;
+            }
+        }
+
         static bool LocalPlaylistStopRequested = false;
         //
         // Summary:
         //     Raised when a local item is discovered
         public  static event TypedEventHandler<System.Threading.Tasks.Task, int> LocalItemDiscovered;
-
+        //
+        // Summary:
+        //     Raised when the local Playlist Creation Task status change 
+        public static event TypedEventHandler<System.Threading.Tasks.Task, bool> LocalTaskStatus;
         public static bool IsLocalPlaylistTaskRunning()
         {
             if(LocalPlayListTask !=null)
@@ -727,6 +753,7 @@ namespace AudioVideoPlayer.Helpers
                 LocalPlayListTask = null;
                 return true;
             }
+            LocalPlayListTask = null;
             return false;
 
         }
@@ -1189,6 +1216,8 @@ namespace AudioVideoPlayer.Helpers
             BlobContinuationToken token = null;
             do
             {
+                if (CloudPlaylistStopRequested == true)
+                    break;
                 if (directory != null)
                     result = await directory.ListBlobsSegmentedAsync(token);
                 else
@@ -1198,6 +1227,9 @@ namespace AudioVideoPlayer.Helpers
                     token = result.ContinuationToken;
                     foreach (IListBlobItem item in result.Results)
                     {
+                        if (CloudPlaylistStopRequested == true)
+                            break;
+
                         if (item.GetType() == typeof(CloudBlockBlob))
                         {
                             CloudBlockBlob blob = (CloudBlockBlob)item;
@@ -1253,6 +1285,7 @@ namespace AudioVideoPlayer.Helpers
                                         AppendText(stream, s);
                                     }
                                     counter++;
+                                    CloudPlaylistCounter++;
                                 }
                             }
                         }
@@ -1278,9 +1311,12 @@ namespace AudioVideoPlayer.Helpers
         {
             set
             {
-                cloudPlaylistCounter = value;
-                if (CloudItemDiscovered != null)
-                    CloudItemDiscovered(CloudPlayListTask, value);
+                if (cloudPlaylistCounter != value)
+                {
+                    cloudPlaylistCounter = value;
+                    if (CloudItemDiscovered != null)
+                        CloudItemDiscovered(CloudPlayListTask, value);
+                }
             }
             get
             {
@@ -1288,18 +1324,39 @@ namespace AudioVideoPlayer.Helpers
             }
         }
         static System.Threading.Tasks.Task CloudPlayListTask = null;
-        static bool CloudPlaylistRunning = false;
+        private static bool cloudPlaylistRunning = false;
+
+        public static bool CloudPlaylistRunning
+        {
+            set
+            {
+                if (cloudPlaylistRunning != value)
+                {
+                    cloudPlaylistRunning = value;
+                    if (CloudItemDiscovered != null)
+                        CloudTaskStatus(CloudPlayListTask, value);
+                }
+            }
+            get
+            {
+                return cloudPlaylistRunning;
+            }
+        }
+
         static bool CloudPlaylistStopRequested = false;
         //
         // Summary:
         //     Raised when a local item is discovered
         public static event TypedEventHandler<System.Threading.Tasks.Task, int> CloudItemDiscovered;
+        //
+        // Summary:
+        //     Raised when the creation task status change 
+        public static event TypedEventHandler<System.Threading.Tasks.Task, bool> CloudTaskStatus;
 
         public static bool IsCloudPlaylistTaskRunning()
         {
             if (CloudPlayListTask != null)
             {
-                //if ((LocalPlayListTask.Status == TaskStatus.Running)
                 if (CloudPlaylistRunning == true)
                     return true;
             }
@@ -1307,7 +1364,6 @@ namespace AudioVideoPlayer.Helpers
         }
         public static async System.Threading.Tasks.Task<bool> StopCloudPlaylistTask()
         {
-
             if (IsCloudPlaylistTaskRunning())
             {
                 CloudPlaylistStopRequested = true;
@@ -1318,10 +1374,11 @@ namespace AudioVideoPlayer.Helpers
                 CloudPlayListTask = null;
                 return true;
             }
+            CloudPlayListTask = null;
             return false;
 
         }
-        public static async System.Threading.Tasks.Task<bool> StartCloudPlaylistTask(string PlaylistName, string folderName, string extensions, bool bCreateThumbnails, int SlideShowPeriod, string outputFile)
+        public static async System.Threading.Tasks.Task<bool> StartCloudPlaylistTask(string PlaylistName, string AccountName, string AccountKey, string Container, string folder, string extensions, bool bCreateThumbnails, int SlideShowPeriod, string outputFile)
         {
             if (CloudPlayListTask != null)
             {
@@ -1333,33 +1390,38 @@ namespace AudioVideoPlayer.Helpers
                 {
                     try
                     {
+                        List<string> blobs = new List<string>();
                         CloudPlaylistRunning = true;
                         CloudPlaylistStopRequested = false;
                         CloudPlaylistCounter = 0;
                         int counter = 0;
-                        Windows.Storage.StorageFile File = await CreateFile(outputFile);
-                        if (File != null)
+                        Windows.Storage.StorageFile writer = await CreateFile(outputFile);
+                        if (writer != null)
                         {
-                            Stream stream = await File.OpenStreamForWriteAsync();
+                            Stream stream = await writer.OpenStreamForWriteAsync();
                             if (stream != null)
                             {
-                                if (await IsFile(folderName) == true)
-                                {
-                                    counter = await ProcessFile(folderName, counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, stream, folderName);
-                                }
-                                else if (await IsFolder(folderName))
-                                {
-                                    // This path is a directory
-                                    counter = await ProcessDirectory(folderName, counter, PlaylistName, extensions, bCreateThumbnails, SlideShowPeriod, stream, folderName);
-                                }
-                                else
-                                {
-                                    System.Diagnostics.Debug.WriteLine("{0} is not a valid file or directory.", folderName);
-                                }
-                                //await Windows.Storage.FileIO.AppendTextAsync(File, footer);
+                                // Retrieve storage account from connection string.
+                                CloudStorageAccount storageAccount = CloudStorageAccount.Parse(
+                                "DefaultEndpointsProtocol=https;AccountName=" + AccountName + ";AccountKey=" + AccountKey);
+
+                                // Create the blob client.
+                                CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+
+                                // Retrieve reference to a previously created container.
+                                CloudBlobContainer container = blobClient.GetContainerReference(Container);
+
+                                string header = headerStart + PlaylistName + headerEnd;
+                                string s = header;
+                                AppendText(stream, s);
+                                CloudBlobDirectory directory = (!string.IsNullOrEmpty(folder) ? container.GetDirectoryReference(folder) : null);
+                                bool bFirst = true;
+                                int c = await ProcessCloudFolder(directory, bFirst, PlaylistName, container, directory, stream, extensions, bCreateThumbnails, SlideShowPeriod);
+                                counter += c;
                                 AppendText(stream, footer);
                                 stream.Flush();
-                                System.Diagnostics.Debug.WriteLine(counter.ToString() + " files discovered on local storage\n");
+
+                                System.Diagnostics.Debug.WriteLine(counter.ToString() + " files discovered on cloud storage\n");
                             }
                         }
                     }
