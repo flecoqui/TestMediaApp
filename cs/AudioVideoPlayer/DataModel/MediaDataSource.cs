@@ -253,7 +253,15 @@ namespace AudioVideoPlayer.DataModel
                         //the local json file
                         string MediaDataFile = path;                        
                         StorageFile file;
-                        file = await Windows.Storage.StorageFile.GetFileFromPathAsync(path);
+                        if (path.StartsWith("C:"))
+                        {
+                            file = await Windows.Storage.StorageFile.GetFileFromPathAsync(path);
+                        }
+                        else
+                        {
+                            Windows.Storage.StorageFolder folder = Windows.Storage.KnownFolders.Playlists;
+                            file = await Helpers.StorageHelper.GetFile(folder, MediaDataFile);
+                        }
                         if (file != null)
                         {
                             jsonText = await FileIO.ReadTextAsync(file);

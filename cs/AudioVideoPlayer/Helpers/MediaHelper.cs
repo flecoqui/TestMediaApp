@@ -73,8 +73,8 @@ namespace AudioVideoPlayer.Helpers
                     {
 //                        Windows.Storage.StorageFolder folder = Windows.Storage.KnownFolders.DocumentsLibrary;
                         Windows.Storage.StorageFolder folder = Windows.Storage.KnownFolders.Playlists;
-                        if (!string.IsNullOrEmpty(folderPath))
-                            folder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(folderPath);
+                      //  if (!string.IsNullOrEmpty(folderPath))
+                      //      folder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(folderPath);
                         if (folder != null)
                         {
                             var f = await Helpers.StorageHelper.GetFile(folder, fileName);
@@ -347,12 +347,13 @@ namespace AudioVideoPlayer.Helpers
                 Windows.Storage.StorageFolder dfolder = Windows.Storage.KnownFolders.Playlists;
                 if (dfolder != null)
                 {
-                    Windows.Storage.StorageFolder afolder = await StorageHelper.GetFolder(dfolder, Information.SystemInformation.ApplicationName);
-                    if (afolder == null)
-                    {
-                        afolder = await dfolder.CreateFolderAsync(Information.SystemInformation.ApplicationName);
-                    }
-                    return afolder;
+                    return dfolder;
+                    //Windows.Storage.StorageFolder afolder = await StorageHelper.GetFolder(dfolder, Information.SystemInformation.ApplicationName);
+                    //if (afolder == null)
+                    //{
+                    //    afolder = await dfolder.CreateFolderAsync(Information.SystemInformation.ApplicationName);
+                    //}
+                    //return afolder;
                 }
             }
             catch (Exception ex)

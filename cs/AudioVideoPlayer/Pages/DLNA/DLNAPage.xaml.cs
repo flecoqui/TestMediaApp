@@ -1640,8 +1640,11 @@ namespace AudioVideoPlayer.Pages.DLNA
                             {
                                 if(CanMediaItemBeImported(item.Content, item.PosterContent))
                                 {
-                                    hs.ListMediaItem.Items.Add(item);
-                                    count++;
+                                    if (hs.ListMediaItem != null)
+                                    {
+                                        hs.ListMediaItem.Items.Add(item);
+                                        count++;
+                                    }
                                 }
                             }
 

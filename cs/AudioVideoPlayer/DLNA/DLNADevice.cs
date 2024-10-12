@@ -444,7 +444,8 @@ namespace AudioVideoPlayer.DLNA
                 if (string.IsNullOrEmpty(name))
                     return false;
 
-                string path = await Helpers.MediaHelper.GetPlaylistPath(name);
+                //string path = await Helpers.MediaHelper.GetPlaylistPath(name);
+                string path = name;
                 MediaDataSource.Clear();
                 this.ListMediaItem = await MediaDataSource.GetGroupAsync(path, "audio_video_picture");
                 if (this.ListMediaItem == null)
